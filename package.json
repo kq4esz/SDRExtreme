@@ -1,6 +1,6 @@
 {
   "name": "sdr-extreme",
-  "version": "0.6.0",
+  "version": "0.6.1",
   "private": true,
   "type": "module",
   "description": "Windows SDR desktop suite with native RTL-SDR USB acquisition and a KiwiSDR network atlas.",
@@ -28,6 +28,9 @@
     "electron-updater": "6.8.9",
     "koffi": "3.3.3",
     "leaflet": "1.9.4"
+  },
+  "optionalDependencies": {
+    "@koromix/koffi-win32-x64": "3.3.3"
   },
   "devDependencies": {
     "electron": "44.7.1",

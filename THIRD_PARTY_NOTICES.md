@@ -22,6 +22,9 @@ DSD-neo's dependent DLLs, source provenance and license notices are retained
 in `native/digital/win32-x64/`, including its SPDX software bill of materials.
 The RTL-SDR Blog companion pthread and Microsoft Visual C runtime files are
 unmodified upstream release files; see `native/README.md` for their origin.
+The Microsoft Visual C++ runtime DLLs from the DSD-neo distribution are also
+placed beside the application executable; its `VCRUNTIME140.dll` accompanies
+the Blog USB library as well. These are unchanged copies of the same files.
 
 Application source and release tags are available without charge at
 https://github.com/kq4esz/SDRExtreme. The native source archives, manifests,

@@ -7,6 +7,12 @@ directories:
 # Workers, native DLLs and the receiver service need real filesystem paths.
 asar: false
 npmRebuild: false
+afterPack: scripts/check-package.cjs
+# Keep the C++ runtime beside the executable for Electron/native addon loads.
+extraFiles:
+  - from: native/digital/win32-x64/bin
+    to: .
+    filter: [VCRUNTIME140.dll, VCRUNTIME140_1.dll, MSVCP140.dll]
 files:
   - desktop/**
   - lib/**

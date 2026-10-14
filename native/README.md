@@ -1,6 +1,6 @@
 # RTL-SDR native USB library
 
-The Windows x64 native receiver uses the unmodified `rtlsdr.dll`, `pthreadVC2.dll`, and `msvcr100.dll` from RTL-SDR Blog driver release **V1.4.0**. It supports the Blog V4 as well as compatible RTL2832U receivers.
+The Windows x64 native receiver uses the unmodified `rtlsdr.dll`, `pthreadVC2.dll`, and `msvcr100.dll` from RTL-SDR Blog driver release **V1.4.0**. It supports the Blog V4 as well as compatible RTL2832U receivers. `VCRUNTIME140.dll` is also bundled beside the receiver library: this Blog DLL imports the Visual C++ runtime, so it must not depend on a development PC's installed runtime.
 
 - Binary release: https://github.com/rtlsdrblog/rtl-sdr-blog/releases/tag/V1.4.0
 - Corresponding RTL-SDR source: https://github.com/rtlsdrblog/rtl-sdr-blog/tree/V1.4.0
@@ -8,6 +8,7 @@ The Windows x64 native receiver uses the unmodified `rtlsdr.dll`, `pthreadVC2.dl
 - Original release ZIP SHA-256: `7ef33f1304647f65e5e0fde43637a73d54f076e91e651a3cecc4f55a17fd9815`
 - RTL-SDR license: GNU GPL v2 or later; see `COPYING-RTL-SDR.txt` and the upstream source headers.
 - The companion pthread and Microsoft Visual C runtime retain their upstream licenses and notices. The original release archive is the source of these companion files.
+- The additional `VCRUNTIME140.dll` is an unmodified Microsoft redistributable already supplied with the bundled DSD-neo Windows runtime. SHA-256: `d5e4d9a3e835fa679450145d6a7d94e36573a509317111904d9b3712c30d9066`. Its provenance/notices are retained under `native/digital/`. The same distribution's `VCRUNTIME140.dll`, `VCRUNTIME140_1.dll` and `MSVCP140.dll` are copied beside the installed executable during packaging.
 
 The DLL talks to the dongle through libusb/WinUSB. SDR Extreme does not install or change Windows USB drivers. If discovery fails, install WinUSB on the dongle's **Bulk-In Interface 0** with the official RTL-SDR setup instructions. Leave the composite parent and Interface 1 alone.
 

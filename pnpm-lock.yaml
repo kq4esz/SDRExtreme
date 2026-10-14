@@ -27,6 +27,10 @@ importers:
       playwright:
         specifier: 1.64.0
         version: 1.64.0
+    optionalDependencies:
+      '@koromix/koffi-win32-x64':
+        specifier: 3.3.3
+        version: 3.3.3
 
 packages:
 
