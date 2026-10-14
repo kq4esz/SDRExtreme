@@ -1,0 +1,37 @@
+{
+  "name": "sdr-extreme",
+  "version": "0.6.0",
+  "private": true,
+  "type": "module",
+  "description": "Windows SDR desktop suite with native RTL-SDR USB acquisition and a KiwiSDR network atlas.",
+  "main": "desktop/main.cjs",
+  "productName": "SDR Extreme",
+  "author": "KQ4ESZ",
+  "license": "GPL-3.0-only",
+  "homepage": "https://github.com/kq4esz/SDRExtreme",
+  "repository": { "type": "git", "url": "https://github.com/kq4esz/SDRExtreme.git" },
+  "engines": {
+    "node": ">=22.12"
+  },
+  "scripts": {
+    "start": "electron .",
+    "start:server": "node server.mjs",
+    "test": "node --test test/*.test.mjs",
+    "test:ui": "node scripts/verify-memory-ui.mjs",
+    "diagnose:usb": "node scripts/diagnose-usb.mjs",
+    "build:win": "electron-builder --win nsis --x64 --publish never",
+    "build:dir": "electron-builder --win --x64 --dir --publish never",
+    "release:win": "pnpm build:win && pnpm release:checksums && node scripts/publish-release.mjs",
+    "release:checksums": "node scripts/release-checksums.mjs"
+  },
+  "dependencies": {
+    "electron-updater": "6.8.9",
+    "koffi": "3.3.3",
+    "leaflet": "1.9.4"
+  },
+  "devDependencies": {
+    "electron": "44.7.1",
+    "electron-builder": "26.15.3",
+    "playwright": "1.64.0"
+  }
+}

@@ -1,0 +1,52 @@
+appId: com.sdrextreme.desktop
+productName: SDR Extreme
+artifactName: SDR-Extreme-Setup-${version}-${arch}.${ext}
+directories:
+  output: dist
+  buildResources: assets
+# Workers, native DLLs and the receiver service need real filesystem paths.
+asar: false
+npmRebuild: false
+files:
+  - desktop/**
+  - lib/**
+  - native/**
+  - assets/**
+  - server.mjs
+  - app.js
+  - app.css
+  - index.html
+  - hd-radio-ui.js
+  - kiwi-network.js
+  - package.json
+  - README.md
+  - LICENSE
+  - THIRD_PARTY_NOTICES.md
+  - '!**/local-data/**'
+  - '!**/test/**'
+  - '!**/scripts/**'
+win:
+  target:
+    - target: nsis
+      arch: [x64]
+  icon: assets/app-icon.png
+  executableName: SDR Extreme
+  # No signing certificate is supplied. HTTPS + SHA-512 still verify downloads.
+  verifyUpdateCodeSignature: false
+nsis:
+  oneClick: false
+  perMachine: false
+  allowToChangeInstallationDirectory: true
+  allowElevation: false
+  createDesktopShortcut: true
+  createStartMenuShortcut: true
+  shortcutName: SDR Extreme
+  runAfterFinish: true
+  deleteAppDataOnUninstall: false
+  license: LICENSE
+publish:
+  provider: github
+  owner: kq4esz
+  repo: SDRExtreme
+  releaseType: release
+  vPrefixedTagName: true

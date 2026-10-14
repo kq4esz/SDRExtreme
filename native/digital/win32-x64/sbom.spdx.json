@@ -1,0 +1,1413 @@
+{
+  "spdxVersion": "SPDX-2.3",
+  "dataLicense": "CC0-1.0",
+  "SPDXID": "SPDXRef-DOCUMENT",
+  "name": "dsd-neo-msvc-x86_64-native-nightly.zip",
+  "documentNamespace": "https://anchore.com/syft/file/dsd-neo-msvc-x86_64-native-nightly.zip-29266191-1079-4c74-b0d4-aeeed356b1fa",
+  "creationInfo": {
+    "licenseListVersion": "3.29",
+    "creators": [
+      "Organization: Anchore, Inc",
+      "Tool: syft-1.54.0"
+    ],
+    "created": "2026-10-14T16:03:51Z"
+  },
+  "packages": [
+    {
+      "name": "Free Lossless Audio Codec",
+      "SPDXID": "SPDXRef-Package-binary-Free-Lossless-Audio-Codec-91cb36254c8d1d2e",
+      "versionInfo": "1.5.0",
+      "supplier": "Organization: Xiph.Org",
+      "originator": "Organization: Xiph.Org",
+      "downloadLocation": "NOASSERTION",
+      "filesAnalyzed": false,
+      "sourceInfo": "acquired package info from the following paths: C:/Users/runneradmin/AppData/Local/Temp/syft-archive-contents-1228228038/bin/FLAC.dll",
+      "licenseConcluded": "NOASSERTION",
+      "licenseDeclared": "NOASSERTION",
+      "copyrightText": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "SECURITY",
+          "referenceType": "cpe23Type",
+          "referenceLocator": "cpe:2.3:a:Free_Lossless_Audio_Codec:Free_Lossless_Audio_Codec:1.5.0:*:*:*:*:*:*:*"
+        }
+      ]
+    },
+    {
+      "name": "L.A.M.E.",
+      "SPDXID": "SPDXRef-Package-binary-L.A.M.E.-d7201c0bdad5bbb4",
+      "versionInfo": "3.100",
+      "supplier": "Organization: http://lame.sf.net",
+      "originator": "Organization: http://lame.sf.net",
+      "downloadLocation": "NOASSERTION",
+      "filesAnalyzed": false,
+      "sourceInfo": "acquired package info from the following paths: C:/Users/runneradmin/AppData/Local/Temp/syft-archive-contents-1228228038/bin/libmp3lame.DLL",
+      "licenseConcluded": "NOASSERTION",
+      "licenseDeclared": "NOASSERTION",
+      "copyrightText": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "SECURITY",
+          "referenceType": "cpe23Type",
+          "referenceLocator": "cpe:2.3:a:L.A.M.E.:L.A.M.E.:3.100:*:*:*:*:*:*:*"
+        }
+      ]
+    },
+    {
+      "name": "Microsoft\u00ae C Runtime Library",
+      "SPDXID": "SPDXRef-Package-binary-Microsoft--C-Runtime-Library-4261ed51b1e98499",
+      "versionInfo": "14.44.35211.0",
+      "supplier": "Organization: Microsoft Corporation",
+      "originator": "Organization: Microsoft Corporation",
+      "downloadLocation": "NOASSERTION",
+      "filesAnalyzed": false,
+      "sourceInfo": "acquired package info from the following paths: C:/Users/runneradmin/AppData/Local/Temp/syft-archive-contents-1228228038/bin/MSVCP140.dll",
+      "licenseConcluded": "NOASSERTION",
+      "licenseDeclared": "NOASSERTION",
+      "copyrightText": "NOASSERTION"
+    },
+    {
+      "name": "Microsoft\u00ae C Runtime Library",
+      "SPDXID": "SPDXRef-Package-binary-Microsoft--C-Runtime-Library-133c970d5e5b848f",
+      "versionInfo": "14.44.35211.0",
+      "supplier": "Organization: Microsoft Corporation",
+      "originator": "Organization: Microsoft Corporation",
+      "downloadLocation": "NOASSERTION",
+      "filesAnalyzed": false,
+      "sourceInfo": "acquired package info from the following paths: C:/Users/runneradmin/AppData/Local/Temp/syft-archive-contents-1228228038/bin/VCRUNTIME140.dll",
+      "licenseConcluded": "NOASSERTION",
+      "licenseDeclared": "NOASSERTION",
+      "copyrightText": "NOASSERTION"
+    },
+    {
+      "name": "Microsoft\u00ae C Runtime Library",
+      "SPDXID": "SPDXRef-Package-binary-Microsoft--C-Runtime-Library-c8089515cf7e3265",
+      "versionInfo": "14.44.35211.0",
+      "supplier": "Organization: Microsoft Corporation",
+      "originator": "Organization: Microsoft Corporation",
+      "downloadLocation": "NOASSERTION",
+      "filesAnalyzed": false,
+      "sourceInfo": "acquired package info from the following paths: C:/Users/runneradmin/AppData/Local/Temp/syft-archive-contents-1228228038/bin/VCRUNTIME140_1.dll",
+      "licenseConcluded": "NOASSERTION",
+      "licenseDeclared": "NOASSERTION",
+      "copyrightText": "NOASSERTION"
+    },
+    {
+      "name": "PDCurses",
+      "SPDXID": "SPDXRef-Package-binary-PDCurses-9bec36ce2cb311cd",
+      "versionInfo": "3.9.0.0",
+      "supplier": "Organization: PDCurses.org",
+      "originator": "Organization: PDCurses.org",
+      "downloadLocation": "NOASSERTION",
+      "filesAnalyzed": false,
+      "sourceInfo": "acquired package info from the following paths: C:/Users/runneradmin/AppData/Local/Temp/syft-archive-contents-1228228038/bin/pdcurses.dll",
+      "licenseConcluded": "NOASSERTION",
+      "licenseDeclared": "NOASSERTION",
+      "copyrightText": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "SECURITY",
+          "referenceType": "cpe23Type",
+          "referenceLocator": "cpe:2.3:a:PDCurses:PDCurses:3.9.0.0:*:*:*:*:*:*:*"
+        }
+      ]
+    },
+    {
+      "name": "POSIX Threads for Windows",
+      "SPDXID": "SPDXRef-Package-binary-POSIX-Threads-for-Windows-7f965a0153ff0f8d",
+      "versionInfo": "3, 0, 0, 0",
+      "supplier": "Organization: Open Source Software community",
+      "originator": "Organization: Open Source Software community",
+      "downloadLocation": "NOASSERTION",
+      "filesAnalyzed": false,
+      "sourceInfo": "acquired package info from the following paths: C:/Users/runneradmin/AppData/Local/Temp/syft-archive-contents-1228228038/bin/pthreadVC3.dll",
+      "licenseConcluded": "NOASSERTION",
+      "licenseDeclared": "NOASSERTION",
+      "copyrightText": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "SECURITY",
+          "referenceType": "cpe23Type",
+          "referenceLocator": "cpe:2.3:a:POSIX_Threads_for_Windows:POSIX_Threads_for_Windows:3\\,_0\\,_0\\,_0:*:*:*:*:*:*:*"
+        }
+      ]
+    },
+    {
+      "name": "SoapySDR",
+      "SPDXID": "SPDXRef-Package-binary-SoapySDR-3c67aeb32270d2fc",
+      "versionInfo": "UNKNOWN",
+      "supplier": "NOASSERTION",
+      "downloadLocation": "NOASSERTION",
+      "filesAnalyzed": false,
+      "sourceInfo": "acquired package info from the following paths: C:/Users/runneradmin/AppData/Local/Temp/syft-archive-contents-1228228038/bin/SoapySDR.dll",
+      "licenseConcluded": "NOASSERTION",
+      "licenseDeclared": "NOASSERTION",
+      "copyrightText": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "SECURITY",
+          "referenceType": "cpe23Type",
+          "referenceLocator": "cpe:2.3:a:SoapySDR:SoapySDR:*:*:*:*:*:*:*:*"
+        }
+      ]
+    },
+    {
+      "name": "The OpenSSL Toolkit",
+      "SPDXID": "SPDXRef-Package-binary-The-OpenSSL-Toolkit-4ee5873dca97df19",
+      "versionInfo": "3.6.3",
+      "supplier": "Organization: The OpenSSL Project, https://www.openssl.org/",
+      "originator": "Organization: The OpenSSL Project, https://www.openssl.org/",
+      "downloadLocation": "NOASSERTION",
+      "filesAnalyzed": false,
+      "sourceInfo": "acquired package info from the following paths: C:/Users/runneradmin/AppData/Local/Temp/syft-archive-contents-1228228038/bin/libcrypto-3-x64.dll",
+      "licenseConcluded": "NOASSERTION",
+      "licenseDeclared": "NOASSERTION",
+      "copyrightText": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "SECURITY",
+          "referenceType": "cpe23Type",
+          "referenceLocator": "cpe:2.3:a:The_OpenSSL_Toolkit:The_OpenSSL_Toolkit:3.6.3:*:*:*:*:*:*:*"
+        }
+      ]
+    },
+    {
+      "name": "The curl library",
+      "SPDXID": "SPDXRef-Package-binary-The-curl-library-961a8f8387545558",
+      "versionInfo": "8.21.0",
+      "supplier": "Organization: The curl library, https://curl.se/",
+      "originator": "Organization: The curl library, https://curl.se/",
+      "downloadLocation": "NOASSERTION",
+      "filesAnalyzed": false,
+      "sourceInfo": "acquired package info from the following paths: C:/Users/runneradmin/AppData/Local/Temp/syft-archive-contents-1228228038/bin/libcurl.dll",
+      "licenseConcluded": "NOASSERTION",
+      "licenseDeclared": "NOASSERTION",
+      "copyrightText": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "SECURITY",
+          "referenceType": "cpe23Type",
+          "referenceLocator": "cpe:2.3:a:The_curl_library:The_curl_library:8.21.0:*:*:*:*:*:*:*"
+        }
+      ]
+    },
+    {
+      "name": "airspy",
+      "SPDXID": "SPDXRef-Package-binary-airspy-03fcf84d9bc9eebe",
+      "versionInfo": "UNKNOWN",
+      "supplier": "NOASSERTION",
+      "downloadLocation": "NOASSERTION",
+      "filesAnalyzed": false,
+      "sourceInfo": "acquired package info from the following paths: C:/Users/runneradmin/AppData/Local/Temp/syft-archive-contents-1228228038/bin/airspy.dll",
+      "licenseConcluded": "NOASSERTION",
+      "licenseDeclared": "NOASSERTION",
+      "copyrightText": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "SECURITY",
+          "referenceType": "cpe23Type",
+          "referenceLocator": "cpe:2.3:a:airspy:airspy:*:*:*:*:*:*:*:*"
+        }
+      ]
+    },
+    {
+      "name": "codec2",
+      "SPDXID": "SPDXRef-Package-binary-codec2-e9991ab86ee650a7",
+      "versionInfo": "UNKNOWN",
+      "supplier": "NOASSERTION",
+      "downloadLocation": "NOASSERTION",
+      "filesAnalyzed": false,
+      "sourceInfo": "acquired package info from the following paths: C:/Users/runneradmin/AppData/Local/Temp/syft-archive-contents-1228228038/bin/codec2.dll",
+      "licenseConcluded": "NOASSERTION",
+      "licenseDeclared": "NOASSERTION",
+      "copyrightText": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "SECURITY",
+          "referenceType": "cpe23Type",
+          "referenceLocator": "cpe:2.3:a:codec2:codec2:*:*:*:*:*:*:*:*"
+        },
+        {
+          "referenceCategory": "SECURITY",
+          "referenceType": "cpe23Type",
+          "referenceLocator": "cpe:2.3:a:codec2:codec:*:*:*:*:*:*:*:*"
+        },
+        {
+          "referenceCategory": "SECURITY",
+          "referenceType": "cpe23Type",
+          "referenceLocator": "cpe:2.3:a:codec:codec2:*:*:*:*:*:*:*:*"
+        },
+        {
+          "referenceCategory": "SECURITY",
+          "referenceType": "cpe23Type",
+          "referenceLocator": "cpe:2.3:a:codec:codec:*:*:*:*:*:*:*:*"
+        }
+      ]
+    },
+    {
+      "name": "dsd-neo",
+      "SPDXID": "SPDXRef-Package-binary-dsd-neo-15f6a604db05f156",
+      "versionInfo": "UNKNOWN",
+      "supplier": "NOASSERTION",
+      "downloadLocation": "NOASSERTION",
+      "filesAnalyzed": false,
+      "sourceInfo": "acquired package info from the following paths: C:/Users/runneradmin/AppData/Local/Temp/syft-archive-contents-1228228038/bin/dsd-neo.exe",
+      "licenseConcluded": "NOASSERTION",
+      "licenseDeclared": "NOASSERTION",
+      "copyrightText": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "SECURITY",
+          "referenceType": "cpe23Type",
+          "referenceLocator": "cpe:2.3:a:dsd-neo:dsd-neo:*:*:*:*:*:*:*:*"
+        },
+        {
+          "referenceCategory": "SECURITY",
+          "referenceType": "cpe23Type",
+          "referenceLocator": "cpe:2.3:a:dsd-neo:dsd_neo:*:*:*:*:*:*:*:*"
+        },
+        {
+          "referenceCategory": "SECURITY",
+          "referenceType": "cpe23Type",
+          "referenceLocator": "cpe:2.3:a:dsd_neo:dsd-neo:*:*:*:*:*:*:*:*"
+        },
+        {
+          "referenceCategory": "SECURITY",
+          "referenceType": "cpe23Type",
+          "referenceLocator": "cpe:2.3:a:dsd_neo:dsd_neo:*:*:*:*:*:*:*:*"
+        },
+        {
+          "referenceCategory": "SECURITY",
+          "referenceType": "cpe23Type",
+          "referenceLocator": "cpe:2.3:a:dsd:dsd-neo:*:*:*:*:*:*:*:*"
+        },
+        {
+          "referenceCategory": "SECURITY",
+          "referenceType": "cpe23Type",
+          "referenceLocator": "cpe:2.3:a:dsd:dsd_neo:*:*:*:*:*:*:*:*"
+        }
+      ]
+    },
+    {
+      "name": "libexpat",
+      "SPDXID": "SPDXRef-Package-binary-libexpat-957c3ea26f7ca5c3",
+      "versionInfo": "2.8.2.0",
+      "supplier": "NOASSERTION",
+      "downloadLocation": "NOASSERTION",
+      "filesAnalyzed": false,
+      "sourceInfo": "acquired package info from the following paths: C:/Users/runneradmin/AppData/Local/Temp/syft-archive-contents-1228228038/bin/libexpat.dll",
+      "licenseConcluded": "NOASSERTION",
+      "licenseDeclared": "NOASSERTION",
+      "copyrightText": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "SECURITY",
+          "referenceType": "cpe23Type",
+          "referenceLocator": "cpe:2.3:a:libexpat:libexpat:2.8.2.0:*:*:*:*:*:*:*"
+        }
+      ]
+    },
+    {
+      "name": "libsndfile-1 DLL",
+      "SPDXID": "SPDXRef-Package-binary-libsndfile-1-DLL-36254c0ecfdc718b",
+      "versionInfo": "1.2.2.0",
+      "supplier": "NOASSERTION",
+      "downloadLocation": "NOASSERTION",
+      "filesAnalyzed": false,
+      "sourceInfo": "acquired package info from the following paths: C:/Users/runneradmin/AppData/Local/Temp/syft-archive-contents-1228228038/bin/sndfile.dll",
+      "licenseConcluded": "NOASSERTION",
+      "licenseDeclared": "NOASSERTION",
+      "copyrightText": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "SECURITY",
+          "referenceType": "cpe23Type",
+          "referenceLocator": "cpe:2.3:a:libsndfile-1_DLL:libsndfile-1_DLL:1.2.2.0:*:*:*:*:*:*:*"
+        },
+        {
+          "referenceCategory": "SECURITY",
+          "referenceType": "cpe23Type",
+          "referenceLocator": "cpe:2.3:a:libsndfile-1_DLL:libsndfile_1_DLL:1.2.2.0:*:*:*:*:*:*:*"
+        },
+        {
+          "referenceCategory": "SECURITY",
+          "referenceType": "cpe23Type",
+          "referenceLocator": "cpe:2.3:a:libsndfile_1_DLL:libsndfile-1_DLL:1.2.2.0:*:*:*:*:*:*:*"
+        },
+        {
+          "referenceCategory": "SECURITY",
+          "referenceType": "cpe23Type",
+          "referenceLocator": "cpe:2.3:a:libsndfile_1_DLL:libsndfile_1_DLL:1.2.2.0:*:*:*:*:*:*:*"
+        },
+        {
+          "referenceCategory": "SECURITY",
+          "referenceType": "cpe23Type",
+          "referenceLocator": "cpe:2.3:a:libsndfile:libsndfile-1_DLL:1.2.2.0:*:*:*:*:*:*:*"
+        },
+        {
+          "referenceCategory": "SECURITY",
+          "referenceType": "cpe23Type",
+          "referenceLocator": "cpe:2.3:a:libsndfile:libsndfile_1_DLL:1.2.2.0:*:*:*:*:*:*:*"
+        }
+      ]
+    },
+    {
+      "name": "libusb-1.0",
+      "SPDXID": "SPDXRef-Package-binary-libusb-1.0-21a5055dd2c0ead4",
+      "versionInfo": "1.0.30.12037",
+      "supplier": "Organization: libusb.info",
+      "originator": "Organization: libusb.info",
+      "downloadLocation": "NOASSERTION",
+      "filesAnalyzed": false,
+      "sourceInfo": "acquired package info from the following paths: C:/Users/runneradmin/AppData/Local/Temp/syft-archive-contents-1228228038/bin/libusb-1.0.dll",
+      "licenseConcluded": "NOASSERTION",
+      "licenseDeclared": "NOASSERTION",
+      "copyrightText": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "SECURITY",
+          "referenceType": "cpe23Type",
+          "referenceLocator": "cpe:2.3:a:libusb-1.0:libusb-1.0:1.0.30.12037:*:*:*:*:*:*:*"
+        },
+        {
+          "referenceCategory": "SECURITY",
+          "referenceType": "cpe23Type",
+          "referenceLocator": "cpe:2.3:a:libusb-1.0:libusb_1.0:1.0.30.12037:*:*:*:*:*:*:*"
+        },
+        {
+          "referenceCategory": "SECURITY",
+          "referenceType": "cpe23Type",
+          "referenceLocator": "cpe:2.3:a:libusb_1.0:libusb-1.0:1.0.30.12037:*:*:*:*:*:*:*"
+        },
+        {
+          "referenceCategory": "SECURITY",
+          "referenceType": "cpe23Type",
+          "referenceLocator": "cpe:2.3:a:libusb_1.0:libusb_1.0:1.0.30.12037:*:*:*:*:*:*:*"
+        },
+        {
+          "referenceCategory": "SECURITY",
+          "referenceType": "cpe23Type",
+          "referenceLocator": "cpe:2.3:a:libusb-1.0:libusb-1.:1.0.30.12037:*:*:*:*:*:*:*"
+        },
+        {
+          "referenceCategory": "SECURITY",
+          "referenceType": "cpe23Type",
+          "referenceLocator": "cpe:2.3:a:libusb-1.0:libusb_1.:1.0.30.12037:*:*:*:*:*:*:*"
+        },
+        {
+          "referenceCategory": "SECURITY",
+          "referenceType": "cpe23Type",
+          "referenceLocator": "cpe:2.3:a:libusb-1.:libusb-1.0:1.0.30.12037:*:*:*:*:*:*:*"
+        },
+        {
+          "referenceCategory": "SECURITY",
+          "referenceType": "cpe23Type",
+          "referenceLocator": "cpe:2.3:a:libusb-1.:libusb_1.0:1.0.30.12037:*:*:*:*:*:*:*"
+        },
+        {
+          "referenceCategory": "SECURITY",
+          "referenceType": "cpe23Type",
+          "referenceLocator": "cpe:2.3:a:libusb_1.0:libusb-1.:1.0.30.12037:*:*:*:*:*:*:*"
+        },
+        {
+          "referenceCategory": "SECURITY",
+          "referenceType": "cpe23Type",
+          "referenceLocator": "cpe:2.3:a:libusb_1.0:libusb_1.:1.0.30.12037:*:*:*:*:*:*:*"
+        },
+        {
+          "referenceCategory": "SECURITY",
+          "referenceType": "cpe23Type",
+          "referenceLocator": "cpe:2.3:a:libusb_1.:libusb-1.0:1.0.30.12037:*:*:*:*:*:*:*"
+        },
+        {
+          "referenceCategory": "SECURITY",
+          "referenceType": "cpe23Type",
+          "referenceLocator": "cpe:2.3:a:libusb_1.:libusb_1.0:1.0.30.12037:*:*:*:*:*:*:*"
+        },
+        {
+          "referenceCategory": "SECURITY",
+          "referenceType": "cpe23Type",
+          "referenceLocator": "cpe:2.3:a:libusb-1.:libusb-1.:1.0.30.12037:*:*:*:*:*:*:*"
+        },
+        {
+          "referenceCategory": "SECURITY",
+          "referenceType": "cpe23Type",
+          "referenceLocator": "cpe:2.3:a:libusb-1.:libusb_1.:1.0.30.12037:*:*:*:*:*:*:*"
+        },
+        {
+          "referenceCategory": "SECURITY",
+          "referenceType": "cpe23Type",
+          "referenceLocator": "cpe:2.3:a:libusb_1.:libusb-1.:1.0.30.12037:*:*:*:*:*:*:*"
+        },
+        {
+          "referenceCategory": "SECURITY",
+          "referenceType": "cpe23Type",
+          "referenceLocator": "cpe:2.3:a:libusb_1.:libusb_1.:1.0.30.12037:*:*:*:*:*:*:*"
+        },
+        {
+          "referenceCategory": "SECURITY",
+          "referenceType": "cpe23Type",
+          "referenceLocator": "cpe:2.3:a:libusb:libusb-1.0:1.0.30.12037:*:*:*:*:*:*:*"
+        },
+        {
+          "referenceCategory": "SECURITY",
+          "referenceType": "cpe23Type",
+          "referenceLocator": "cpe:2.3:a:libusb:libusb_1.0:1.0.30.12037:*:*:*:*:*:*:*"
+        },
+        {
+          "referenceCategory": "SECURITY",
+          "referenceType": "cpe23Type",
+          "referenceLocator": "cpe:2.3:a:libusb:libusb-1.:1.0.30.12037:*:*:*:*:*:*:*"
+        },
+        {
+          "referenceCategory": "SECURITY",
+          "referenceType": "cpe23Type",
+          "referenceLocator": "cpe:2.3:a:libusb:libusb_1.:1.0.30.12037:*:*:*:*:*:*:*"
+        }
+      ]
+    },
+    {
+      "name": "mbe-neo",
+      "SPDXID": "SPDXRef-Package-binary-mbe-neo-3c75cd03b82eefa9",
+      "versionInfo": "UNKNOWN",
+      "supplier": "NOASSERTION",
+      "downloadLocation": "NOASSERTION",
+      "filesAnalyzed": false,
+      "sourceInfo": "acquired package info from the following paths: C:/Users/runneradmin/AppData/Local/Temp/syft-archive-contents-1228228038/bin/mbe-neo.dll",
+      "licenseConcluded": "NOASSERTION",
+      "licenseDeclared": "NOASSERTION",
+      "copyrightText": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "SECURITY",
+          "referenceType": "cpe23Type",
+          "referenceLocator": "cpe:2.3:a:mbe-neo:mbe-neo:*:*:*:*:*:*:*:*"
+        },
+        {
+          "referenceCategory": "SECURITY",
+          "referenceType": "cpe23Type",
+          "referenceLocator": "cpe:2.3:a:mbe-neo:mbe_neo:*:*:*:*:*:*:*:*"
+        },
+        {
+          "referenceCategory": "SECURITY",
+          "referenceType": "cpe23Type",
+          "referenceLocator": "cpe:2.3:a:mbe_neo:mbe-neo:*:*:*:*:*:*:*:*"
+        },
+        {
+          "referenceCategory": "SECURITY",
+          "referenceType": "cpe23Type",
+          "referenceLocator": "cpe:2.3:a:mbe_neo:mbe_neo:*:*:*:*:*:*:*:*"
+        },
+        {
+          "referenceCategory": "SECURITY",
+          "referenceType": "cpe23Type",
+          "referenceLocator": "cpe:2.3:a:mbe:mbe-neo:*:*:*:*:*:*:*:*"
+        },
+        {
+          "referenceCategory": "SECURITY",
+          "referenceType": "cpe23Type",
+          "referenceLocator": "cpe:2.3:a:mbe:mbe_neo:*:*:*:*:*:*:*:*"
+        }
+      ]
+    },
+    {
+      "name": "mpg123",
+      "SPDXID": "SPDXRef-Package-binary-mpg123-bade3a783467cadd",
+      "versionInfo": "UNKNOWN",
+      "supplier": "NOASSERTION",
+      "downloadLocation": "NOASSERTION",
+      "filesAnalyzed": false,
+      "sourceInfo": "acquired package info from the following paths: C:/Users/runneradmin/AppData/Local/Temp/syft-archive-contents-1228228038/bin/mpg123.dll",
+      "licenseConcluded": "NOASSERTION",
+      "licenseDeclared": "NOASSERTION",
+      "copyrightText": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "SECURITY",
+          "referenceType": "cpe23Type",
+          "referenceLocator": "cpe:2.3:a:mpg123:mpg123:*:*:*:*:*:*:*:*"
+        },
+        {
+          "referenceCategory": "SECURITY",
+          "referenceType": "cpe23Type",
+          "referenceLocator": "cpe:2.3:a:mpg123:mpg:*:*:*:*:*:*:*:*"
+        },
+        {
+          "referenceCategory": "SECURITY",
+          "referenceType": "cpe23Type",
+          "referenceLocator": "cpe:2.3:a:mpg:mpg123:*:*:*:*:*:*:*:*"
+        },
+        {
+          "referenceCategory": "SECURITY",
+          "referenceType": "cpe23Type",
+          "referenceLocator": "cpe:2.3:a:mpg:mpg:*:*:*:*:*:*:*:*"
+        }
+      ]
+    },
+    {
+      "name": "ogg",
+      "SPDXID": "SPDXRef-Package-binary-ogg-da09ce34ae651464",
+      "versionInfo": "UNKNOWN",
+      "supplier": "NOASSERTION",
+      "downloadLocation": "NOASSERTION",
+      "filesAnalyzed": false,
+      "sourceInfo": "acquired package info from the following paths: C:/Users/runneradmin/AppData/Local/Temp/syft-archive-contents-1228228038/bin/ogg.dll",
+      "licenseConcluded": "NOASSERTION",
+      "licenseDeclared": "NOASSERTION",
+      "copyrightText": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "SECURITY",
+          "referenceType": "cpe23Type",
+          "referenceLocator": "cpe:2.3:a:ogg:ogg:*:*:*:*:*:*:*:*"
+        }
+      ]
+    },
+    {
+      "name": "opus",
+      "SPDXID": "SPDXRef-Package-binary-opus-308eba0efb0eba71",
+      "versionInfo": "UNKNOWN",
+      "supplier": "NOASSERTION",
+      "downloadLocation": "NOASSERTION",
+      "filesAnalyzed": false,
+      "sourceInfo": "acquired package info from the following paths: C:/Users/runneradmin/AppData/Local/Temp/syft-archive-contents-1228228038/bin/opus.dll",
+      "licenseConcluded": "NOASSERTION",
+      "licenseDeclared": "NOASSERTION",
+      "copyrightText": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "SECURITY",
+          "referenceType": "cpe23Type",
+          "referenceLocator": "cpe:2.3:a:opus:opus:*:*:*:*:*:*:*:*"
+        }
+      ]
+    },
+    {
+      "name": "osmocom rtl-sdr",
+      "SPDXID": "SPDXRef-Package-binary-osmocom-rtl-sdr-987a8d85e88408ea",
+      "versionInfo": "2.0.3",
+      "supplier": "NOASSERTION",
+      "downloadLocation": "NOASSERTION",
+      "filesAnalyzed": false,
+      "sourceInfo": "acquired package info from the following paths: C:/Users/runneradmin/AppData/Local/Temp/syft-archive-contents-1228228038/bin/rtlsdr.dll",
+      "licenseConcluded": "NOASSERTION",
+      "licenseDeclared": "NOASSERTION",
+      "copyrightText": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "SECURITY",
+          "referenceType": "cpe23Type",
+          "referenceLocator": "cpe:2.3:a:osmocom_rtl-sdr:osmocom_rtl-sdr:2.0.3:*:*:*:*:*:*:*"
+        },
+        {
+          "referenceCategory": "SECURITY",
+          "referenceType": "cpe23Type",
+          "referenceLocator": "cpe:2.3:a:osmocom_rtl-sdr:osmocom_rtl_sdr:2.0.3:*:*:*:*:*:*:*"
+        },
+        {
+          "referenceCategory": "SECURITY",
+          "referenceType": "cpe23Type",
+          "referenceLocator": "cpe:2.3:a:osmocom_rtl_sdr:osmocom_rtl-sdr:2.0.3:*:*:*:*:*:*:*"
+        },
+        {
+          "referenceCategory": "SECURITY",
+          "referenceType": "cpe23Type",
+          "referenceLocator": "cpe:2.3:a:osmocom_rtl_sdr:osmocom_rtl_sdr:2.0.3:*:*:*:*:*:*:*"
+        },
+        {
+          "referenceCategory": "SECURITY",
+          "referenceType": "cpe23Type",
+          "referenceLocator": "cpe:2.3:a:osmocom_rtl:osmocom_rtl-sdr:2.0.3:*:*:*:*:*:*:*"
+        },
+        {
+          "referenceCategory": "SECURITY",
+          "referenceType": "cpe23Type",
+          "referenceLocator": "cpe:2.3:a:osmocom_rtl:osmocom_rtl_sdr:2.0.3:*:*:*:*:*:*:*"
+        }
+      ]
+    },
+    {
+      "name": "portaudio",
+      "SPDXID": "SPDXRef-Package-binary-portaudio-3df695d655112929",
+      "versionInfo": "UNKNOWN",
+      "supplier": "NOASSERTION",
+      "downloadLocation": "NOASSERTION",
+      "filesAnalyzed": false,
+      "sourceInfo": "acquired package info from the following paths: C:/Users/runneradmin/AppData/Local/Temp/syft-archive-contents-1228228038/bin/portaudio.dll",
+      "licenseConcluded": "NOASSERTION",
+      "licenseDeclared": "NOASSERTION",
+      "copyrightText": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "SECURITY",
+          "referenceType": "cpe23Type",
+          "referenceLocator": "cpe:2.3:a:portaudio:portaudio:*:*:*:*:*:*:*:*"
+        }
+      ]
+    },
+    {
+      "name": "vorbis",
+      "SPDXID": "SPDXRef-Package-binary-vorbis-262dfe5f2faa7893",
+      "versionInfo": "UNKNOWN",
+      "supplier": "NOASSERTION",
+      "downloadLocation": "NOASSERTION",
+      "filesAnalyzed": false,
+      "sourceInfo": "acquired package info from the following paths: C:/Users/runneradmin/AppData/Local/Temp/syft-archive-contents-1228228038/bin/vorbis.dll",
+      "licenseConcluded": "NOASSERTION",
+      "licenseDeclared": "NOASSERTION",
+      "copyrightText": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "SECURITY",
+          "referenceType": "cpe23Type",
+          "referenceLocator": "cpe:2.3:a:vorbis:vorbis:*:*:*:*:*:*:*:*"
+        }
+      ]
+    },
+    {
+      "name": "vorbisenc",
+      "SPDXID": "SPDXRef-Package-binary-vorbisenc-3939bba378fcee43",
+      "versionInfo": "UNKNOWN",
+      "supplier": "NOASSERTION",
+      "downloadLocation": "NOASSERTION",
+      "filesAnalyzed": false,
+      "sourceInfo": "acquired package info from the following paths: C:/Users/runneradmin/AppData/Local/Temp/syft-archive-contents-1228228038/bin/vorbisenc.dll",
+      "licenseConcluded": "NOASSERTION",
+      "licenseDeclared": "NOASSERTION",
+      "copyrightText": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "SECURITY",
+          "referenceType": "cpe23Type",
+          "referenceLocator": "cpe:2.3:a:vorbisenc:vorbisenc:*:*:*:*:*:*:*:*"
+        }
+      ]
+    },
+    {
+      "name": "zlib",
+      "SPDXID": "SPDXRef-Package-binary-zlib-9ab240deef879f1a",
+      "versionInfo": "1.3.2",
+      "supplier": "NOASSERTION",
+      "downloadLocation": "NOASSERTION",
+      "filesAnalyzed": false,
+      "sourceInfo": "acquired package info from the following paths: C:/Users/runneradmin/AppData/Local/Temp/syft-archive-contents-1228228038/bin/z.dll",
+      "licenseConcluded": "NOASSERTION",
+      "licenseDeclared": "NOASSERTION",
+      "copyrightText": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "SECURITY",
+          "referenceType": "cpe23Type",
+          "referenceLocator": "cpe:2.3:a:zlib:zlib:1.3.2:*:*:*:*:*:*:*"
+        }
+      ]
+    },
+    {
+      "name": "dsd-neo-msvc-x86_64-native-nightly.zip",
+      "SPDXID": "SPDXRef-DocumentRoot-File-dsd-neo-msvc-x86-64-native-nightly.zip",
+      "versionInfo": "sha256:f8ef451c93c03266d009fa7f39c651acb791fe1839ba91f07def3978127e2b33",
+      "supplier": "NOASSERTION",
+      "downloadLocation": "NOASSERTION",
+      "filesAnalyzed": false,
+      "checksums": [
+        {
+          "algorithm": "SHA256",
+          "checksumValue": "f8ef451c93c03266d009fa7f39c651acb791fe1839ba91f07def3978127e2b33"
+        }
+      ],
+      "licenseConcluded": "NOASSERTION",
+      "licenseDeclared": "NOASSERTION",
+      "copyrightText": "NOASSERTION",
+      "primaryPackagePurpose": "FILE"
+    },
+    {
+      "name": "pffft",
+      "SPDXID": "SPDXRef-Package-dsd-pffft",
+      "versionInfo": "94d3c8323a530c5e60a2535505166366171c1fdb",
+      "downloadLocation": "https://github.com/arancormonk/pffft/archive/94d3c8323a530c5e60a2535505166366171c1fdb.tar.gz",
+      "homepage": "https://github.com/arancormonk/pffft",
+      "filesAnalyzed": false,
+      "licenseConcluded": "NOASSERTION",
+      "licenseDeclared": "NOASSERTION",
+      "copyrightText": "NOASSERTION",
+      "sourceInfo": "Compiled into dsd-neo from https://github.com/arancormonk/pffft at commit 94d3c8323a530c5e60a2535505166366171c1fdb",
+      "checksums": [
+        {
+          "algorithm": "SHA256",
+          "checksumValue": "18339f8f518f1837785120881857f98b3c0d028200967354bf422e9eb5181f6a"
+        }
+      ],
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceType": "purl",
+          "referenceLocator": "pkg:github/arancormonk/pffft@94d3c8323a530c5e60a2535505166366171c1fdb"
+        }
+      ]
+    }
+  ],
+  "files": [
+    {
+      "fileName": "C:/Users/runneradmin/AppData/Local/Temp/syft-archive-contents-1228228038/bin/FLAC.dll",
+      "SPDXID": "SPDXRef-File-...bin-FLAC.dll-0fb25e402ca6eb51",
+      "checksums": [
+        {
+          "algorithm": "SHA1",
+          "checksumValue": "0000000000000000000000000000000000000000"
+        }
+      ],
+      "licenseConcluded": "NOASSERTION",
+      "licenseInfoInFiles": [
+        "NOASSERTION"
+      ],
+      "copyrightText": "NOASSERTION"
+    },
+    {
+      "fileName": "C:/Users/runneradmin/AppData/Local/Temp/syft-archive-contents-1228228038/bin/MSVCP140.dll",
+      "SPDXID": "SPDXRef-File-...bin-MSVCP140.dll-df2afe0e4992ff64",
+      "checksums": [
+        {
+          "algorithm": "SHA1",
+          "checksumValue": "0000000000000000000000000000000000000000"
+        }
+      ],
+      "licenseConcluded": "NOASSERTION",
+      "licenseInfoInFiles": [
+        "NOASSERTION"
+      ],
+      "copyrightText": "NOASSERTION"
+    },
+    {
+      "fileName": "C:/Users/runneradmin/AppData/Local/Temp/syft-archive-contents-1228228038/bin/SoapySDR.dll",
+      "SPDXID": "SPDXRef-File-...bin-SoapySDR.dll-095b0ace801bf53a",
+      "checksums": [
+        {
+          "algorithm": "SHA1",
+          "checksumValue": "0000000000000000000000000000000000000000"
+        }
+      ],
+      "licenseConcluded": "NOASSERTION",
+      "licenseInfoInFiles": [
+        "NOASSERTION"
+      ],
+      "copyrightText": "NOASSERTION"
+    },
+    {
+      "fileName": "C:/Users/runneradmin/AppData/Local/Temp/syft-archive-contents-1228228038/bin/VCRUNTIME140.dll",
+      "SPDXID": "SPDXRef-File-...bin-VCRUNTIME140.dll-513e646d94abcdf6",
+      "checksums": [
+        {
+          "algorithm": "SHA1",
+          "checksumValue": "0000000000000000000000000000000000000000"
+        }
+      ],
+      "licenseConcluded": "NOASSERTION",
+      "licenseInfoInFiles": [
+        "NOASSERTION"
+      ],
+      "copyrightText": "NOASSERTION"
+    },
+    {
+      "fileName": "C:/Users/runneradmin/AppData/Local/Temp/syft-archive-contents-1228228038/bin/VCRUNTIME140_1.dll",
+      "SPDXID": "SPDXRef-File-...bin-VCRUNTIME140-1.dll-f201ad453e13b3b4",
+      "checksums": [
+        {
+          "algorithm": "SHA1",
+          "checksumValue": "0000000000000000000000000000000000000000"
+        }
+      ],
+      "licenseConcluded": "NOASSERTION",
+      "licenseInfoInFiles": [
+        "NOASSERTION"
+      ],
+      "copyrightText": "NOASSERTION"
+    },
+    {
+      "fileName": "C:/Users/runneradmin/AppData/Local/Temp/syft-archive-contents-1228228038/bin/airspy.dll",
+      "SPDXID": "SPDXRef-File-...bin-airspy.dll-7518d9efb6be6eac",
+      "checksums": [
+        {
+          "algorithm": "SHA1",
+          "checksumValue": "0000000000000000000000000000000000000000"
+        }
+      ],
+      "licenseConcluded": "NOASSERTION",
+      "licenseInfoInFiles": [
+        "NOASSERTION"
+      ],
+      "copyrightText": "NOASSERTION"
+    },
+    {
+      "fileName": "C:/Users/runneradmin/AppData/Local/Temp/syft-archive-contents-1228228038/bin/codec2.dll",
+      "SPDXID": "SPDXRef-File-...bin-codec2.dll-a651854ba8c7f6f9",
+      "checksums": [
+        {
+          "algorithm": "SHA1",
+          "checksumValue": "0000000000000000000000000000000000000000"
+        }
+      ],
+      "licenseConcluded": "NOASSERTION",
+      "licenseInfoInFiles": [
+        "NOASSERTION"
+      ],
+      "copyrightText": "NOASSERTION"
+    },
+    {
+      "fileName": "C:/Users/runneradmin/AppData/Local/Temp/syft-archive-contents-1228228038/bin/dsd-neo.exe",
+      "SPDXID": "SPDXRef-File-...bin-dsd-neo.exe-61bf7527d215d3d4",
+      "checksums": [
+        {
+          "algorithm": "SHA1",
+          "checksumValue": "0000000000000000000000000000000000000000"
+        }
+      ],
+      "licenseConcluded": "NOASSERTION",
+      "licenseInfoInFiles": [
+        "NOASSERTION"
+      ],
+      "copyrightText": "NOASSERTION"
+    },
+    {
+      "fileName": "C:/Users/runneradmin/AppData/Local/Temp/syft-archive-contents-1228228038/bin/libcrypto-3-x64.dll",
+      "SPDXID": "SPDXRef-File-...bin-libcrypto-3-x64.dll-39b8701f85c41338",
+      "checksums": [
+        {
+          "algorithm": "SHA1",
+          "checksumValue": "0000000000000000000000000000000000000000"
+        }
+      ],
+      "licenseConcluded": "NOASSERTION",
+      "licenseInfoInFiles": [
+        "NOASSERTION"
+      ],
+      "copyrightText": "NOASSERTION"
+    },
+    {
+      "fileName": "C:/Users/runneradmin/AppData/Local/Temp/syft-archive-contents-1228228038/bin/libcurl.dll",
+      "SPDXID": "SPDXRef-File-...bin-libcurl.dll-e12df615d279b643",
+      "checksums": [
+        {
+          "algorithm": "SHA1",
+          "checksumValue": "0000000000000000000000000000000000000000"
+        }
+      ],
+      "licenseConcluded": "NOASSERTION",
+      "licenseInfoInFiles": [
+        "NOASSERTION"
+      ],
+      "copyrightText": "NOASSERTION"
+    },
+    {
+      "fileName": "C:/Users/runneradmin/AppData/Local/Temp/syft-archive-contents-1228228038/bin/libexpat.dll",
+      "SPDXID": "SPDXRef-File-...bin-libexpat.dll-0f8ebe179c81c7bd",
+      "checksums": [
+        {
+          "algorithm": "SHA1",
+          "checksumValue": "0000000000000000000000000000000000000000"
+        }
+      ],
+      "licenseConcluded": "NOASSERTION",
+      "licenseInfoInFiles": [
+        "NOASSERTION"
+      ],
+      "copyrightText": "NOASSERTION"
+    },
+    {
+      "fileName": "C:/Users/runneradmin/AppData/Local/Temp/syft-archive-contents-1228228038/bin/libmp3lame.DLL",
+      "SPDXID": "SPDXRef-File-...bin-libmp3lame.DLL-852bb691eecf99f0",
+      "checksums": [
+        {
+          "algorithm": "SHA1",
+          "checksumValue": "0000000000000000000000000000000000000000"
+        }
+      ],
+      "licenseConcluded": "NOASSERTION",
+      "licenseInfoInFiles": [
+        "NOASSERTION"
+      ],
+      "copyrightText": "NOASSERTION"
+    },
+    {
+      "fileName": "C:/Users/runneradmin/AppData/Local/Temp/syft-archive-contents-1228228038/bin/libusb-1.0.dll",
+      "SPDXID": "SPDXRef-File-...bin-libusb-1.0.dll-1252a350e7e5f981",
+      "checksums": [
+        {
+          "algorithm": "SHA1",
+          "checksumValue": "0000000000000000000000000000000000000000"
+        }
+      ],
+      "licenseConcluded": "NOASSERTION",
+      "licenseInfoInFiles": [
+        "NOASSERTION"
+      ],
+      "copyrightText": "NOASSERTION"
+    },
+    {
+      "fileName": "C:/Users/runneradmin/AppData/Local/Temp/syft-archive-contents-1228228038/bin/mbe-neo.dll",
+      "SPDXID": "SPDXRef-File-...bin-mbe-neo.dll-8a8d9f06045d3876",
+      "checksums": [
+        {
+          "algorithm": "SHA1",
+          "checksumValue": "0000000000000000000000000000000000000000"
+        }
+      ],
+      "licenseConcluded": "NOASSERTION",
+      "licenseInfoInFiles": [
+        "NOASSERTION"
+      ],
+      "copyrightText": "NOASSERTION"
+    },
+    {
+      "fileName": "C:/Users/runneradmin/AppData/Local/Temp/syft-archive-contents-1228228038/bin/mpg123.dll",
+      "SPDXID": "SPDXRef-File-...bin-mpg123.dll-8ea40da813d7704c",
+      "checksums": [
+        {
+          "algorithm": "SHA1",
+          "checksumValue": "0000000000000000000000000000000000000000"
+        }
+      ],
+      "licenseConcluded": "NOASSERTION",
+      "licenseInfoInFiles": [
+        "NOASSERTION"
+      ],
+      "copyrightText": "NOASSERTION"
+    },
+    {
+      "fileName": "C:/Users/runneradmin/AppData/Local/Temp/syft-archive-contents-1228228038/bin/ogg.dll",
+      "SPDXID": "SPDXRef-File-...bin-ogg.dll-5fd182c7a37fea55",
+      "checksums": [
+        {
+          "algorithm": "SHA1",
+          "checksumValue": "0000000000000000000000000000000000000000"
+        }
+      ],
+      "licenseConcluded": "NOASSERTION",
+      "licenseInfoInFiles": [
+        "NOASSERTION"
+      ],
+      "copyrightText": "NOASSERTION"
+    },
+    {
+      "fileName": "C:/Users/runneradmin/AppData/Local/Temp/syft-archive-contents-1228228038/bin/opus.dll",
+      "SPDXID": "SPDXRef-File-...bin-opus.dll-9dfc7eab55aaa2eb",
+      "checksums": [
+        {
+          "algorithm": "SHA1",
+          "checksumValue": "0000000000000000000000000000000000000000"
+        }
+      ],
+      "licenseConcluded": "NOASSERTION",
+      "licenseInfoInFiles": [
+        "NOASSERTION"
+      ],
+      "copyrightText": "NOASSERTION"
+    },
+    {
+      "fileName": "C:/Users/runneradmin/AppData/Local/Temp/syft-archive-contents-1228228038/bin/pdcurses.dll",
+      "SPDXID": "SPDXRef-File-...bin-pdcurses.dll-b2babf1ee9c457e4",
+      "checksums": [
+        {
+          "algorithm": "SHA1",
+          "checksumValue": "0000000000000000000000000000000000000000"
+        }
+      ],
+      "licenseConcluded": "NOASSERTION",
+      "licenseInfoInFiles": [
+        "NOASSERTION"
+      ],
+      "copyrightText": "NOASSERTION"
+    },
+    {
+      "fileName": "C:/Users/runneradmin/AppData/Local/Temp/syft-archive-contents-1228228038/bin/portaudio.dll",
+      "SPDXID": "SPDXRef-File-...bin-portaudio.dll-0949627c5ac64b20",
+      "checksums": [
+        {
+          "algorithm": "SHA1",
+          "checksumValue": "0000000000000000000000000000000000000000"
+        }
+      ],
+      "licenseConcluded": "NOASSERTION",
+      "licenseInfoInFiles": [
+        "NOASSERTION"
+      ],
+      "copyrightText": "NOASSERTION"
+    },
+    {
+      "fileName": "C:/Users/runneradmin/AppData/Local/Temp/syft-archive-contents-1228228038/bin/pthreadVC3.dll",
+      "SPDXID": "SPDXRef-File-...bin-pthreadVC3.dll-24aac8ae466caad4",
+      "checksums": [
+        {
+          "algorithm": "SHA1",
+          "checksumValue": "0000000000000000000000000000000000000000"
+        }
+      ],
+      "licenseConcluded": "NOASSERTION",
+      "licenseInfoInFiles": [
+        "NOASSERTION"
+      ],
+      "copyrightText": "NOASSERTION"
+    },
+    {
+      "fileName": "C:/Users/runneradmin/AppData/Local/Temp/syft-archive-contents-1228228038/bin/rtlsdr.dll",
+      "SPDXID": "SPDXRef-File-...bin-rtlsdr.dll-c8d0dccfea2f1b24",
+      "checksums": [
+        {
+          "algorithm": "SHA1",
+          "checksumValue": "0000000000000000000000000000000000000000"
+        }
+      ],
+      "licenseConcluded": "NOASSERTION",
+      "licenseInfoInFiles": [
+        "NOASSERTION"
+      ],
+      "copyrightText": "NOASSERTION"
+    },
+    {
+      "fileName": "C:/Users/runneradmin/AppData/Local/Temp/syft-archive-contents-1228228038/bin/sndfile.dll",
+      "SPDXID": "SPDXRef-File-...bin-sndfile.dll-cd823b23363c64d5",
+      "checksums": [
+        {
+          "algorithm": "SHA1",
+          "checksumValue": "0000000000000000000000000000000000000000"
+        }
+      ],
+      "licenseConcluded": "NOASSERTION",
+      "licenseInfoInFiles": [
+        "NOASSERTION"
+      ],
+      "copyrightText": "NOASSERTION"
+    },
+    {
+      "fileName": "C:/Users/runneradmin/AppData/Local/Temp/syft-archive-contents-1228228038/bin/vorbis.dll",
+      "SPDXID": "SPDXRef-File-...bin-vorbis.dll-566bf8a198034d35",
+      "checksums": [
+        {
+          "algorithm": "SHA1",
+          "checksumValue": "0000000000000000000000000000000000000000"
+        }
+      ],
+      "licenseConcluded": "NOASSERTION",
+      "licenseInfoInFiles": [
+        "NOASSERTION"
+      ],
+      "copyrightText": "NOASSERTION"
+    },
+    {
+      "fileName": "C:/Users/runneradmin/AppData/Local/Temp/syft-archive-contents-1228228038/bin/vorbisenc.dll",
+      "SPDXID": "SPDXRef-File-...bin-vorbisenc.dll-4677c70f136963c8",
+      "checksums": [
+        {
+          "algorithm": "SHA1",
+          "checksumValue": "0000000000000000000000000000000000000000"
+        }
+      ],
+      "licenseConcluded": "NOASSERTION",
+      "licenseInfoInFiles": [
+        "NOASSERTION"
+      ],
+      "copyrightText": "NOASSERTION"
+    },
+    {
+      "fileName": "C:/Users/runneradmin/AppData/Local/Temp/syft-archive-contents-1228228038/bin/z.dll",
+      "SPDXID": "SPDXRef-File-...bin-z.dll-23b29e093941d6a2",
+      "checksums": [
+        {
+          "algorithm": "SHA1",
+          "checksumValue": "0000000000000000000000000000000000000000"
+        }
+      ],
+      "licenseConcluded": "NOASSERTION",
+      "licenseInfoInFiles": [
+        "NOASSERTION"
+      ],
+      "copyrightText": "NOASSERTION"
+    }
+  ],
+  "relationships": [
+    {
+      "spdxElementId": "SPDXRef-Package-binary-airspy-03fcf84d9bc9eebe",
+      "relatedSpdxElement": "SPDXRef-File-...bin-airspy.dll-7518d9efb6be6eac",
+      "relationshipType": "OTHER",
+      "comment": "evident-by: indicates the package's existence is evident by the given file"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-binary-Microsoft--C-Runtime-Library-133c970d5e5b848f",
+      "relatedSpdxElement": "SPDXRef-File-...bin-VCRUNTIME140.dll-513e646d94abcdf6",
+      "relationshipType": "OTHER",
+      "comment": "evident-by: indicates the package's existence is evident by the given file"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-binary-dsd-neo-15f6a604db05f156",
+      "relatedSpdxElement": "SPDXRef-File-...bin-dsd-neo.exe-61bf7527d215d3d4",
+      "relationshipType": "OTHER",
+      "comment": "evident-by: indicates the package's existence is evident by the given file"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-binary-libusb-1.0-21a5055dd2c0ead4",
+      "relatedSpdxElement": "SPDXRef-File-...bin-libusb-1.0.dll-1252a350e7e5f981",
+      "relationshipType": "OTHER",
+      "comment": "evident-by: indicates the package's existence is evident by the given file"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-binary-vorbis-262dfe5f2faa7893",
+      "relatedSpdxElement": "SPDXRef-File-...bin-vorbis.dll-566bf8a198034d35",
+      "relationshipType": "OTHER",
+      "comment": "evident-by: indicates the package's existence is evident by the given file"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-binary-opus-308eba0efb0eba71",
+      "relatedSpdxElement": "SPDXRef-File-...bin-opus.dll-9dfc7eab55aaa2eb",
+      "relationshipType": "OTHER",
+      "comment": "evident-by: indicates the package's existence is evident by the given file"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-binary-libsndfile-1-DLL-36254c0ecfdc718b",
+      "relatedSpdxElement": "SPDXRef-File-...bin-sndfile.dll-cd823b23363c64d5",
+      "relationshipType": "OTHER",
+      "comment": "evident-by: indicates the package's existence is evident by the given file"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-binary-vorbisenc-3939bba378fcee43",
+      "relatedSpdxElement": "SPDXRef-File-...bin-vorbisenc.dll-4677c70f136963c8",
+      "relationshipType": "OTHER",
+      "comment": "evident-by: indicates the package's existence is evident by the given file"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-binary-SoapySDR-3c67aeb32270d2fc",
+      "relatedSpdxElement": "SPDXRef-File-...bin-SoapySDR.dll-095b0ace801bf53a",
+      "relationshipType": "OTHER",
+      "comment": "evident-by: indicates the package's existence is evident by the given file"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-binary-mbe-neo-3c75cd03b82eefa9",
+      "relatedSpdxElement": "SPDXRef-File-...bin-mbe-neo.dll-8a8d9f06045d3876",
+      "relationshipType": "OTHER",
+      "comment": "evident-by: indicates the package's existence is evident by the given file"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-binary-portaudio-3df695d655112929",
+      "relatedSpdxElement": "SPDXRef-File-...bin-portaudio.dll-0949627c5ac64b20",
+      "relationshipType": "OTHER",
+      "comment": "evident-by: indicates the package's existence is evident by the given file"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-binary-Microsoft--C-Runtime-Library-4261ed51b1e98499",
+      "relatedSpdxElement": "SPDXRef-File-...bin-MSVCP140.dll-df2afe0e4992ff64",
+      "relationshipType": "OTHER",
+      "comment": "evident-by: indicates the package's existence is evident by the given file"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-binary-The-OpenSSL-Toolkit-4ee5873dca97df19",
+      "relatedSpdxElement": "SPDXRef-File-...bin-libcrypto-3-x64.dll-39b8701f85c41338",
+      "relationshipType": "OTHER",
+      "comment": "evident-by: indicates the package's existence is evident by the given file"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-binary-POSIX-Threads-for-Windows-7f965a0153ff0f8d",
+      "relatedSpdxElement": "SPDXRef-File-...bin-pthreadVC3.dll-24aac8ae466caad4",
+      "relationshipType": "OTHER",
+      "comment": "evident-by: indicates the package's existence is evident by the given file"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-binary-Free-Lossless-Audio-Codec-91cb36254c8d1d2e",
+      "relatedSpdxElement": "SPDXRef-File-...bin-FLAC.dll-0fb25e402ca6eb51",
+      "relationshipType": "OTHER",
+      "comment": "evident-by: indicates the package's existence is evident by the given file"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-binary-libexpat-957c3ea26f7ca5c3",
+      "relatedSpdxElement": "SPDXRef-File-...bin-libexpat.dll-0f8ebe179c81c7bd",
+      "relationshipType": "OTHER",
+      "comment": "evident-by: indicates the package's existence is evident by the given file"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-binary-The-curl-library-961a8f8387545558",
+      "relatedSpdxElement": "SPDXRef-File-...bin-libcurl.dll-e12df615d279b643",
+      "relationshipType": "OTHER",
+      "comment": "evident-by: indicates the package's existence is evident by the given file"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-binary-osmocom-rtl-sdr-987a8d85e88408ea",
+      "relatedSpdxElement": "SPDXRef-File-...bin-rtlsdr.dll-c8d0dccfea2f1b24",
+      "relationshipType": "OTHER",
+      "comment": "evident-by: indicates the package's existence is evident by the given file"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-binary-zlib-9ab240deef879f1a",
+      "relatedSpdxElement": "SPDXRef-File-...bin-z.dll-23b29e093941d6a2",
+      "relationshipType": "OTHER",
+      "comment": "evident-by: indicates the package's existence is evident by the given file"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-binary-PDCurses-9bec36ce2cb311cd",
+      "relatedSpdxElement": "SPDXRef-File-...bin-pdcurses.dll-b2babf1ee9c457e4",
+      "relationshipType": "OTHER",
+      "comment": "evident-by: indicates the package's existence is evident by the given file"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-binary-mpg123-bade3a783467cadd",
+      "relatedSpdxElement": "SPDXRef-File-...bin-mpg123.dll-8ea40da813d7704c",
+      "relationshipType": "OTHER",
+      "comment": "evident-by: indicates the package's existence is evident by the given file"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-binary-Microsoft--C-Runtime-Library-c8089515cf7e3265",
+      "relatedSpdxElement": "SPDXRef-File-...bin-VCRUNTIME140-1.dll-f201ad453e13b3b4",
+      "relationshipType": "OTHER",
+      "comment": "evident-by: indicates the package's existence is evident by the given file"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-binary-L.A.M.E.-d7201c0bdad5bbb4",
+      "relatedSpdxElement": "SPDXRef-File-...bin-libmp3lame.DLL-852bb691eecf99f0",
+      "relationshipType": "OTHER",
+      "comment": "evident-by: indicates the package's existence is evident by the given file"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-binary-ogg-da09ce34ae651464",
+      "relatedSpdxElement": "SPDXRef-File-...bin-ogg.dll-5fd182c7a37fea55",
+      "relationshipType": "OTHER",
+      "comment": "evident-by: indicates the package's existence is evident by the given file"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-binary-codec2-e9991ab86ee650a7",
+      "relatedSpdxElement": "SPDXRef-File-...bin-codec2.dll-a651854ba8c7f6f9",
+      "relationshipType": "OTHER",
+      "comment": "evident-by: indicates the package's existence is evident by the given file"
+    },
+    {
+      "spdxElementId": "SPDXRef-DocumentRoot-File-dsd-neo-msvc-x86-64-native-nightly.zip",
+      "relatedSpdxElement": "SPDXRef-Package-binary-Free-Lossless-Audio-Codec-91cb36254c8d1d2e",
+      "relationshipType": "CONTAINS"
+    },
+    {
+      "spdxElementId": "SPDXRef-DocumentRoot-File-dsd-neo-msvc-x86-64-native-nightly.zip",
+      "relatedSpdxElement": "SPDXRef-Package-binary-L.A.M.E.-d7201c0bdad5bbb4",
+      "relationshipType": "CONTAINS"
+    },
+    {
+      "spdxElementId": "SPDXRef-DocumentRoot-File-dsd-neo-msvc-x86-64-native-nightly.zip",
+      "relatedSpdxElement": "SPDXRef-Package-binary-Microsoft--C-Runtime-Library-4261ed51b1e98499",
+      "relationshipType": "CONTAINS"
+    },
+    {
+      "spdxElementId": "SPDXRef-DocumentRoot-File-dsd-neo-msvc-x86-64-native-nightly.zip",
+      "relatedSpdxElement": "SPDXRef-Package-binary-Microsoft--C-Runtime-Library-133c970d5e5b848f",
+      "relationshipType": "CONTAINS"
+    },
+    {
+      "spdxElementId": "SPDXRef-DocumentRoot-File-dsd-neo-msvc-x86-64-native-nightly.zip",
+      "relatedSpdxElement": "SPDXRef-Package-binary-Microsoft--C-Runtime-Library-c8089515cf7e3265",
+      "relationshipType": "CONTAINS"
+    },
+    {
+      "spdxElementId": "SPDXRef-DocumentRoot-File-dsd-neo-msvc-x86-64-native-nightly.zip",
+      "relatedSpdxElement": "SPDXRef-Package-binary-PDCurses-9bec36ce2cb311cd",
+      "relationshipType": "CONTAINS"
+    },
+    {
+      "spdxElementId": "SPDXRef-DocumentRoot-File-dsd-neo-msvc-x86-64-native-nightly.zip",
+      "relatedSpdxElement": "SPDXRef-Package-binary-POSIX-Threads-for-Windows-7f965a0153ff0f8d",
+      "relationshipType": "CONTAINS"
+    },
+    {
+      "spdxElementId": "SPDXRef-DocumentRoot-File-dsd-neo-msvc-x86-64-native-nightly.zip",
+      "relatedSpdxElement": "SPDXRef-Package-binary-SoapySDR-3c67aeb32270d2fc",
+      "relationshipType": "CONTAINS"
+    },
+    {
+      "spdxElementId": "SPDXRef-DocumentRoot-File-dsd-neo-msvc-x86-64-native-nightly.zip",
+      "relatedSpdxElement": "SPDXRef-Package-binary-The-OpenSSL-Toolkit-4ee5873dca97df19",
+      "relationshipType": "CONTAINS"
+    },
+    {
+      "spdxElementId": "SPDXRef-DocumentRoot-File-dsd-neo-msvc-x86-64-native-nightly.zip",
+      "relatedSpdxElement": "SPDXRef-Package-binary-The-curl-library-961a8f8387545558",
+      "relationshipType": "CONTAINS"
+    },
+    {
+      "spdxElementId": "SPDXRef-DocumentRoot-File-dsd-neo-msvc-x86-64-native-nightly.zip",
+      "relatedSpdxElement": "SPDXRef-Package-binary-airspy-03fcf84d9bc9eebe",
+      "relationshipType": "CONTAINS"
+    },
+    {
+      "spdxElementId": "SPDXRef-DocumentRoot-File-dsd-neo-msvc-x86-64-native-nightly.zip",
+      "relatedSpdxElement": "SPDXRef-Package-binary-codec2-e9991ab86ee650a7",
+      "relationshipType": "CONTAINS"
+    },
+    {
+      "spdxElementId": "SPDXRef-DocumentRoot-File-dsd-neo-msvc-x86-64-native-nightly.zip",
+      "relatedSpdxElement": "SPDXRef-Package-binary-dsd-neo-15f6a604db05f156",
+      "relationshipType": "CONTAINS"
+    },
+    {
+      "spdxElementId": "SPDXRef-DocumentRoot-File-dsd-neo-msvc-x86-64-native-nightly.zip",
+      "relatedSpdxElement": "SPDXRef-Package-binary-libexpat-957c3ea26f7ca5c3",
+      "relationshipType": "CONTAINS"
+    },
+    {
+      "spdxElementId": "SPDXRef-DocumentRoot-File-dsd-neo-msvc-x86-64-native-nightly.zip",
+      "relatedSpdxElement": "SPDXRef-Package-binary-libsndfile-1-DLL-36254c0ecfdc718b",
+      "relationshipType": "CONTAINS"
+    },
+    {
+      "spdxElementId": "SPDXRef-DocumentRoot-File-dsd-neo-msvc-x86-64-native-nightly.zip",
+      "relatedSpdxElement": "SPDXRef-Package-binary-libusb-1.0-21a5055dd2c0ead4",
+      "relationshipType": "CONTAINS"
+    },
+    {
+      "spdxElementId": "SPDXRef-DocumentRoot-File-dsd-neo-msvc-x86-64-native-nightly.zip",
+      "relatedSpdxElement": "SPDXRef-Package-binary-mbe-neo-3c75cd03b82eefa9",
+      "relationshipType": "CONTAINS"
+    },
+    {
+      "spdxElementId": "SPDXRef-DocumentRoot-File-dsd-neo-msvc-x86-64-native-nightly.zip",
+      "relatedSpdxElement": "SPDXRef-Package-binary-mpg123-bade3a783467cadd",
+      "relationshipType": "CONTAINS"
+    },
+    {
+      "spdxElementId": "SPDXRef-DocumentRoot-File-dsd-neo-msvc-x86-64-native-nightly.zip",
+      "relatedSpdxElement": "SPDXRef-Package-binary-ogg-da09ce34ae651464",
+      "relationshipType": "CONTAINS"
+    },
+    {
+      "spdxElementId": "SPDXRef-DocumentRoot-File-dsd-neo-msvc-x86-64-native-nightly.zip",
+      "relatedSpdxElement": "SPDXRef-Package-binary-opus-308eba0efb0eba71",
+      "relationshipType": "CONTAINS"
+    },
+    {
+      "spdxElementId": "SPDXRef-DocumentRoot-File-dsd-neo-msvc-x86-64-native-nightly.zip",
+      "relatedSpdxElement": "SPDXRef-Package-binary-osmocom-rtl-sdr-987a8d85e88408ea",
+      "relationshipType": "CONTAINS"
+    },
+    {
+      "spdxElementId": "SPDXRef-DocumentRoot-File-dsd-neo-msvc-x86-64-native-nightly.zip",
+      "relatedSpdxElement": "SPDXRef-Package-binary-portaudio-3df695d655112929",
+      "relationshipType": "CONTAINS"
+    },
+    {
+      "spdxElementId": "SPDXRef-DocumentRoot-File-dsd-neo-msvc-x86-64-native-nightly.zip",
+      "relatedSpdxElement": "SPDXRef-Package-binary-vorbis-262dfe5f2faa7893",
+      "relationshipType": "CONTAINS"
+    },
+    {
+      "spdxElementId": "SPDXRef-DocumentRoot-File-dsd-neo-msvc-x86-64-native-nightly.zip",
+      "relatedSpdxElement": "SPDXRef-Package-binary-vorbisenc-3939bba378fcee43",
+      "relationshipType": "CONTAINS"
+    },
+    {
+      "spdxElementId": "SPDXRef-DocumentRoot-File-dsd-neo-msvc-x86-64-native-nightly.zip",
+      "relatedSpdxElement": "SPDXRef-Package-binary-zlib-9ab240deef879f1a",
+      "relationshipType": "CONTAINS"
+    },
+    {
+      "spdxElementId": "SPDXRef-DOCUMENT",
+      "relatedSpdxElement": "SPDXRef-DocumentRoot-File-dsd-neo-msvc-x86-64-native-nightly.zip",
+      "relationshipType": "DESCRIBES"
+    },
+    {
+      "spdxElementId": "SPDXRef-DOCUMENT",
+      "relationshipType": "DESCRIBES",
+      "relatedSpdxElement": "SPDXRef-Package-dsd-pffft"
+    }
+  ]
+}

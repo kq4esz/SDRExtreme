@@ -1,0 +1,13 @@
+{
+  "name": "DSD-neo",
+  "channel": "preview",
+  "version": "2.10.0+32ae7c8",
+  "commit": "32ae7c8afba7bb8acbc95d1c6b4099db48d899a0",
+  "platform": "win32-x64",
+  "executable": "win32-x64/bin/dsd-neo.exe",
+  "executableSha256": "c926db948933baf3bb63c9cf551c3cf6075f30aef8ef2a95ec5a9d9208dc8031",
+  "archiveSha256": "f8ef451c93c03266d009fa7f39c651acb791fe1839ba91f07def3978127e2b33",
+  "upstream": "https://github.com/arancormonk/dsd-neo",
+  "source": "https://github.com/arancormonk/dsd-neo/tree/32ae7c8afba7bb8acbc95d1c6b4099db48d899a0",
+  "license": "GPL-3.0-or-later"
+}

@@ -1,0 +1,11 @@
+node_modules/
+local-data/
+dist/
+*.pem
+*.pfx
+*.p12
+.env
+.env.*
+*.log
+Thumbs.db
+Desktop.ini
