@@ -4,7 +4,7 @@ SDR Extreme is a Windows desktop receiver suite with native RTL-SDR USB access, 
 
 ## Start the app
 
-1. Download **SDR-Extreme-Setup-0.6.1-x64.exe** from [GitHub Releases](https://github.com/kq4esz/SDRExtreme/releases/latest), run the installer, then launch **SDR Extreme** from the desktop or Start menu. The installer includes Electron, the local service, USB libraries and decoders; Node.js is not required. For a source checkout, use **`launch-sdr-extreme.cmd`** after the setup below.
+1. Download **SDR-Extreme-Setup-0.6.2-x64.exe** from [GitHub Releases](https://github.com/kq4esz/SDRExtreme/releases/latest), run the installer, then launch **SDR Extreme** from the desktop or Start menu. The installer includes Electron, the local service, USB libraries and decoders; Node.js is not required. For a source checkout, use **`launch-sdr-extreme.cmd`** after the setup below.
 2. Open **Settings → RTL-SDR device manager**. Click **Refresh**, select your attached receiver, and save the hardware settings.
 3. Go to **Live radio** and click **Start listening**. Select a memory or tune to a frequency.
 4. Go to **KiwiSDR network** to choose a receiver on the world map or in the station list. Select a station, then click **Check & listen**. Its listening interface opens inside the app; **Open receiver in a new window** offers a dedicated desktop window if a receiver blocks embedding.
@@ -55,7 +55,8 @@ runtime sidecars. An after-pack dependency audit checks native imports and
 the bundled decoder hashes before an installer is produced. USB sample
 callbacks copy native memory with `koffi.decode`; external ArrayBuffer views
 are incompatible with Electron's V8 memory cage, including its Node helper
-processes. Version 0.6.1 fixes the first-sample crash in installed 0.6.0 builds.
+processes. Version 0.6.2 includes the first-sample crash fix and corrects the
+HD startup response so the controls leave their waiting state after startup.
 
 For future releases, update `package.json`'s version and the sidebar version
 in `index.html`; add notes in `docs/releases/<version>.md`, commit and push

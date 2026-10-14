@@ -639,11 +639,13 @@ async function startHd(body = {}) {
     session.on('failure', error => { if (hdSession === session) { broadcast({ type: 'hd-error', message: error.message }); broadcast({ type: 'status', status: status() }); } });
     await session.start();
     if (generation !== hdGeneration) { await session.stop(); throw new Error('HD Radio start cancelled.'); }
-    broadcast({ type: 'status', status: status() }); return status();
   } catch (error) {
     if (hdSession) { await hdSession.stop(); lastHdState = hdSession.snapshot(); hdSession = null; }
     throw error;
   } finally { hdStarting = false; broadcast({ type: 'status', status: status() }); }
+  // Take the HTTP snapshot after clearing the startup flag. Returning it from
+  // inside try can overwrite the final WebSocket status with hdStarting=true.
+  return status();
 }
 function csvCell(value) { return `"${String(value ?? '').replaceAll('"', '""')}"`; }
 async function startDigital(body) {

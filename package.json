@@ -1,6 +1,6 @@
 {
   "name": "sdr-extreme",
-  "version": "0.6.1",
+  "version": "0.6.2",
   "private": true,
   "type": "module",
   "description": "Windows SDR desktop suite with native RTL-SDR USB acquisition and a KiwiSDR network atlas.",
