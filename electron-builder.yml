@@ -29,6 +29,7 @@ files:
   - package.json
   - README.md
   - docs/meshcore-devices.md
+  - docs/meshcore-repeaters.md
   - LICENSE
   - THIRD_PARTY_NOTICES.md
   - '!**/local-data/**'

@@ -27,6 +27,36 @@
 .mesh-drop-before:before{top:-3px}.mesh-drop-after:after{bottom:-3px}
 .mesh-category-tabs button[draggable=true]{cursor:grab}.mesh-category-tabs button.mesh-tab-dragging{opacity:.45}.mesh-category-tabs button.mesh-tab-drop{outline:2px solid var(--lime);outline-offset:-2px}
 
+/* Repeater administration through the connected companion radio. */
+.mesh-repeater-panel{padding:17px 23px;background:#101d24;border-bottom:1px solid var(--line)}
+.mesh-repeater-topline{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap}
+#mesh-repeater-route{font:10px var(--mono);color:var(--cyan)}
+.mesh-repeater-identity{font:9px/1.6 var(--mono);color:var(--muted);overflow-wrap:anywhere;margin:9px 0}
+.mesh-repeater-access{font:9px var(--mono);color:var(--muted);letter-spacing:.08em;margin:8px 0 13px}
+.mesh-repeater-access.authenticated{color:var(--lime)}
+.mesh-repeater-login{display:flex;gap:8px;align-items:flex-end;flex-wrap:wrap}
+.mesh-repeater-login>div{flex:1;min-width:180px}
+.mesh-repeater-login input{width:100%;height:35px;font-size:11px}
+.mesh-repeater-login button{min-height:35px;font-size:10px;padding:0 11px}
+.mesh-repeater-help{font:10px/1.7 var(--sans);color:var(--muted);margin:9px 0}
+.mesh-repeater-state{font:11px/1.6 var(--sans);color:var(--text);min-height:18px;margin:9px 0}
+.mesh-repeater-state.error{color:var(--orange)}
+.mesh-repeater-status-line{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.mesh-repeater-status-line button{font-size:10px;padding:6px 9px;min-height:29px}
+#mesh-repeater-status-time{font:9px var(--mono);color:var(--muted)}
+.mesh-repeater-stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px 12px;margin:15px 0 0}
+.mesh-repeater-stats dt{font:8px/1.6 var(--mono);color:var(--muted);letter-spacing:.04em}
+.mesh-repeater-stats dd{font:12px/1.5 var(--mono);margin:4px 0 0;color:var(--text);overflow-wrap:anywhere}
+.mesh-repeater-shortcuts{display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin:0 0 11px}
+.mesh-repeater-shortcuts button{border:1px solid #33464c;background:#14242c;color:var(--muted);border-radius:4px;font:10px var(--sans);padding:5px 8px}
+.mesh-repeater-shortcuts button:hover{color:var(--lime);border-color:#536341}
+.mesh-repeater-shortcuts a{font:10px var(--sans);color:var(--cyan);margin-left:auto}
+.mesh-repeater-composer input{width:100%;font:12px/1.6 var(--mono);height:36px}
+.mesh-repeater-log .mesh-message-text{font:11px/1.8 var(--mono)}
+.mesh-repeater-log .mesh-message{max-width:100%}
+.mesh-repeater-panel button:focus-visible,.mesh-repeater-shortcuts button:focus-visible{outline:2px solid var(--lime);outline-offset:2px}
+@media(max-width:1050px){.mesh-repeater-panel{padding:15px 17px}.mesh-repeater-stats{grid-template-columns:repeat(2,minmax(0,1fr))}}
+
 /* Conversation categories and unread messages. Counts stay visible in the
    compact navigation, where ordinary text labels are hidden. */
 .mesh-profile-row{display:flex;align-items:center;gap:20px;margin:17px 0 6px;padding:0 0 15px;border-bottom:1px solid var(--line)}

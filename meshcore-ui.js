@@ -37,6 +37,24 @@ export class MeshCoreUi {
       </div><p class="mesh-footer-note">MeshCore companion firmware is required. USB, BLE and Wi-Fi availability depends on your firmware build. Mesh messaging uses the node’s LoRa radio.</p>
       <dialog class="app-dialog mesh-dialog" id="mesh-device-dialog"><div class="dialog-head"><div><div class="section-kicker">BLUETOOTH LOW ENERGY</div><h2>Choose a MeshCore node</h2></div><button type="button" class="icon-button" id="mesh-device-close" aria-label="Cancel device selection">×</button></div><p>Keep your node nearby with Bluetooth companion firmware running. Close its connection in other apps.</p><div id="mesh-device-list" class="mesh-device-list"></div><p id="mesh-device-searching">Searching for MeshCore devices…</p><div class="dialog-actions"><button type="button" class="outline-button" id="mesh-device-cancel">Cancel</button></div></dialog>
       <dialog class="app-dialog mesh-dialog" id="mesh-pair-dialog"><form id="mesh-pair-form"><div class="dialog-head"><div><div class="section-kicker">BLUETOOTH PAIRING</div><h2>Pair with your node</h2></div></div><p id="mesh-pair-prompt"></p><label class="field-label" for="mesh-pin" id="mesh-pin-label">NODE PAIRING PIN</label><input id="mesh-pin" autocomplete="off" inputmode="numeric" maxlength="16"><div class="dialog-actions"><button type="button" id="mesh-pair-cancel" class="outline-button">Cancel</button><button type="submit" class="primary-button">Pair node</button></div></form></dialog>`;
+    const repeaterPanel = element('section', 'mesh-repeater-panel hidden'); repeaterPanel.id = 'mesh-repeater-panel'; repeaterPanel.setAttribute('aria-label', 'Repeater connection and login');
+    repeaterPanel.innerHTML = `<div class="mesh-repeater-topline"><span class="section-kicker">REPEATER LINK · LoRa</span><span id="mesh-repeater-route"></span></div>
+      <p id="mesh-repeater-identity" class="mesh-repeater-identity"></p><p id="mesh-repeater-access" class="mesh-repeater-access"></p>
+      <form id="mesh-repeater-login-form" class="mesh-repeater-login"><div><label class="field-label" for="mesh-repeater-password">REPEATER PASSWORD</label><input type="password" id="mesh-repeater-password" maxlength="15" autocomplete="off" placeholder="Password or blank for ACL login" aria-describedby="mesh-repeater-password-help"></div><button type="submit" class="primary-button" id="mesh-repeater-login">Connect & log in</button><button type="button" class="outline-button" id="mesh-repeater-logout">End session</button></form>
+      <p id="mesh-repeater-password-help" class="mesh-repeater-help">Up to 15 UTF-8 bytes. Login uses your companion’s LoRa radio. Passwords and console output are not saved.</p>
+      <p id="mesh-repeater-state" class="mesh-repeater-state" role="status" aria-live="polite"></p>
+      <div class="mesh-repeater-status-line"><button type="button" class="outline-button" id="mesh-repeater-status">Refresh status</button><span id="mesh-repeater-status-time"></span></div>
+      <dl id="mesh-repeater-stats" class="mesh-repeater-stats hidden"></dl>`;
+    $('.mesh-chat-heading').after(repeaterPanel);
+    const repeaterComposer = element('form', 'mesh-composer mesh-repeater-composer hidden'); repeaterComposer.id = 'mesh-repeater-command-form';
+    repeaterComposer.innerHTML = `<div class="mesh-repeater-shortcuts" role="group" aria-label="Repeater command shortcuts"><button type="button" data-mesh-command="ver">Version</button><button type="button" data-mesh-command="clock">Clock</button><button type="button" data-mesh-command="get radio">Radio settings</button><a href="https://docs.meshcore.io/cli_commands/" target="_blank" rel="noopener noreferrer">Command reference ↗</a></div><label class="sr-only" for="mesh-repeater-command">Repeater command</label><input id="mesh-repeater-command" autocomplete="off" maxlength="150" placeholder="Log in with admin access to send commands…" disabled><div class="mesh-composer-bottom"><span id="mesh-repeater-command-hint">Commands and replies stay in this session only.</span><span id="mesh-repeater-byte-count">0 / 150 bytes</span><button type="submit" class="primary-button" id="mesh-repeater-send" disabled>Send command ↗</button></div>`;
+    $('#mesh-message-form').after(repeaterComposer);
+    $('#mesh-repeater-login-form').addEventListener('submit', event => { event.preventDefault(); void this.repeaterAction('login'); });
+    $('#mesh-repeater-logout').addEventListener('click', () => void this.repeaterAction('logout'));
+    $('#mesh-repeater-status').addEventListener('click', () => void this.repeaterAction('status'));
+    $('#mesh-repeater-command-form').addEventListener('submit', event => { event.preventDefault(); if (!$('#mesh-repeater-send').disabled) void this.repeaterAction('command'); });
+    $('#mesh-repeater-command').addEventListener('input', () => this.renderRepeater());
+    for (const button of document.querySelectorAll('[data-mesh-command]')) button.addEventListener('click', () => { $('#mesh-repeater-command').value = button.dataset.meshCommand; this.renderRepeater(); $('#mesh-repeater-command').focus(); });
     for (const button of document.querySelectorAll('[data-mesh-transport]')) button.addEventListener('click', () => this.selectTransport(button.dataset.meshTransport));
     $('#mesh-model').addEventListener('change', () => this.selectProfile($('#mesh-model').value));
     $('#mesh-connect-form').addEventListener('submit', event => { event.preventDefault(); void this.connect(); });
@@ -248,6 +266,7 @@ export class MeshCoreUi {
   update(data) {
     if (this.drag && this.drag.node !== data.node?.publicKey) this.finishDrag(false);
     if (data.node?.publicKey === this.data.node?.publicKey && this.data.layout?.revision > (data.layout?.revision || 0)) data = { ...data, layout: this.data.layout };
+    if (data.connectionId !== this.data.connectionId) { $('#mesh-repeater-password').value = ''; $('#mesh-repeater-command').value = ''; }
     this.data = data;
     if (['connecting', 'syncing', 'connected'].includes(data.phase) && data.config.modelId !== this.profileId) {
       this.profileId = meshProfile(this.catalog, data.config.modelId)?.id || 'auto'; $('#mesh-model').value = this.profileId;
@@ -278,7 +297,11 @@ export class MeshCoreUi {
     return this.conversationsCache = { data: this.data, ...meshConversations(this.data) };
   }
   targets() { return this.conversationData().targets; }
-  conversationMessages() { return this.conversationData().groups.get(this.selected)?.messages || []; }
+  conversationMessages() {
+    const target = this.targets().find(row => row.id === this.selected);
+    const history = this.conversationData().groups.get(this.selected)?.messages || [];
+    return target?.repeater ? [...history, ...(this.data.repeaters?.[target.publicKey]?.events || [])] : history;
+  }
   layout() { return normalizeMeshLayout(this.data.layout, this.conversationData().resolveId); }
   visibleConversationRows() {
     const query = $('#mesh-search').value.trim().toLowerCase();
@@ -331,6 +354,7 @@ export class MeshCoreUi {
   }
   selectConversation(recipient) {
     if (this.selected !== recipient) {
+      $('#mesh-repeater-password').value = ''; $('#mesh-repeater-command').value = '';
       if (this.selected) this.drafts = { ...this.drafts, [this.selected]: $('#mesh-message').value };
       this.selected = recipient; $('#mesh-message').value = this.drafts?.[recipient] || '';
     }
@@ -526,9 +550,11 @@ export class MeshCoreUi {
   renderMessages() {
     const target = this.targets().find(row => row.id === this.selected), messages = this.conversationMessages();
     $('#mesh-chat-title').textContent = target?.name || 'Your next conversation starts here';
-    $('#mesh-chat-subtitle').textContent = target ? target.channel ? 'Channel conversation · everyone with this channel key can read it' : target.writable ? 'Direct conversation · delivery receipts supported' : target.detail : 'Connect a node and select a channel or contact.';
+    $('#mesh-chat-subtitle').textContent = target ? target.repeater ? `Repeater console · through ${this.data.node?.name || 'your companion node'} over LoRa` : target.channel ? 'Channel conversation · everyone with this channel key can read it' : target.writable ? 'Direct conversation · delivery receipts supported' : target.detail : 'Connect a node and select a channel or contact.';
     $('#mesh-chat-avatar').textContent = target ? target.channel ? '#' : target.name.slice(0, 1).toUpperCase() : '⌁';
-    $('#mesh-chat-tag').textContent = target ? target.channel ? 'CHANNEL' : 'DIRECT' : 'MESHCORE';
+    $('#mesh-chat-tag').textContent = target ? target.repeater ? 'REPEATER' : target.channel ? 'CHANNEL' : 'DIRECT' : 'MESHCORE';
+    $('#mesh-messages').classList.toggle('mesh-repeater-log', Boolean(target?.repeater));
+    $('#mesh-messages').setAttribute('aria-label', target?.repeater ? 'Repeater command replies' : 'Conversation messages');
     const signature = `${this.selected}:${messages.map(row => row.id + row.status).join(',')}`;
     if (signature === this.messageSignature) {
       if (this.forceScroll) this.jumpToLatest(); this.forceScroll = false;
@@ -538,16 +564,16 @@ export class MeshCoreUi {
     const container = $('#mesh-messages'), nearBottom = this.atLatestMessage(), previousScroll = container.scrollTop;
     container.replaceChildren();
     if (!messages.length) {
-      const empty = element('div', 'mesh-chat-empty'); empty.append(element('div', 'mesh-empty-mark', '⌁'), element('h3', '', target ? 'A clear channel' : 'Stay connected beyond the network'), element('p', '', target ? 'No messages saved for this conversation yet. New messages will appear here.' : 'Use USB, Bluetooth, or Wi-Fi to connect your MeshCore node. Channels, contacts, and messages are read directly from it.'));
+      const empty = element('div', 'mesh-chat-empty'); empty.append(element('div', 'mesh-empty-mark', '⌁'), element('h3', '', target?.repeater ? 'Your repeater console' : target ? 'A clear channel' : 'Stay connected beyond the network'), element('p', '', target?.repeater ? 'Log in above, then request status or send an administrator command. Replies appear here. This console is cleared when the companion disconnects.' : target ? 'No messages saved for this conversation yet. New messages will appear here.' : 'Use USB, Bluetooth, or Wi-Fi to connect your MeshCore node. Channels, contacts, and messages are read directly from it.'));
       container.append(empty);
     }
     for (const row of messages) {
       const item = element('article', `mesh-message ${row.direction === 'out' ? 'outgoing' : 'incoming'}`);
-      item.append(element('div', 'mesh-message-sender', row.direction === 'out' ? 'YOU' : row.sender || target?.name || 'Node'));
+      item.append(element('div', 'mesh-message-sender', row.direction === 'out' ? target?.repeater ? 'COMMAND' : 'YOU' : row.sender || target?.name || 'Node'));
       item.append(element('p', 'mesh-message-text', row.text));
       const date = new Date((row.timestamp || 0) * 1000), meta = element('div', 'mesh-message-meta');
       meta.append(element('time', '', Number.isNaN(date.valueOf()) ? '' : date.toLocaleString(undefined, { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })));
-      if (row.direction === 'out') meta.append(element('span', `mesh-delivery ${row.status}`, STATUS[row.status] || row.status));
+      if (row.direction === 'out' && !target?.repeater) meta.append(element('span', `mesh-delivery ${row.status}`, STATUS[row.status] || row.status));
       else if (Number.isFinite(row.snr)) meta.append(element('span', '', `SNR ${row.snr} dB`));
       item.append(meta); if (row.error) item.title = row.error; container.append(item);
     }
@@ -555,6 +581,8 @@ export class MeshCoreUi {
   }
   renderComposer() {
     const target = this.targets().find(row => row.id === this.selected), enabled = this.data.connected && target?.writable;
+    $('#mesh-message-form').classList.toggle('hidden', Boolean(target?.repeater));
+    this.renderRepeater();
     this.maxBytes = target?.channel ? Math.max(1, Math.min(150, 160 - bytes(this.data.node?.name || '') - 2)) : 150;
     const size = bytes($('#mesh-message').value.trim());
     $('#mesh-message').disabled = !enabled || this.sending;
@@ -563,6 +591,57 @@ export class MeshCoreUi {
     $('#mesh-send').disabled = !enabled || this.sending || !size || size > this.maxBytes;
     $('#mesh-send').textContent = this.sending ? 'Sending…' : 'Send ↗';
     $('#mesh-send-hint').textContent = target && !target.writable ? 'This entry is read-only. Select a chat contact or configured channel.' : target?.channel ? 'Channel sends confirm acceptance by your node.' : 'Messages travel through your connected LoRa node.';
+  }
+  renderRepeater() {
+    const target = this.targets().find(row => row.id === this.selected), repeater = Boolean(target?.repeater);
+    $('#mesh-repeater-panel').classList.toggle('hidden', !repeater); $('#mesh-repeater-command-form').classList.toggle('hidden', !repeater);
+    if (!repeater) return;
+    const state = this.data.repeaters?.[target.publicKey] || {}, busy = Boolean(this.data.repeaterBusy || this.repeaterPending), authenticated = state.phase === 'authenticated';
+    const canCommand = this.data.connected && authenticated && state.admin !== false && !busy;
+    const encoded = Number(target.pathLength) & 255, hops = encoded & 63;
+    $('#mesh-repeater-route').textContent = !Number.isFinite(target.pathLength) ? 'Route not yet reported' : encoded === 255 ? 'Flood · route discovery' : hops === 0 ? 'Direct · zero relay hops' : `${hops} relay hop${hops === 1 ? '' : 's'}`;
+    $('#mesh-repeater-identity').textContent = target.publicKey;
+    $('#mesh-repeater-access').textContent = authenticated ? state.admin === true ? 'ADMINISTRATOR' : state.admin === false ? 'GUEST · STATUS ONLY' : 'LEGACY LOGIN · ACCESS LEVEL NOT REPORTED' : state.phase === 'logging-in' ? 'AUTHENTICATING' : 'NOT LOGGED IN';
+    $('#mesh-repeater-access').classList.toggle('authenticated', authenticated);
+    $('#mesh-repeater-login').disabled = !this.data.connected || busy; $('#mesh-repeater-password').disabled = !this.data.connected || busy;
+    $('#mesh-repeater-login').textContent = state.phase === 'logging-in' ? 'Logging in…' : authenticated ? 'Log in again' : 'Connect & log in';
+    $('#mesh-repeater-logout').disabled = !this.data.connected || busy || !authenticated;
+    $('#mesh-repeater-status').disabled = !this.data.connected || busy || !authenticated;
+    $('#mesh-repeater-state').textContent = !this.data.connected ? 'Connect your companion node to log in to this repeater.' : state.error || state.notice || 'Ready to log in. Leave the password blank if this companion already has repeater ACL access.';
+    $('#mesh-repeater-state').classList.toggle('error', Boolean(state.error));
+    $('#mesh-repeater-command').disabled = !canCommand;
+    $('#mesh-repeater-command').placeholder = authenticated && state.admin === false ? 'Guest access · administrator login required for commands' : !authenticated ? 'Log in with admin access to send commands…' : 'Enter a repeater CLI command…';
+    const size = bytes($('#mesh-repeater-command').value.trim()); $('#mesh-repeater-byte-count').textContent = `${size} / 150 bytes`;
+    $('#mesh-repeater-byte-count').classList.toggle('over-limit', size > 150); $('#mesh-repeater-send').disabled = !canCommand || size === 0 || size > 150;
+    for (const button of document.querySelectorAll('[data-mesh-command]')) button.disabled = !canCommand;
+    $('#mesh-repeater-command-hint').textContent = busy ? 'Waiting for the current repeater request…' : state.admin === false ? 'Guest login supports status requests. Use the admin password for commands.' : 'Commands and replies stay in this session only. No automatic retries.';
+    const stats = state.stats, statsContainer = $('#mesh-repeater-stats'); statsContainer.classList.toggle('hidden', !stats);
+    $('#mesh-repeater-status-time').textContent = stats ? `Updated ${new Date(stats.updatedAt).toLocaleTimeString()}` : 'Request status after login';
+    statsContainer.replaceChildren();
+    if (stats) {
+      const hours = Math.floor(stats.uptimeSeconds / 3600), minutes = Math.floor(stats.uptimeSeconds % 3600 / 60);
+      for (const [label, value] of [['BATTERY', stats.batteryMillivolts ? `${(stats.batteryMillivolts / 1000).toFixed(2)} V` : '—'], ['UPTIME', `${hours}h ${minutes}m`], ['LAST RSSI', `${stats.rssi} dBm`], ['LAST SNR', `${stats.snr} dB`], ['NOISE FLOOR', `${stats.noiseFloor} dBm`], ['TX QUEUE', stats.queueLength], ['PACKETS RX / TX', `${stats.packetsReceived} / ${stats.packetsSent}`], ['ERROR FLAGS', `0x${stats.errorFlags.toString(16)}`]]) {
+        const cell = element('div', ''); cell.append(element('dt', '', label), element('dd', '', String(value))); statsContainer.append(cell);
+      }
+    }
+  }
+  async repeaterAction(action) {
+    const target = this.targets().find(row => row.id === this.selected);
+    if (!target?.repeater || !this.data.connected || this.repeaterPending || this.data.repeaterBusy) return;
+    const node = this.data.node.publicKey, connectionId = this.data.connectionId, input = { node, publicKey: target.publicKey, action };
+    if (action === 'login') { input.password = $('#mesh-repeater-password').value; $('#mesh-repeater-password').value = ''; }
+    if (action === 'command') { input.command = $('#mesh-repeater-command').value; $('#mesh-repeater-command').value = ''; }
+    this.repeaterPending = true; this.renderRepeater();
+    try {
+      const result = await this.api('/api/meshcore/repeater', input);
+      if (result.node === this.data.node?.publicKey && result.connectionId === this.data.connectionId) {
+        const existing = this.data.repeaters?.[result.publicKey];
+        if (!existing || result.repeater.revision >= existing.revision) this.data = { ...this.data, repeaters: { ...this.data.repeaters, [result.publicKey]: result.repeater } };
+        if (this.data.repeaterBusy?.id === result.operationId) this.data = { ...this.data, repeaterBusy: null };
+      }
+    } catch (error) {
+      if (node === this.data.node?.publicKey && connectionId === this.data.connectionId) this.toast(error.message, 'error');
+    } finally { this.repeaterPending = false; this.renderMessages(); this.renderRepeater(); }
   }
   async send() {
     if ($('#mesh-send').disabled || this.sending) return;

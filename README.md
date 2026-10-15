@@ -4,7 +4,7 @@ SDR Extreme is a Windows desktop receiver suite with native RTL-SDR USB access, 
 
 ## Start the app
 
-1. Download **SDR-Extreme-Setup-0.8.1-x64.exe** from [GitHub Releases](https://github.com/kq4esz/SDRExtreme/releases/latest), run the installer, then launch **SDR Extreme** from the desktop or Start menu. The installer includes Electron, the local service, USB libraries and decoders; Node.js is not required. For a source checkout, use **`launch-sdr-extreme.cmd`** after the setup below.
+1. Download **SDR-Extreme-Setup-0.9.0-x64.exe** from [GitHub Releases](https://github.com/kq4esz/SDRExtreme/releases/latest), run the installer, then launch **SDR Extreme** from the desktop or Start menu. The installer includes Electron, the local service, USB libraries and decoders; Node.js is not required. For a source checkout, use **`launch-sdr-extreme.cmd`** after the setup below.
 2. Open **Settings → RTL-SDR device manager**. Click **Refresh**, select your attached receiver, and save the hardware settings.
 3. Go to **Live radio** and click **Start listening**. Select a memory or tune to a frequency.
 4. Go to **KiwiSDR network** to choose a receiver on the world map or in the station list. Select a station, then click **Check & listen**. Its listening interface opens inside the app; **Open receiver in a new window** offers a dedicated desktop window if a receiver blocks embedding.
@@ -73,8 +73,9 @@ change its role or flash firmware automatically.
 
 The client reads the node identity, LoRa profile, battery voltage, configured
 channels and contact list, and retrieves waiting messages. Select a channel
-or chat contact to send a text message. Repeater/room entries are displayed
-for reference; room-server login and commands are not implemented. Configure
+or chat contact to send a text message. Select a repeater for its LoRa login,
+status and command console, described below. Room-server login and commands
+are not implemented. Configure
 new contacts/channels using an existing MeshCore companion app, then use
 **Sync node** here. No firmware flashing or radio-parameter editing is performed.
 
@@ -103,6 +104,31 @@ messages, **N new messages ↓** takes you to the latest messages. Unread state 
 saved with local history, scoped to the node, and restored after reconnecting
 following an app restart. Existing history from versions before 0.7.1 starts as
 read; newly retrieved messages are counted as unread.
+
+### Repeater login over LoRa
+
+Connect your companion node using USB, Bluetooth or Wi-Fi, then open **Contacts**
+and select an existing **Repeater** entry. Enter its password and click
+**Connect & log in**. A blank password can use an existing repeater ACL entry.
+The app waits for the repeater's login response, shows its access level, and
+displays whether the current route is direct, relayed or still using flood
+discovery. Guest logins can request status; administrator logins can send
+repeater CLI commands. Legacy repeaters may confirm login without reporting
+their access level, so the repeater itself determines which commands it accepts.
+
+**Refresh status** requests battery, uptime, RSSI/SNR, noise floor, TX queue,
+packet counts and error flags. Use the command field or the **Version**, **Clock**
+and **Radio settings** shortcuts to prepare a command, then click **Send command**.
+Commands are sent as CLI data; the app waits for a reply rather than a chat ACK.
+No reply does not prove a command failed, and commands are never retried automatically.
+
+Login credentials are not saved or put into chat history. New repeater command
+and response logs stay in RAM (up to 100 entries per repeater) and clear when
+the companion disconnects or the app session ends. **End session** stops the
+companion-managed connection and clears this app's login and console; it does
+not revoke authorization stored in the repeater's ACL. Reconnects require login
+again. This feature uses the companion's LoRa radio; it does not connect the PC
+directly to a repeater's USB console. See [repeater details and protocol references](docs/meshcore-repeaters.md).
 
 Direct messages display delivery confirmation only when the recipient's ACK
 arrives. A timeout means **Delivery unconfirmed** and is not automatically

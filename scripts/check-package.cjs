@@ -23,6 +23,7 @@ module.exports = async function checkPackage(context) {
     'node_modules/@serialport/bindings-cpp/prebuilds/win32-x64/@serialport+bindings-cpp.node',
     'lib/meshcore.mjs',
     'lib/meshcore-conversations.mjs',
+    'lib/meshcore-repeater.mjs',
     'lib/meshcore-devices.mjs',
     'lib/meshcore-devices.json',
     'lib/MESHCORE_CATALOG_LICENSE.txt',
