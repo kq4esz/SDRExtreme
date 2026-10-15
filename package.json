@@ -1,15 +1,18 @@
 {
   "name": "sdr-extreme",
-  "version": "0.6.2",
+  "version": "0.7.0",
   "private": true,
   "type": "module",
-  "description": "Windows SDR desktop suite with native RTL-SDR USB acquisition and a KiwiSDR network atlas.",
+  "description": "Windows SDR desktop suite with RTL-SDR USB, digital decoders, KiwiSDR and a MeshCore client.",
   "main": "desktop/main.cjs",
   "productName": "SDR Extreme",
   "author": "KQ4ESZ",
   "license": "GPL-3.0-only",
   "homepage": "https://github.com/kq4esz/SDRExtreme",
-  "repository": { "type": "git", "url": "https://github.com/kq4esz/SDRExtreme.git" },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/kq4esz/SDRExtreme.git"
+  },
   "engines": {
     "node": ">=22.12"
   },
@@ -25,9 +28,11 @@
     "release:checksums": "node scripts/release-checksums.mjs"
   },
   "dependencies": {
+    "@liamcottle/meshcore.js": "1.15.0",
     "electron-updater": "6.8.9",
     "koffi": "3.3.3",
-    "leaflet": "1.9.4"
+    "leaflet": "1.9.4",
+    "serialport": "13.0.0"
   },
   "optionalDependencies": {
     "@koromix/koffi-win32-x64": "3.3.3"

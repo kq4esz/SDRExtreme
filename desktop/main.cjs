@@ -4,6 +4,7 @@ const fs = require('node:fs');
 const { spawn } = require('node:child_process');
 const { createHash } = require('node:crypto');
 const { createUpdates } = require('./updates.cjs');
+const setupBluetooth = require('./meshcore-bluetooth.cjs');
 
 const ROOT = path.resolve(__dirname, '..');
 const APP_VERSION = require('../package.json').version;
@@ -73,10 +74,12 @@ function createWindow() {
   window.once('ready-to-show', () => { if (!process.env.SDREXTREME_TEST_MODE) window.show(); });
   window.on('close', () => { if (!window.isMaximized()) fs.writeFileSync(path.join(DATA_DIR, 'window.json'), JSON.stringify(window.getBounds())); });
   window.on('closed', () => { window = null; });
+  setupBluetooth({ window, trusted });
   window.loadURL(LOCAL);
   const navigate = page => { if (window) { window.show(); window.webContents.send('sdr:navigate', page); } };
   Menu.setApplicationMenu(Menu.buildFromTemplate([
     { label: 'SDR Extreme', submenu: [{ label: 'Live radio', accelerator: 'Ctrl+1', click: () => navigate('radio') }, { label: 'Memory channels', accelerator: 'Ctrl+2', click: () => navigate('channels') }, { label: 'KiwiSDR map', accelerator: 'Ctrl+3', click: () => navigate('remote') }, { label: 'Decoders', accelerator: 'Ctrl+4', click: () => navigate('decoders') }, { type: 'separator' }, { label: 'Hardware settings', accelerator: 'Ctrl+,', click: () => navigate('settings') }, { type: 'separator' }, { role: 'quit' }] },
+    { label: 'MeshCore', submenu: [{ label: 'Open MeshCore client', accelerator: 'Ctrl+5', click: () => navigate('meshcore') }] },
     { label: 'Edit', submenu: [{ role: 'undo' }, { role: 'redo' }, { type: 'separator' }, { role: 'cut' }, { role: 'copy' }, { role: 'paste' }, { role: 'selectAll' }] },
     { label: 'View', submenu: [{ role: 'reload' }, { role: 'togglefullscreen' }, { type: 'separator' }, { role: 'resetZoom' }, { role: 'zoomIn' }, { role: 'zoomOut' }, { type: 'separator' }, { role: 'toggleDevTools' }] },
     { label: 'Help', submenu: [
@@ -101,7 +104,7 @@ async function stopBackend() {
   if (shutdownPromise) return shutdownPromise;
   shutdownPromise = (async () => {
     for (const receiver of receiverWindows) receiver.destroy();
-    const endpoints = backend ? ['/api/shutdown'] : ['/api/hd/stop', '/api/rtl/stop', '/api/digital/stop', '/api/wsjt/stop'];
+    const endpoints = backend ? ['/api/shutdown'] : ['/api/hd/stop', '/api/rtl/stop', '/api/digital/stop', '/api/wsjt/stop', '/api/meshcore/disconnect'];
     await Promise.allSettled(endpoints.map(endpoint => fetch(LOCAL + endpoint, { method: 'POST', signal: AbortSignal.timeout(5000) })));
     if (backend && backend.exitCode === null) {
       await Promise.race([new Promise(resolve => backend.once('exit', resolve)), new Promise(resolve => setTimeout(resolve, 1500))]);
@@ -124,10 +127,11 @@ else {
   app.on('second-instance', () => { if (window) { if (window.isMinimized()) window.restore(); window.focus(); } });
   app.whenReady().then(async () => {
     session.defaultSession.setUserAgent(`${session.defaultSession.getUserAgent()} SDRExtreme/${APP_VERSION}`);
-    session.defaultSession.setPermissionRequestHandler((_contents, permission, callback, details) => {
-      const local = details.requestingUrl?.startsWith(LOCAL + '/');
-      callback(Boolean(local && ['speaker-selection', 'audio-output'].includes(permission)));
+    session.defaultSession.setPermissionRequestHandler((contents, permission, callback, details) => {
+      const local = contents === window?.webContents && details.requestingUrl?.startsWith(LOCAL + '/');
+      callback(Boolean(local && ['speaker-selection', 'audio-output', 'bluetooth'].includes(permission)));
     });
+    session.defaultSession.setPermissionCheckHandler((contents, permission, origin) => Boolean(contents === window?.webContents && (origin === LOCAL || origin === LOCAL + '/') && ['speaker-selection', 'audio-output', 'bluetooth'].includes(permission)));
     try {
       await startBackend(); createWindow();
       updates = createUpdates({ getWindow: () => window, dataDir: DATA_DIR,

@@ -18,6 +18,12 @@ module.exports = async function checkPackage(context) {
     'node_modules/@koromix/koffi-win32-x64/win32_x64/koffi.node',
     'node_modules/leaflet/dist/leaflet.js',
     'node_modules/electron-updater/out/main.js',
+    'node_modules/@liamcottle/meshcore.js/src/index.js',
+    'node_modules/serialport/dist/index.js',
+    'node_modules/@serialport/bindings-cpp/prebuilds/win32-x64/@serialport+bindings-cpp.node',
+    'lib/meshcore.mjs',
+    'meshcore-ui.js',
+    'meshcore.css',
     'native/win32-x64/rtlsdr.dll',
     'native/win32-x64/VCRUNTIME140.dll'
   ]) requireFile(relative);
@@ -37,6 +43,7 @@ module.exports = async function checkPackage(context) {
   }
   walk(path.join(app, 'native'));
   files.push(requireFile('node_modules/@koromix/koffi-win32-x64/win32_x64/koffi.node'));
+  files.push(requireFile('node_modules/@serialport/bindings-cpp/prebuilds/win32-x64/@serialport+bindings-cpp.node'));
   const system = path.join(process.env.WINDIR || 'C:\\Windows', 'System32');
   for (const filename of files) {
     for (const dependency of peImports(filename)) {

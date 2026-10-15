@@ -1,10 +1,10 @@
 # SDR Extreme
 
-SDR Extreme is a Windows desktop receiver suite with native RTL-SDR USB access, a worldwide KiwiSDR receiver map, scanner memories, and digital decoding integrations. The desktop application uses Electron, with a local receiver service and an isolated native USB acquisition process.
+SDR Extreme is a Windows desktop receiver suite with native RTL-SDR USB access, a worldwide KiwiSDR receiver map, scanner memories, digital decoding integrations, and a MeshCore companion client. The desktop application uses Electron, with a local receiver service and an isolated native USB acquisition process.
 
 ## Start the app
 
-1. Download **SDR-Extreme-Setup-0.6.2-x64.exe** from [GitHub Releases](https://github.com/kq4esz/SDRExtreme/releases/latest), run the installer, then launch **SDR Extreme** from the desktop or Start menu. The installer includes Electron, the local service, USB libraries and decoders; Node.js is not required. For a source checkout, use **`launch-sdr-extreme.cmd`** after the setup below.
+1. Download **SDR-Extreme-Setup-0.7.0-x64.exe** from [GitHub Releases](https://github.com/kq4esz/SDRExtreme/releases/latest), run the installer, then launch **SDR Extreme** from the desktop or Start menu. The installer includes Electron, the local service, USB libraries and decoders; Node.js is not required. For a source checkout, use **`launch-sdr-extreme.cmd`** after the setup below.
 2. Open **Settings → RTL-SDR device manager**. Click **Refresh**, select your attached receiver, and save the hardware settings.
 3. Go to **Live radio** and click **Start listening**. Select a memory or tune to a frequency.
 4. Go to **KiwiSDR network** to choose a receiver on the world map or in the station list. Select a station, then click **Check & listen**. Its listening interface opens inside the app; **Open receiver in a new window** offers a dedicated desktop window if a receiver blocks embedding.
@@ -13,7 +13,53 @@ For a fresh source checkout, install Node.js **22.12 or newer**, then run `setup
 
 Installed builds save memory channels, preferences, the receiver directory and window size in **`%APPDATA%\SDR Extreme\data`**, outside the installation directory. Updates preserve this data. **Help → Open saved data folder** opens it. Source checkouts continue to use the ignored `local-data` folder. To migrate from a source checkout, close both versions and copy `channels.json` and `settings.json` from `local-data` into the installed build's data folder; keep a backup before replacing an existing profile. Closing the desktop app releases its receiver. In a source checkout, `stop-sdr-extreme.cmd` also stops the local service.
 
-The local UI service uses `127.0.0.1:17890` for the desktop interface and audio/waterfall display. **Hardware access is direct USB through `rtlsdr.dll` and WinUSB. There is no RTL-TCP process, hardware TCP connection, or port 1234 requirement.** `launch-browser-console.cmd` is an optional browser interface to the same native USB backend.
+The local UI service uses `127.0.0.1:17890` for the desktop interface and audio/waterfall display. **RTL-SDR hardware access is direct USB through `rtlsdr.dll` and WinUSB, with no RTL-TCP process or port 1234 requirement.** MeshCore separately supports USB serial, Bluetooth LE and its companion TCP connection over Wi-Fi. `launch-browser-console.cmd` is an optional browser interface to the same native USB backend.
+
+## MeshCore companion client
+
+Open **MeshCore** in the sidebar or press **Ctrl+5**. Connect a node running
+MeshCore **companion** firmware. Heltec V3 with firmware 1.17.1 is the target
+device; each firmware build determines which transports are available.
+
+- **USB:** plug in a USB data cable, refresh the COM port list, select the
+  Heltec's port, then connect. The serial connection uses **115200 baud**.
+  Install the USB serial driver appropriate to the board if Windows does not
+  expose a COM port. Close other applications using that port. Do not replace
+  the Heltec's serial driver with the RTL-SDR WinUSB driver.
+- **Bluetooth:** enable Bluetooth in Windows, run BLE companion firmware,
+  click **Choose Bluetooth node**, select the node, and enter/confirm its PIN.
+  Device selection and PIN prompts are provided inside the desktop app.
+  Close other MeshCore apps connected to the node. A browser console requires
+  a browser with Web Bluetooth support, such as Chrome or Edge.
+- **Wi-Fi:** run firmware exposing the MeshCore companion TCP service, then
+  enter the node IP/hostname and TCP port (default **5000**). This is the binary
+  companion service, not a node's HTTP page. Wi-Fi support is not added to a
+  USB/BLE-only firmware build by selecting this option.
+
+The client reads the node identity, LoRa profile, battery voltage, configured
+channels and contact list, and retrieves waiting messages. Select a channel
+or chat contact to send a text message. Repeater/room entries are displayed
+for reference; room-server login and commands are not implemented. Configure
+new contacts/channels using an existing MeshCore companion app, then use
+**Sync node** here. No firmware flashing or radio-parameter editing is performed.
+
+Direct messages display delivery confirmation only when the recipient's ACK
+arrives. A timeout means **Delivery unconfirmed** and is not automatically
+retransmitted. Channel messages show **Sent to node**, which is not a receipt
+from other channel members. The composer counts UTF-8 bytes and reserves
+space for the sender name on channel messages. Enter sends; Shift+Enter adds
+a line. Disconnection cancels pending operations; reconnect manually to resume.
+
+Up to 1,500 messages are retained in `meshcore.json` in the saved data folder,
+scoped to the connected node's public identity. Message text is stored locally
+in plain text. Channel keys, private keys, and Bluetooth PINs are not saved.
+The app does not connect or transmit messages until the user requests it.
+MeshCore runs independently of the RTL-SDR receiver.
+
+The implementation uses the [official JavaScript library](https://github.com/meshcore-dev/meshcore.js)
+and [MeshCore companion protocol](https://github.com/meshcore-dev/MeshCore/blob/main/docs/companion_protocol.md).
+Physical node reception, RF delivery and Bluetooth pairing depend on the
+connected hardware and firmware; they cannot be established by a package build.
 
 ## Windows installation and automatic updates
 

@@ -2,3 +2,4 @@ allowBuilds:
   koffi: true
   electron: true
   electron-winstaller: false
+  '@serialport/bindings-cpp': true

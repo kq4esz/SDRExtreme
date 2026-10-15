@@ -24,6 +24,8 @@ files:
   - index.html
   - hd-radio-ui.js
   - kiwi-network.js
+  - meshcore-ui.js
+  - meshcore.css
   - package.json
   - README.md
   - LICENSE

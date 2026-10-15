@@ -8,6 +8,7 @@
   <link rel="icon" href="/assets/app-icon.svg" type="image/svg+xml">
   <link rel="stylesheet" href="/vendor/leaflet/leaflet.css">
   <link rel="stylesheet" href="/app.css">
+  <link rel="stylesheet" href="/meshcore.css">
 </head>
 <body>
   <div class="app-shell">
@@ -23,6 +24,7 @@
         <button class="nav-item" data-page="channels"><span class="nav-icon">▤</span><span>Memory channels</span><span class="nav-shortcut" id="channel-count">00</span></button>
         <button class="nav-item" data-page="remote"><span class="nav-icon">◌</span><span>KiwiSDR network</span><span class="nav-dot"></span></button>
         <button class="nav-item" data-page="decoders"><span class="nav-icon">⌁</span><span>Decoders</span></button>
+        <button class="nav-item" data-page="meshcore"><span class="nav-icon">⌘</span><span>MeshCore</span><span class="nav-shortcut">NEW</span></button>
       </nav>
 
       <div class="sidebar-divider"></div>
@@ -36,7 +38,7 @@
         <button class="icon-button tiny" data-page="settings" title="Device settings">⚙</button>
       </div>
       <button class="nav-item settings-link" data-page="settings"><span class="nav-icon">⚙</span><span>Settings</span></button>
-      <div class="sidebar-footer"><span>SDR EXTREME</span><span>DESKTOP 0.6.2</span></div>
+      <div class="sidebar-footer"><span>SDR EXTREME</span><span>DESKTOP 0.7.0</span></div>
     </aside>
 
     <main class="main-area">
@@ -176,6 +178,7 @@
         </div>
       </section>
 
+      <section class="page" id="page-meshcore"></section>
       <section class="page" id="page-settings">
         <div class="page-heading"><div><div class="eyebrow"><span class="eyebrow-line"></span>MAKE IT YOURS</div><h1>Settings<span class="heading-period">.</span></h1><p>Connect your receiver and set up external decoding tools.</p></div></div>
         <div class="settings-layout">
@@ -193,7 +196,7 @@
         </div>
       </section>
 
-      <footer class="app-footer"><span>SDR EXTREME <i>·</i> BUILT FOR THE CURIOUS</span><span>RECEIVE ONLY <b>●</b></span></footer>
+      <footer class="app-footer"><span>SDR EXTREME <i>·</i> BUILT FOR THE CURIOUS</span><span>RECEIVER + MESH CLIENT <b>●</b></span></footer>
     </main>
   </div>
 

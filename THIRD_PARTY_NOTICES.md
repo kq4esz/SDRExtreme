@@ -9,6 +9,8 @@ Third-party components retain their own licenses and copyright notices.
 | Koffi | 3.3.3 | MIT; installed package `LICENSE.txt`; https://github.com/Koromix/koffi |
 | Leaflet | 1.9.4 | BSD-2-Clause; installed package `LICENSE`; https://github.com/Leaflet/Leaflet/tree/v1.9.4 |
 | electron-updater | 6.8.9 | MIT; installed package `LICENSE`; https://github.com/electron-userland/electron-builder |
+| MeshCore JavaScript SDK (@liamcottle/meshcore.js) | 1.15.0 | MIT; installed package `LICENSE`; https://github.com/meshcore-dev/meshcore.js |
+| SerialPort / @serialport/bindings-cpp | 13.0.0 | MIT; installed package licenses; https://github.com/serialport/node-serialport |
 | RTL-SDR Blog driver | V1.4.0 | GPL-2.0-or-later; `native/COPYING-RTL-SDR.txt`; https://github.com/rtlsdrblog/rtl-sdr-blog/tree/V1.4.0 |
 | nrsc5 | 3.2.0 | GPL-3.0; `native/hd-radio/COPYING.GPL-3.0`; corresponding source snapshot and build recipe in `native/hd-radio/source/` |
 | DSD-neo | 2.10.0+32ae7c8 | GPL-3.0-or-later; notices under `native/digital/win32-x64/share/doc/dsd-neo/`; corresponding source snapshot in `native/digital/source/` |

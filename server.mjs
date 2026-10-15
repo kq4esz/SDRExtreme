@@ -14,6 +14,7 @@ import { MemoryScanner, scanPlan, spectrumSnr } from './lib/memory-scanner.mjs';
 import { DigitalDecoder, digitalRuntime } from './lib/digital-decoder.mjs';
 import { HdRadio, hdRuntime } from './lib/hd-radio.mjs';
 import { hdBandForFrequency, hdProgram } from './lib/hd-options.mjs';
+import { MeshCoreClient } from './lib/meshcore.mjs';
 
 const ROOT = path.dirname(fileURLToPath(import.meta.url));
 const APP_VERSION = JSON.parse(fs.readFileSync(path.join(ROOT, 'package.json'), 'utf8')).version;
@@ -61,6 +62,9 @@ let lastSpectrumAt = 0;
 let spectrumRefreshCounter = 0;
 let recentDecodes = [];
 let clients = new Set();
+const meshcore = new MeshCoreClient(DATA_DIR);
+meshcore.on('state', mesh => broadcast({ type: 'meshcore-state', mesh }));
+meshcore.on('ble-frame', frame => broadcast({ type: 'meshcore-frame', ...frame }));
 let cwState = { unit: 100, keyed: false, markMs: 0, gapMs: 0, pattern: '', text: '', noise: 0.008, peak: 0.04, envelope: 0 };
 const MORSE = { '.-':'A','-...':'B','-.-.':'C','-..':'D','.':'E','..-.':'F','--.':'G','....':'H','..':'I','.---':'J','-.-':'K','.-..':'L','--':'M','-.':'N','---':'O','.--.':'P','--.-':'Q','.-.':'R','...':'S','-':'T','..-':'U','...-':'V','.--':'W','-..-':'X','-.--':'Y','--..':'Z','-----':'0','.----':'1','..---':'2','...--':'3','....-':'4','.....':'5','-....':'6','--...':'7','---..':'8','----.':'9','.-.-.-':'.','--..--':',','..--..':'?','-..-.':'/','-.-.--':'!','.-..-.':'"','-.--.':'(','-.--.-':')','.-.-.':'+','-....-':'-','...-..-':'$','.-.-':'Ä','---.':'Ö','.--.-':'Å','..--':'Ü' };
 
@@ -790,6 +794,20 @@ const server = http.createServer(async (req, res) => {
   if (req.headers.origin && req.headers.origin !== `http://127.0.0.1:${PORT}`) return sendJson(res, 403, { error: 'Open SDR Extreme from its local desktop window.' });
   try {
     if (url.pathname === '/api/state' && req.method === 'GET') return sendJson(res, 200, { status: status(), channels, settings, digitalRuntime: digitalRuntime(), digitalHistory, hdRuntime: hdRuntime() });
+    if (url.pathname === '/api/meshcore/state' && req.method === 'GET') return sendJson(res, 200, meshcore.snapshot());
+    if (url.pathname === '/api/meshcore/ports' && req.method === 'GET') return sendJson(res, 200, { ports: await meshcore.ports() });
+    if (url.pathname === '/api/meshcore/connect' && req.method === 'POST') return sendJson(res, 200, meshcore.connect(await parseBody(req, 4096)));
+    if (url.pathname === '/api/meshcore/disconnect' && req.method === 'POST') {
+      const body = await parseBody(req, 4096);
+      if (body.session && body.session !== meshcore.connectionId) return sendJson(res, 200, { disconnected: true });
+      return sendJson(res, 200, meshcore.disconnect());
+    }
+    if (url.pathname === '/api/meshcore/refresh' && req.method === 'POST') return sendJson(res, 200, await meshcore.refresh());
+    if (url.pathname === '/api/meshcore/send' && req.method === 'POST') return sendJson(res, 200, await meshcore.send(await parseBody(req, 4096)));
+    if (url.pathname === '/api/meshcore/ble/start' && req.method === 'POST') { const body = await parseBody(req, 4096); return sendJson(res, 200, meshcore.startBle(body.session)); }
+    if (url.pathname === '/api/meshcore/ble/rx' && req.method === 'POST') { const body = await parseBody(req, 4096); meshcore.receiveBle(body.session, body.frame); return sendJson(res, 200, { received: true }); }
+    if (url.pathname === '/api/meshcore/ble/heartbeat' && req.method === 'POST') { const body = await parseBody(req, 4096); meshcore.checkBle(body.session); return sendJson(res, 200, { active: true }); }
+    if (url.pathname === '/api/meshcore/ble/failed' && req.method === 'POST') { const body = await parseBody(req, 4096); meshcore.checkBle(body.session); meshcore.fail(new Error(String(body.error || 'Bluetooth connection lost.'))); return sendJson(res, 200, { disconnected: true }); }
     if (url.pathname === '/api/hd/start' && req.method === 'POST') return sendJson(res, 200, await startHd(await parseBody(req)));
     if (url.pathname === '/api/hd/stop' && req.method === 'POST') { await stopHd(); return sendJson(res, 200, status()); }
     if (url.pathname === '/api/hd/fallback' && req.method === 'POST') {
@@ -889,9 +907,9 @@ const server = http.createServer(async (req, res) => {
       } else throw new Error('Unsupported decoder control.');
       return sendJson(res, 200, status());
     }
-    if (url.pathname === '/api/shutdown' && req.method === 'POST') { stopScan(); await stopHd(); await stopReceiver(); await stopDigital(); stopWsjtBridge(); sendJson(res, 200, { stopped: true }); setTimeout(() => { for (const client of clients) client.destroy(); server.close(); }, 100); return; }
+    if (url.pathname === '/api/shutdown' && req.method === 'POST') { meshcore.disconnect(); stopScan(); await stopHd(); await stopReceiver(); await stopDigital(); stopWsjtBridge(); sendJson(res, 200, { stopped: true }); setTimeout(() => { for (const client of clients) client.destroy(); server.close(); }, 100); return; }
     const relative = url.pathname === '/' ? 'index.html' : decodeURIComponent(url.pathname.slice(1));
-    const publicFiles = new Set(['index.html', 'app.js', 'app.css', 'kiwi-network.js', 'hd-radio-ui.js', 'lib/channel-protocols.mjs', 'lib/current-memory.mjs', 'lib/hd-options.mjs', 'lib/playback-buffer.mjs', 'assets/app-icon.svg', 'assets/app-icon.png']);
+    const publicFiles = new Set(['index.html', 'app.js', 'app.css', 'meshcore-ui.js', 'meshcore.css', 'kiwi-network.js', 'hd-radio-ui.js', 'lib/channel-protocols.mjs', 'lib/current-memory.mjs', 'lib/hd-options.mjs', 'lib/playback-buffer.mjs', 'assets/app-icon.svg', 'assets/app-icon.png']);
     const leafletFiles = new Set(['leaflet.js', 'leaflet.css', 'images/layers.png', 'images/layers-2x.png', 'images/marker-icon.png', 'images/marker-icon-2x.png', 'images/marker-shadow.png']);
     const vendorName = relative.startsWith('vendor/leaflet/') ? relative.slice('vendor/leaflet/'.length) : '';
     if (!publicFiles.has(relative) && !leafletFiles.has(vendorName)) { res.writeHead(404); res.end('Not found'); return; }
@@ -919,6 +937,6 @@ server.on('upgrade', (req, socket) => {
 });
 
 server.listen(PORT, '127.0.0.1', () => console.log(`SDR Extreme is ready at http://127.0.0.1:${PORT}`));
-async function shutdown() { stopScan(); await stopHd(); await stopReceiver(); await stopDigital(); stopWsjtBridge(); for (const client of clients) client.destroy(); server.close(() => process.exit(0)); }
+async function shutdown() { meshcore.disconnect(); stopScan(); await stopHd(); await stopReceiver(); await stopDigital(); stopWsjtBridge(); for (const client of clients) client.destroy(); server.close(() => process.exit(0)); }
 process.on('SIGINT', shutdown);
 process.on('SIGTERM', shutdown);

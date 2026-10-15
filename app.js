@@ -4,6 +4,7 @@ import { currentMemoryDraft } from './lib/current-memory.mjs';
 import { HdRadioUi } from './hd-radio-ui.js';
 import { hdMemoryOptions } from './lib/hd-options.mjs';
 import { PlaybackBuffer } from './lib/playback-buffer.mjs';
+import { MeshCoreUi } from './meshcore-ui.js';
 const $ = (selector, root = document) => root.querySelector(selector);
 const $$ = (selector, root = document) => [...root.querySelectorAll(selector)];
 const DIGITAL = new Set(['P25', 'DMR', 'NXDN', 'D-STAR', 'YSF', 'M17']);
@@ -53,8 +54,9 @@ function setPage(name) {
   window.scrollTo({ top: 0, behavior: 'instant' });
   $$('.page').forEach(page => page.classList.toggle('active', page.id === `page-${name}`));
   $$('.nav-item[data-page]').forEach(button => button.classList.toggle('active', button.dataset.page === name));
-  const labels = { radio:'Live radio', channels:'Memory channels', remote:'KiwiSDR network', decoders:'Decoders', settings:'Settings' };
+  const labels = { radio:'Live radio', channels:'Memory channels', remote:'KiwiSDR network', decoders:'Decoders', meshcore:'MeshCore', settings:'Settings' };
   $('#page-title').textContent = labels[name] || 'Live radio';
+  if (name === 'meshcore') void state.meshcore?.show();
   if (name === 'radio' || name === 'decoders') {drawSpectrum();drawWaterfall(true);renderSpectrumStatus();}
   if (name === 'remote') state.network?.show();
   if (name === 'settings' && !state.usbDevices.length) refreshUsbDevices();
@@ -468,6 +470,7 @@ function connectSocket() {
   socket.onmessage=event=>{
     if(typeof event.data!=='string'){queueAudio(event.data);return;}
     let message;try{message=JSON.parse(event.data);}catch{return;}
+    if (message.type.startsWith('meshcore-')) { state.meshcore?.handleMessage(message); return; }
     if(message.type==='status'){state.status=message.status;renderStatus();}
     else if(message.type==='hd-state'){
       state.status={...state.status,hd:message.hd,hdActive:message.hd.active};
@@ -491,7 +494,7 @@ function connectSocket() {
     else if(message.type==='digital-error'){addDigitalLog(message.message);toast(message.message,'error');}
     else if(message.type==='log'&&message.message)toast(message.message.slice(0,180),'error');
   };
-  socket.onopen=()=>{};socket.onclose=()=>{state.socket=null;if(document.visibilityState==='visible')setTimeout(connectSocket,1200);};socket.onerror=()=>{};
+  socket.onopen=()=>state.meshcore?.socketOpened();socket.onclose=()=>{state.meshcore?.socketClosed();state.socket=null;if(document.visibilityState==='visible')setTimeout(connectSocket,1200);};socket.onerror=()=>{};
 }
 function fitCanvas(canvas, context) {
   const rect=canvas.getBoundingClientRect(),dpr=Math.min(window.devicePixelRatio||1,2);const width=Math.max(1,Math.floor(rect.width*dpr)),height=Math.max(1,Math.floor(rect.height*dpr));
@@ -718,6 +721,7 @@ function bindEvents() {
   $('#spectrum-expand').addEventListener('click',()=>$('#spectrum-wrap').classList.toggle('expanded'));
 }
 async function init() {
+  state.meshcore = new MeshCoreUi({api,toast,socketReady:()=>state.socket?.readyState === WebSocket.OPEN});
   state.hdUi=new HdRadioUi({api,getState:()=>state,updateStatus:next=>{state.status=next;renderStatus();},audio:async()=>{connectSocket();await setupAudio();},saveSettings,memory:draft=>openChannelDialog(draft,{draft:true}),toast});
   bindEvents();updateClock();setInterval(updateClock,1000);setInterval(renderSpectrumStatus,500);window.addEventListener('resize',()=>{drawSpectrum();drawWaterfall(true);});
   setInterval(renderPlaybackDiagnostics,1000);
