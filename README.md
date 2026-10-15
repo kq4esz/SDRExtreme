@@ -4,7 +4,7 @@ SDR Extreme is a Windows desktop receiver suite with native RTL-SDR USB access, 
 
 ## Start the app
 
-1. Download **SDR-Extreme-Setup-0.7.0-x64.exe** from [GitHub Releases](https://github.com/kq4esz/SDRExtreme/releases/latest), run the installer, then launch **SDR Extreme** from the desktop or Start menu. The installer includes Electron, the local service, USB libraries and decoders; Node.js is not required. For a source checkout, use **`launch-sdr-extreme.cmd`** after the setup below.
+1. Download **SDR-Extreme-Setup-0.7.1-x64.exe** from [GitHub Releases](https://github.com/kq4esz/SDRExtreme/releases/latest), run the installer, then launch **SDR Extreme** from the desktop or Start menu. The installer includes Electron, the local service, USB libraries and decoders; Node.js is not required. For a source checkout, use **`launch-sdr-extreme.cmd`** after the setup below.
 2. Open **Settings → RTL-SDR device manager**. Click **Refresh**, select your attached receiver, and save the hardware settings.
 3. Go to **Live radio** and click **Start listening**. Select a memory or tune to a frequency.
 4. Go to **KiwiSDR network** to choose a receiver on the world map or in the station list. Select a station, then click **Check & listen**. Its listening interface opens inside the app; **Open receiver in a new window** offers a dedicated desktop window if a receiver blocks embedding.
@@ -42,6 +42,20 @@ or chat contact to send a text message. Repeater/room entries are displayed
 for reference; room-server login and commands are not implemented. Configure
 new contacts/channels using an existing MeshCore companion app, then use
 **Sync node** here. No firmware flashing or radio-parameter editing is performed.
+
+**Channels** and **Contacts** have separate selectable tabs, each with its own
+conversation selection and search. Switching between them keeps unsent drafts.
+Unread badges show the number of new incoming messages for each conversation,
+the total for each category tab, and the overall total beside MeshCore in the
+main navigation. Outgoing messages and delivery receipts do not add to these
+counts. Search does not hide a category's unread total.
+
+Messages become read when their conversation is open in the visible, focused
+MeshCore workspace and scrolled to the latest message. If you are reading older
+messages, **N new messages ↓** takes you to the latest messages. Unread state is
+saved with local history, scoped to the node, and restored after reconnecting
+following an app restart. Existing history from versions before 0.7.1 starts as
+read; newly retrieved messages are counted as unread.
 
 Direct messages display delivery confirmation only when the recipient's ACK
 arrives. A timeout means **Delivery unconfirmed** and is not automatically

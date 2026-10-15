@@ -12,6 +12,7 @@ export class MeshCoreUi {
     this.api = api; this.toast = toast; this.socketReady = socketReady;
     this.data = { phase: 'disconnected', config: {}, contacts: [], channels: [], messages: [] };
     this.transport = 'usb'; this.attempt = 0; this.writeQueue = Promise.resolve(); this.readQueue = Promise.resolve(); this.selected = '';
+    this.category = 'channels'; this.categorySelections = { channels: '', contacts: '' }; this.pendingReads = new Set();
     $('#page-meshcore').innerHTML = `
       <div class="page-heading"><div><div class="eyebrow"><span class="eyebrow-line"></span>OFF-GRID MESSAGING</div><h1>MeshCore<span class="heading-period">.</span></h1><p>Your mesh. One connected workspace.</p></div><div class="mesh-state" id="mesh-state" role="status"><i></i><span>Not connected</span></div></div>
       <section class="mesh-connect panel" aria-label="MeshCore connection">
@@ -26,7 +27,7 @@ export class MeshCoreUi {
         <div id="mesh-error" class="mesh-notice error hidden" role="alert"></div><div id="mesh-warning" class="mesh-notice hidden" role="status"></div>
       </section>
       <section class="mesh-node panel" aria-label="Connected node information"><div class="mesh-node-identity"><div class="mesh-node-icon">⌘</div><div><div class="section-kicker">LOCAL NODE</div><strong id="mesh-node-name">Heltec V3 / MeshCore companion</strong><small id="mesh-node-detail">Connect to read your node’s identity and radio settings.</small></div></div><dl><div><dt>FREQUENCY</dt><dd id="mesh-node-frequency">—</dd></div><div><dt>LoRa PROFILE</dt><dd id="mesh-node-radio">—</dd></div><div><dt>BATTERY</dt><dd id="mesh-node-battery">—</dd></div><div><dt>CONTACTS</dt><dd id="mesh-contact-count">—</dd></div></dl><button type="button" id="mesh-refresh" class="outline-button" disabled>Sync node</button></section>
-      <div class="mesh-workspace panel"><aside class="mesh-conversations"><div class="mesh-list-heading"><h2>Conversations</h2><span id="mesh-conversation-count">0</span></div><label class="sr-only" for="mesh-search">Search channels and contacts</label><input id="mesh-search" type="search" placeholder="Search channels & contacts…"><div class="mesh-conversation-scroll" id="mesh-conversation-list"></div></aside>
+      <div class="mesh-workspace panel"><aside class="mesh-conversations"><div class="mesh-list-heading"><h2>Conversations</h2><span id="mesh-conversation-count">0</span></div><div class="mesh-category-tabs" role="tablist" aria-label="Conversation category"><button type="button" role="tab" id="mesh-tab-channels" aria-selected="true" aria-controls="mesh-conversation-panel" data-mesh-category="channels"><span>Channels</span><span id="mesh-channels-unread" class="mesh-unread-badge hidden" aria-hidden="true">0</span></button><button type="button" role="tab" id="mesh-tab-contacts" aria-selected="false" aria-controls="mesh-conversation-panel" tabindex="-1" data-mesh-category="contacts"><span>Contacts</span><span id="mesh-contacts-unread" class="mesh-unread-badge hidden" aria-hidden="true">0</span></button></div><div id="mesh-conversation-panel" role="tabpanel" aria-labelledby="mesh-tab-channels"><label class="sr-only" id="mesh-search-label" for="mesh-search">Search channels</label><input id="mesh-search" type="search" placeholder="Search channels…"><div class="mesh-conversation-scroll" id="mesh-conversation-list"></div></div><p class="sr-only" id="mesh-unread-status" role="status" aria-atomic="true"></p></aside>
         <section class="mesh-chat" aria-label="MeshCore messages"><header class="mesh-chat-heading"><div class="mesh-chat-avatar" id="mesh-chat-avatar">⌁</div><div><h2 id="mesh-chat-title">Your next conversation starts here</h2><p id="mesh-chat-subtitle">Connect a node and select a channel or contact.</p></div><span class="mesh-chat-tag" id="mesh-chat-tag">MESHCORE</span></header><div id="mesh-messages" class="mesh-messages" role="log" aria-label="Conversation messages" aria-live="polite"></div><form id="mesh-message-form" class="mesh-composer"><label class="sr-only" for="mesh-message">Message text</label><textarea id="mesh-message" rows="2" placeholder="Select a channel or chat contact to write a message…" disabled></textarea><div class="mesh-composer-bottom"><span id="mesh-send-hint">Messages travel through your connected LoRa node.</span><span id="mesh-byte-count">0 / 150 bytes</span><button class="primary-button" id="mesh-send" type="submit" disabled>Send <span>↗</span></button></div></form></section>
       </div><p class="mesh-footer-note">MeshCore companion firmware is required. USB, BLE and Wi-Fi availability depends on your firmware build. Mesh messaging uses the node’s LoRa radio.</p>
       <dialog class="app-dialog mesh-dialog" id="mesh-device-dialog"><div class="dialog-head"><div><div class="section-kicker">BLUETOOTH LOW ENERGY</div><h2>Choose a MeshCore node</h2></div><button type="button" class="icon-button" id="mesh-device-close" aria-label="Cancel device selection">×</button></div><p>Keep your Heltec V3 nearby with Bluetooth companion firmware running. Close its connection in other apps.</p><div id="mesh-device-list" class="mesh-device-list"></div><p id="mesh-device-searching">Searching for MeshCore devices…</p><div class="dialog-actions"><button type="button" class="outline-button" id="mesh-device-cancel">Cancel</button></div></dialog>
@@ -37,6 +38,23 @@ export class MeshCoreUi {
     $('#mesh-ports-refresh').addEventListener('click', () => void this.refreshPorts());
     $('#mesh-refresh').addEventListener('click', async () => { try { this.update(await api('/api/meshcore/refresh', {})); } catch (error) { this.showError(error.message); } });
     $('#mesh-search').addEventListener('input', () => this.renderConversations());
+    for (const tab of document.querySelectorAll('[data-mesh-category]')) {
+      tab.addEventListener('click', () => this.selectCategory(tab.dataset.meshCategory));
+      tab.addEventListener('keydown', event => {
+        if (!['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(event.key)) return;
+        event.preventDefault();
+        const category = event.key === 'Home' ? 'channels' : event.key === 'End' ? 'contacts' : this.category === 'channels' ? 'contacts' : 'channels';
+        this.selectCategory(category); $(`#mesh-tab-${category}`).focus();
+      });
+    }
+    const jump = element('button', 'mesh-unread-jump hidden'); jump.type = 'button'; jump.id = 'mesh-unread-jump';
+    $('#mesh-message-form').before(jump);
+    jump.addEventListener('click', () => this.jumpToLatest());
+    $('#mesh-messages').addEventListener('scroll', () => this.scheduleRead(), { passive: true });
+    window.addEventListener('scroll', () => this.scheduleRead(), { passive: true });
+    window.addEventListener('resize', () => this.scheduleRead());
+    window.addEventListener('focus', () => this.scheduleRead());
+    document.addEventListener('visibilitychange', () => this.scheduleRead());
     $('#mesh-message').addEventListener('input', () => this.renderComposer());
     $('#mesh-message').addEventListener('keydown', event => { if (event.key === 'Enter' && !event.shiftKey && !event.isComposing) { event.preventDefault(); $('#mesh-message-form').requestSubmit(); } });
     $('#mesh-message-form').addEventListener('submit', event => { event.preventDefault(); void this.send(); });
@@ -63,7 +81,10 @@ export class MeshCoreUi {
       $('#mesh-host').value = data.config.host || ''; $('#mesh-tcp-port').value = data.config.port || 5000;
     } catch (error) { this.showError(error.message); }
   }
-  async show() { await this.ready; if (this.transport === 'usb' && !this.portsLoaded) await this.refreshPorts(); }
+  async show() {
+    await this.ready; this.scheduleRead();
+    if (this.transport === 'usb' && !this.portsLoaded) await this.refreshPorts();
+  }
   selectTransport(name, force = false) {
     if (!force && (this.localBusy || ['connecting', 'syncing', 'connected'].includes(this.data.phase))) return;
     this.transport = name;
@@ -156,34 +177,115 @@ export class MeshCoreUi {
   socketOpened() { this.api('/api/meshcore/state').then(data => this.update(data)).catch(() => {}); }
   socketClosed() { if (this.bleSession) void this.bleFailed('The local Bluetooth bridge disconnected. Connect the node again.'); }
   update(data) {
-    const previousNode = this.data.node?.publicKey; this.data = data;
+    this.data = data;
     if (['connecting', 'syncing', 'connected'].includes(data.phase) && this.transport !== data.config.transport) {
       this.selectTransport(data.config.transport, true);
       $('#mesh-host').value = data.config.host || ''; $('#mesh-tcp-port').value = data.config.port || 5000;
     }
-    if (previousNode && data.node && previousNode !== data.node.publicKey) { this.selected = ''; $('#mesh-message').value = ''; }
+    if (data.node) {
+      if (this.nodeIdentity && this.nodeIdentity !== data.node.publicKey) {
+        this.selected = ''; this.categorySelections = { channels: '', contacts: '' }; this.drafts = {}; $('#mesh-message').value = '';
+      }
+      this.nodeIdentity = data.node.publicKey;
+    }
+    const resolved = this.conversationData().resolveId(this.selected);
+    if (resolved !== this.selected) {
+      if (this.drafts?.[this.selected]) this.drafts[resolved] = this.drafts[this.selected];
+      this.selected = resolved; this.categorySelections[this.category] = resolved;
+    }
     if (this.bleSession && (data.connectionId !== this.bleSession || ['disconnected', 'error'].includes(data.phase))) this.closeGatt();
     this.render();
   }
   showError(message) { this.localError = message; this.render(); }
 
-  targets() {
+  conversationData() {
+    if (this.conversationsCache?.data === this.data) return this.conversationsCache;
     const targets = this.data.channels.map(row => ({ id: `channel:${row.index}`, name: row.name, detail: `Channel ${row.index}`, channel: true, writable: true }));
     for (const contact of this.data.contacts) targets.push({ id: `contact:${contact.publicKey}`, name: contact.name || contact.publicKey.slice(0, 12), detail: TYPES[contact.type] || 'Node', writable: contact.type === 1, publicKey: contact.publicKey });
-    for (const message of this.data.messages) {
-      if (targets.some(target => target.id === message.recipient)) continue;
-      if (message.recipient.startsWith('contact:')) {
-        const prefix = message.recipient.slice(8);
-        const matches = targets.filter(target => target.publicKey?.startsWith(prefix));
-        if (matches.length === 1) continue;
+    const byId = new Map(targets.map(target => [target.id, target])), prefixes = new Map(), groups = new Map();
+    const unread = { channels: 0, contacts: 0, total: 0 };
+    const resolveId = recipient => {
+      if (!recipient || byId.has(recipient) || !recipient.startsWith('contact:')) return recipient;
+      if (!prefixes.has(recipient)) {
+        const matches = this.data.contacts.filter(contact => contact.publicKey.startsWith(recipient.slice(8)));
+        prefixes.set(recipient, matches.length === 1 ? `contact:${matches[0].publicKey}` : recipient);
       }
-      targets.push({ id: message.recipient, name: message.recipient.startsWith('channel:') ? `Channel ${message.recipient.slice(8)}` : message.sender || message.recipient.slice(8, 20), detail: 'History · not in node list', writable: false, channel: message.recipient.startsWith('channel:') });
+      return prefixes.get(recipient);
+    };
+    for (const message of this.data.messages) {
+      const recipient = resolveId(message.recipient);
+      if (!byId.has(recipient)) {
+        const target = { id: recipient, name: recipient.startsWith('channel:') ? `Channel ${recipient.slice(8)}` : message.sender || recipient.slice(8, 20), detail: 'History · not in node list', writable: false, channel: recipient.startsWith('channel:') };
+        targets.push(target); byId.set(recipient, target);
+      }
+      if (!groups.has(recipient)) groups.set(recipient, { messages: [], unread: 0 });
+      const group = groups.get(recipient); group.messages.push(message);
+      if (message.direction === 'in' && message.unread === true) {
+        group.unread++; unread[recipient.startsWith('channel:') ? 'channels' : 'contacts']++; unread.total++;
+      }
     }
-    return targets;
+    return this.conversationsCache = { data: this.data, targets, groups, unread, resolveId };
   }
-  conversationMessages() {
+  targets() { return this.conversationData().targets; }
+  conversationMessages() { return this.conversationData().groups.get(this.selected)?.messages || []; }
+  selectCategory(category) {
+    if (!['channels', 'contacts'].includes(category) || category === this.category) return;
+    this.categorySelections[this.category] = this.selected;
+    this.category = category; $('#mesh-search').value = '';
+    this.selectConversation(this.conversationData().resolveId(this.categorySelections[category]));
+  }
+  selectConversation(recipient) {
+    if (this.selected !== recipient) {
+      if (this.selected) this.drafts = { ...this.drafts, [this.selected]: $('#mesh-message').value };
+      this.selected = recipient; $('#mesh-message').value = this.drafts?.[recipient] || '';
+    }
+    this.categorySelections[this.category] = recipient;
+    this.messageSignature = null; this.forceScroll = true;
+    this.renderConversations(); this.renderMessages(); this.renderComposer(); this.scheduleRead();
+  }
+  atLatestMessage() {
+    const container = $('#mesh-messages');
+    return container.clientHeight > 0 && container.scrollHeight - container.scrollTop - container.clientHeight < 35;
+  }
+  canReadConversation() {
     const target = this.targets().find(row => row.id === this.selected);
-    return this.data.messages.filter(message => message.recipient === this.selected || (target?.publicKey && message.recipient.startsWith('contact:') && target.publicKey.startsWith(message.recipient.slice(8))));
+    if (!this.data.node || !target || Boolean(target.channel) !== (this.category === 'channels') ||
+      !$('#page-meshcore').classList.contains('active') || document.visibilityState !== 'visible' || !document.hasFocus() || !this.atLatestMessage()) return false;
+    const container = $('#mesh-messages'), latest = container.lastElementChild?.getBoundingClientRect(), bounds = container.getBoundingClientRect();
+    // The page can be active while connection controls fill the viewport.
+    // Wait until the end of the conversation is actually on screen as well.
+    return Boolean(latest && latest.bottom <= Math.min(window.innerHeight, bounds.bottom) + 1 && latest.bottom > Math.max(0, bounds.top));
+  }
+  scheduleRead() {
+    clearTimeout(this.readTimer);
+    this.readTimer = setTimeout(() => void this.markVisibleRead(), 180);
+  }
+  async markVisibleRead() {
+    if (!this.canReadConversation()) return;
+    const node = this.data.node.publicKey;
+    const ids = this.conversationMessages().filter(message => message.direction === 'in' && message.unread === true && !this.pendingReads.has(message.id)).map(message => message.id);
+    if (!ids.length) return;
+    for (const id of ids) this.pendingReads.add(id);
+    try {
+      const result = await this.api('/api/meshcore/read', { node, ids });
+      if (result.node !== this.data.node?.publicKey) return;
+      const readIds = new Set(result.ids);
+      for (const message of this.data.messages) if (readIds.has(message.id)) message.unread = false;
+      this.conversationsCache = null; this.renderConversations(); this.renderUnreadJump();
+    } catch {
+      // Keep the badges until the read is saved. A focus, scroll, reconnect or
+      // later state update can retry; local read failures must not close BLE.
+    } finally { for (const id of ids) this.pendingReads.delete(id); }
+  }
+  jumpToLatest() {
+    const container = $('#mesh-messages'); container.scrollTop = container.scrollHeight;
+    if ($('#page-meshcore').classList.contains('active')) container.lastElementChild?.scrollIntoView({ block: 'nearest' });
+    this.scheduleRead();
+  }
+  renderUnreadJump() {
+    const count = this.conversationData().groups.get(this.selected)?.unread || 0;
+    $('#mesh-unread-jump').textContent = `${count} new message${count === 1 ? '' : 's'} ↓`;
+    $('#mesh-unread-jump').classList.toggle('hidden', !count || !this.selected);
   }
   render() {
     const data = this.data, busy = this.localBusy || ['connecting', 'syncing'].includes(data.phase), locked = busy || data.connected;
@@ -210,26 +312,41 @@ export class MeshCoreUi {
     $('#mesh-node-radio').textContent = node ? `SF${node.spreadingFactor} · ${node.bandwidth} kHz · CR${node.codingRate}` : '—';
     $('#mesh-node-battery').textContent = node?.batteryMillivolts ? `${(node.batteryMillivolts / 1000).toFixed(2)} V` : '—';
     $('#mesh-contact-count').textContent = node ? String(data.contacts.length) : '—';
-    this.renderConversations(); this.renderMessages(); this.renderComposer();
+    this.renderConversations(); this.renderMessages(); this.renderComposer(); this.scheduleRead();
   }
   renderConversations() {
     const container = $('#mesh-conversation-list'), query = $('#mesh-search').value.trim().toLowerCase();
-    const targets = this.targets(); $('#mesh-conversation-count').textContent = String(targets.length); container.replaceChildren();
-    for (const [label, channel] of [['CHANNELS', true], ['CONTACTS', false]]) {
-      const rows = targets.filter(row => Boolean(row.channel) === channel && `${row.name} ${row.detail}`.toLowerCase().includes(query));
-      if (!rows.length) continue;
-      container.append(element('div', 'mesh-list-label', `${label} / ${rows.length}`));
+    const { targets, groups, unread } = this.conversationData();
+    const badge = (id, count) => { $(id).textContent = String(count); $(id).classList.toggle('hidden', count === 0); };
+    for (const category of ['channels', 'contacts']) {
+      const tab = $(`#mesh-tab-${category}`), active = category === this.category;
+      tab.setAttribute('aria-selected', String(active)); tab.tabIndex = active ? 0 : -1;
+      tab.setAttribute('aria-label', `${category === 'channels' ? 'Channels' : 'Contacts'}, ${unread[category]} unread messages`);
+      badge(`#mesh-${category}-unread`, unread[category]);
+    }
+    badge('#mesh-nav-unread', unread.total);
+    const nav = document.querySelector('.nav-item[data-page="meshcore"]');
+    nav.setAttribute('aria-label', unread.total ? `MeshCore, ${unread.total} unread messages` : 'MeshCore');
+    nav.title = unread.total ? `${unread.channels} channel messages · ${unread.contacts} direct messages unread` : 'MeshCore';
+    const announcement = `${unread.channels} unread channel messages. ${unread.contacts} unread direct messages.`;
+    if ($('#mesh-unread-status').textContent !== announcement) $('#mesh-unread-status').textContent = announcement;
+    $('#mesh-conversation-panel').setAttribute('aria-labelledby', `mesh-tab-${this.category}`);
+    $('#mesh-search-label').textContent = `Search ${this.category}`; $('#mesh-search').placeholder = `Search ${this.category}…`;
+    const categoryTargets = targets.filter(row => Boolean(row.channel) === (this.category === 'channels'));
+    $('#mesh-conversation-count').textContent = String(categoryTargets.length); $('#mesh-conversation-count').title = `${categoryTargets.length} ${this.category}`;
+    container.replaceChildren();
+    const rows = categoryTargets.filter(row => `${row.name} ${row.detail}`.toLowerCase().includes(query));
       for (const row of rows) {
-        const button = element('button', `mesh-conversation${this.selected === row.id ? ' selected' : ''}`); button.type = 'button'; button.setAttribute('aria-pressed', String(this.selected === row.id));
+        const count = groups.get(row.id)?.unread || 0;
+        const button = element('button', `mesh-conversation${this.selected === row.id ? ' selected' : ''}${count ? ' has-unread' : ''}`); button.type = 'button'; button.setAttribute('aria-pressed', String(this.selected === row.id));
+        button.setAttribute('aria-label', `${row.name}, ${row.detail}${count ? `, ${count} unread messages` : ''}`);
         button.append(element('span', `mesh-conversation-icon${row.channel ? ' channel' : ''}`, row.channel ? '#' : row.name.slice(0, 1).toUpperCase()));
         const copy = element('span', 'mesh-conversation-copy'); copy.append(element('strong', '', row.name), element('small', '', row.detail)); button.append(copy);
-        button.addEventListener('click', () => {
-          if (this.selected !== row.id) this.drafts = { ...this.drafts, [this.selected]: $('#mesh-message').value };
-          this.selected = row.id; $('#mesh-message').value = this.drafts?.[row.id] || ''; this.messageSignature = null; this.renderConversations(); this.renderMessages(); this.renderComposer();
-        }); container.append(button);
+        if (count) { const indicator = element('span', 'mesh-unread-badge', String(count)); indicator.setAttribute('aria-hidden', 'true'); button.append(indicator); }
+        button.addEventListener('click', () => this.selectConversation(row.id)); container.append(button);
       }
-    }
-    if (!container.childElementCount) container.append(element('p', 'mesh-list-empty', query ? 'No matching conversations.' : this.data.connected ? 'No channels or contacts on this node. Configure them with your existing MeshCore app, then sync here.' : 'Your node’s channels and contacts will appear here.'));
+    if (!container.childElementCount) container.append(element('p', 'mesh-list-empty', query ? `No matching ${this.category}.` : this.data.connected ? `No ${this.category} on this node. Configure them with your existing MeshCore app, then sync here.` : `Your node’s ${this.category} will appear here.`));
+    this.renderUnreadJump();
   }
   renderMessages() {
     const target = this.targets().find(row => row.id === this.selected), messages = this.conversationMessages();
@@ -238,8 +355,12 @@ export class MeshCoreUi {
     $('#mesh-chat-avatar').textContent = target ? target.channel ? '#' : target.name.slice(0, 1).toUpperCase() : '⌁';
     $('#mesh-chat-tag').textContent = target ? target.channel ? 'CHANNEL' : 'DIRECT' : 'MESHCORE';
     const signature = `${this.selected}:${messages.map(row => row.id + row.status).join(',')}`;
-    if (signature === this.messageSignature) return; this.messageSignature = signature;
-    const container = $('#mesh-messages'), nearBottom = container.scrollHeight - container.scrollTop - container.clientHeight < 80;
+    if (signature === this.messageSignature) {
+      if (this.forceScroll) this.jumpToLatest(); this.forceScroll = false;
+      return;
+    }
+    this.messageSignature = signature;
+    const container = $('#mesh-messages'), nearBottom = this.atLatestMessage(), previousScroll = container.scrollTop;
     container.replaceChildren();
     if (!messages.length) {
       const empty = element('div', 'mesh-chat-empty'); empty.append(element('div', 'mesh-empty-mark', '⌁'), element('h3', '', target ? 'A clear channel' : 'Stay connected beyond the network'), element('p', '', target ? 'No messages saved for this conversation yet. New messages will appear here.' : 'Use USB, Bluetooth, or Wi-Fi to connect your MeshCore node. Channels, contacts, and messages are read directly from it.'));
@@ -255,7 +376,7 @@ export class MeshCoreUi {
       else if (Number.isFinite(row.snr)) meta.append(element('span', '', `SNR ${row.snr} dB`));
       item.append(meta); if (row.error) item.title = row.error; container.append(item);
     }
-    if (nearBottom || this.forceScroll) container.scrollTop = container.scrollHeight; this.forceScroll = false;
+    container.scrollTop = nearBottom || this.forceScroll ? container.scrollHeight : previousScroll; this.forceScroll = false;
   }
   renderComposer() {
     const target = this.targets().find(row => row.id === this.selected), enabled = this.data.connected && target?.writable;
