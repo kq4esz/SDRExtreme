@@ -28,6 +28,7 @@ files:
   - meshcore.css
   - package.json
   - README.md
+  - docs/meshcore-devices.md
   - LICENSE
   - THIRD_PARTY_NOTICES.md
   - '!**/local-data/**'

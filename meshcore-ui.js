@@ -1,3 +1,5 @@
+import { meshProfile, meshConnectionHelp, meshTransportName } from './lib/meshcore-devices.mjs';
+
 const SERVICE = '6e400001-b5a3-f393-e0a9-e50e24dcca9e';
 const RX = '6e400002-b5a3-f393-e0a9-e50e24dcca9e';
 const TX = '6e400003-b5a3-f393-e0a9-e50e24dcca9e';
@@ -13,26 +15,29 @@ export class MeshCoreUi {
     this.data = { phase: 'disconnected', config: {}, contacts: [], channels: [], messages: [] };
     this.transport = 'usb'; this.attempt = 0; this.writeQueue = Promise.resolve(); this.readQueue = Promise.resolve(); this.selected = '';
     this.category = 'channels'; this.categorySelections = { channels: '', contacts: '' }; this.pendingReads = new Set();
+    this.catalog = { devices: [], release: null }; this.profileId = 'auto';
     $('#page-meshcore').innerHTML = `
       <div class="page-heading"><div><div class="eyebrow"><span class="eyebrow-line"></span>OFF-GRID MESSAGING</div><h1>MeshCore<span class="heading-period">.</span></h1><p>Your mesh. One connected workspace.</p></div><div class="mesh-state" id="mesh-state" role="status"><i></i><span>Not connected</span></div></div>
       <section class="mesh-connect panel" aria-label="MeshCore connection">
         <div class="mesh-connect-heading"><div><div class="section-kicker">COMPANION LINK</div><h2>Connect your node</h2></div><div class="mesh-transports" role="group" aria-label="Connection method"><button type="button" data-mesh-transport="usb" aria-pressed="true">▣ <span>USB</span></button><button type="button" data-mesh-transport="bluetooth" aria-pressed="false">ᛒ <span>Bluetooth</span></button><button type="button" data-mesh-transport="wifi" aria-pressed="false">◔ <span>Wi-Fi</span></button></div></div>
+        <div class="mesh-profile-row"><div class="mesh-profile-select"><label class="field-label" for="mesh-model">NODE MODEL</label><select id="mesh-model"><option value="auto">Auto / other compatible node</option></select></div><div class="mesh-profile-copy"><strong id="mesh-profile-capabilities">USB serial · Bluetooth LE · Wi-Fi / TCP</strong><p id="mesh-profile-note">Uses the standard companion protocol across supported node models.</p></div></div>
         <form id="mesh-connect-form"><div class="mesh-connection-row">
           <div id="mesh-usb-fields" class="mesh-transport-fields"><div class="mesh-port-field"><label class="field-label" for="mesh-port">USB SERIAL PORT</label><div class="field-with-action"><select id="mesh-port"><option value="">Select your node’s COM port</option></select><button type="button" id="mesh-ports-refresh" class="outline-button">Refresh ports</button></div></div><span class="mesh-baud">115200 baud <span>·</span> direct USB</span></div>
           <div id="mesh-wifi-fields" class="mesh-transport-fields hidden"><div class="mesh-host-field"><label class="field-label" for="mesh-host">NODE IP ADDRESS / HOSTNAME</label><input id="mesh-host" placeholder="e.g. 192.168.1.50 or meshcore.local" autocomplete="off" maxlength="253"></div><div class="mesh-tcp-field"><label class="field-label" for="mesh-tcp-port">TCP PORT</label><input id="mesh-tcp-port" type="number" min="1" max="65535" value="5000"></div></div>
-          <div id="mesh-bluetooth-fields" class="mesh-transport-fields hidden"><div class="mesh-ble-symbol">ᛒ</div><div><strong>Find a nearby MeshCore node</strong><p>Choose your Heltec V3 and enter its pairing PIN when prompted.</p></div></div>
+          <div id="mesh-bluetooth-fields" class="mesh-transport-fields hidden"><div class="mesh-ble-symbol">ᛒ</div><div><strong>Find a nearby MeshCore node</strong><p>Choose your node and enter its pairing PIN when prompted.</p><label class="mesh-ble-discovery"><input type="checkbox" id="mesh-ble-all"> Show all Bluetooth devices for custom names or missing advertisements</label></div></div>
           <div class="mesh-connect-actions"><button type="button" id="mesh-disconnect" class="outline-button hidden">Disconnect</button><button type="submit" id="mesh-connect" class="primary-button">Connect node <span>→</span></button></div>
         </div></form>
-        <p class="mesh-connection-help" id="mesh-connection-help">Connect your Heltec V3 using a USB data cable. Choose its COM port; close other apps using that port.</p>
+        <p class="mesh-connection-help" id="mesh-connection-help">Choose your node model or use Auto. Select the connection enabled in its companion firmware.</p>
         <div id="mesh-error" class="mesh-notice error hidden" role="alert"></div><div id="mesh-warning" class="mesh-notice hidden" role="status"></div>
       </section>
-      <section class="mesh-node panel" aria-label="Connected node information"><div class="mesh-node-identity"><div class="mesh-node-icon">⌘</div><div><div class="section-kicker">LOCAL NODE</div><strong id="mesh-node-name">Heltec V3 / MeshCore companion</strong><small id="mesh-node-detail">Connect to read your node’s identity and radio settings.</small></div></div><dl><div><dt>FREQUENCY</dt><dd id="mesh-node-frequency">—</dd></div><div><dt>LoRa PROFILE</dt><dd id="mesh-node-radio">—</dd></div><div><dt>BATTERY</dt><dd id="mesh-node-battery">—</dd></div><div><dt>CONTACTS</dt><dd id="mesh-contact-count">—</dd></div></dl><button type="button" id="mesh-refresh" class="outline-button" disabled>Sync node</button></section>
+      <section class="mesh-node panel" aria-label="Connected node information"><div class="mesh-node-identity"><div class="mesh-node-icon">⌘</div><div><div class="section-kicker">LOCAL NODE</div><strong id="mesh-node-name">MeshCore companion node</strong><small id="mesh-node-detail">Connect to read your node’s identity and radio settings.</small><small id="mesh-node-model"></small></div></div><dl><div><dt>FREQUENCY</dt><dd id="mesh-node-frequency">—</dd></div><div><dt>LoRa PROFILE</dt><dd id="mesh-node-radio">—</dd></div><div><dt>BATTERY</dt><dd id="mesh-node-battery">—</dd></div><div><dt>CONTACTS</dt><dd id="mesh-contact-count">—</dd></div></dl><button type="button" id="mesh-refresh" class="outline-button" disabled>Sync node</button></section>
       <div class="mesh-workspace panel"><aside class="mesh-conversations"><div class="mesh-list-heading"><h2>Conversations</h2><span id="mesh-conversation-count">0</span></div><div class="mesh-category-tabs" role="tablist" aria-label="Conversation category"><button type="button" role="tab" id="mesh-tab-channels" aria-selected="true" aria-controls="mesh-conversation-panel" data-mesh-category="channels"><span>Channels</span><span id="mesh-channels-unread" class="mesh-unread-badge hidden" aria-hidden="true">0</span></button><button type="button" role="tab" id="mesh-tab-contacts" aria-selected="false" aria-controls="mesh-conversation-panel" tabindex="-1" data-mesh-category="contacts"><span>Contacts</span><span id="mesh-contacts-unread" class="mesh-unread-badge hidden" aria-hidden="true">0</span></button></div><div id="mesh-conversation-panel" role="tabpanel" aria-labelledby="mesh-tab-channels"><label class="sr-only" id="mesh-search-label" for="mesh-search">Search channels</label><input id="mesh-search" type="search" placeholder="Search channels…"><div class="mesh-conversation-scroll" id="mesh-conversation-list"></div></div><p class="sr-only" id="mesh-unread-status" role="status" aria-atomic="true"></p></aside>
         <section class="mesh-chat" aria-label="MeshCore messages"><header class="mesh-chat-heading"><div class="mesh-chat-avatar" id="mesh-chat-avatar">⌁</div><div><h2 id="mesh-chat-title">Your next conversation starts here</h2><p id="mesh-chat-subtitle">Connect a node and select a channel or contact.</p></div><span class="mesh-chat-tag" id="mesh-chat-tag">MESHCORE</span></header><div id="mesh-messages" class="mesh-messages" role="log" aria-label="Conversation messages" aria-live="polite"></div><form id="mesh-message-form" class="mesh-composer"><label class="sr-only" for="mesh-message">Message text</label><textarea id="mesh-message" rows="2" placeholder="Select a channel or chat contact to write a message…" disabled></textarea><div class="mesh-composer-bottom"><span id="mesh-send-hint">Messages travel through your connected LoRa node.</span><span id="mesh-byte-count">0 / 150 bytes</span><button class="primary-button" id="mesh-send" type="submit" disabled>Send <span>↗</span></button></div></form></section>
       </div><p class="mesh-footer-note">MeshCore companion firmware is required. USB, BLE and Wi-Fi availability depends on your firmware build. Mesh messaging uses the node’s LoRa radio.</p>
-      <dialog class="app-dialog mesh-dialog" id="mesh-device-dialog"><div class="dialog-head"><div><div class="section-kicker">BLUETOOTH LOW ENERGY</div><h2>Choose a MeshCore node</h2></div><button type="button" class="icon-button" id="mesh-device-close" aria-label="Cancel device selection">×</button></div><p>Keep your Heltec V3 nearby with Bluetooth companion firmware running. Close its connection in other apps.</p><div id="mesh-device-list" class="mesh-device-list"></div><p id="mesh-device-searching">Searching for MeshCore devices…</p><div class="dialog-actions"><button type="button" class="outline-button" id="mesh-device-cancel">Cancel</button></div></dialog>
+      <dialog class="app-dialog mesh-dialog" id="mesh-device-dialog"><div class="dialog-head"><div><div class="section-kicker">BLUETOOTH LOW ENERGY</div><h2>Choose a MeshCore node</h2></div><button type="button" class="icon-button" id="mesh-device-close" aria-label="Cancel device selection">×</button></div><p>Keep your node nearby with Bluetooth companion firmware running. Close its connection in other apps.</p><div id="mesh-device-list" class="mesh-device-list"></div><p id="mesh-device-searching">Searching for MeshCore devices…</p><div class="dialog-actions"><button type="button" class="outline-button" id="mesh-device-cancel">Cancel</button></div></dialog>
       <dialog class="app-dialog mesh-dialog" id="mesh-pair-dialog"><form id="mesh-pair-form"><div class="dialog-head"><div><div class="section-kicker">BLUETOOTH PAIRING</div><h2>Pair with your node</h2></div></div><p id="mesh-pair-prompt"></p><label class="field-label" for="mesh-pin" id="mesh-pin-label">NODE PAIRING PIN</label><input id="mesh-pin" autocomplete="off" inputmode="numeric" maxlength="16"><div class="dialog-actions"><button type="button" id="mesh-pair-cancel" class="outline-button">Cancel</button><button type="submit" class="primary-button">Pair node</button></div></form></dialog>`;
     for (const button of document.querySelectorAll('[data-mesh-transport]')) button.addEventListener('click', () => this.selectTransport(button.dataset.meshTransport));
+    $('#mesh-model').addEventListener('change', () => this.selectProfile($('#mesh-model').value));
     $('#mesh-connect-form').addEventListener('submit', event => { event.preventDefault(); void this.connect(); });
     $('#mesh-disconnect').addEventListener('click', () => void this.disconnect());
     $('#mesh-ports-refresh').addEventListener('click', () => void this.refreshPorts());
@@ -76,10 +81,19 @@ export class MeshCoreUi {
 
   async load() {
     try {
-      const data = await this.api('/api/meshcore/state'); this.update(data);
+      const [data, catalog] = await Promise.all([this.api('/api/meshcore/state'), this.api('/api/meshcore/devices')]);
+      this.catalog = catalog;
+      const groups = new Map();
+      for (const device of catalog.devices) {
+        if (!groups.has(device.family)) { const group = document.createElement('optgroup'); group.label = device.family; groups.set(device.family, group); $('#mesh-model').append(group); }
+        groups.get(device.family).append(new Option(`${device.name} · ${device.platform}`, device.id));
+      }
+      this.profileId = meshProfile(catalog, data.config.modelId)?.id || 'auto'; $('#mesh-model').value = this.profileId;
+      this.update(data);
       this.selectTransport(data.config.transport || 'usb', true);
       $('#mesh-host').value = data.config.host || ''; $('#mesh-tcp-port').value = data.config.port || 5000;
     } catch (error) { this.showError(error.message); }
+    finally { this.catalogLoaded = true; this.render(); }
   }
   async show() {
     await this.ready; this.scheduleRead();
@@ -87,19 +101,27 @@ export class MeshCoreUi {
   }
   selectTransport(name, force = false) {
     if (!force && (this.localBusy || ['connecting', 'syncing', 'connected'].includes(this.data.phase))) return;
+    if (!force && !this.profile().transports.includes(name)) return;
     this.transport = name;
     for (const button of document.querySelectorAll('[data-mesh-transport]')) button.setAttribute('aria-pressed', String(button.dataset.meshTransport === name));
     for (const transport of ['usb', 'wifi', 'bluetooth']) $(`#mesh-${transport}-fields`).classList.toggle('hidden', transport !== name);
-    $('#mesh-connection-help').textContent = name === 'wifi' ? 'Use the IP address of a node running the MeshCore Wi-Fi companion TCP service (usually port 5000). A node web page is not a companion connection.' : name === 'bluetooth' ? 'Requires Bluetooth companion firmware, Bluetooth enabled in Windows, and a free BLE connection. The desktop app provides device selection and PIN pairing.' : 'Connect your Heltec V3 using a USB data cable. Choose its COM port; close other apps using that port. The Heltec USB serial driver must be installed.';
     this.render();
     if (name === 'usb' && !this.portsLoaded) void this.refreshPorts();
+  }
+  profile() { return meshProfile(this.catalog, this.profileId) || meshProfile(this.catalog); }
+  selectProfile(id) {
+    if (this.localBusy || ['connecting', 'syncing', 'connected'].includes(this.data.phase) || !meshProfile(this.catalog, id)) return;
+    this.profileId = id;
+    const profile = this.profile();
+    if (!profile.transports.includes(this.transport)) this.selectTransport(profile.transports.includes('usb') ? 'usb' : profile.transports[0], true);
+    else this.render();
   }
   async refreshPorts() {
     if (this.loadingPorts) return; this.loadingPorts = true; $('#mesh-ports-refresh').disabled = true;
     try {
       const { ports } = await this.api('/api/meshcore/ports'), selected = $('#mesh-port').value || this.data.config.path;
       $('#mesh-port').replaceChildren(new Option(ports.length ? 'Select your node’s COM port' : 'No serial ports detected', ''));
-      for (const port of ports) $('#mesh-port').append(new Option(`${port.path}${port.manufacturer ? ` · ${port.manufacturer}` : ''}${port.vendorId ? ` · USB ${port.vendorId}:${port.productId || '—'}` : ''}`, port.path));
+      for (const port of ports) $('#mesh-port').append(new Option(`${port.path}${port.friendlyName || port.manufacturer ? ` · ${port.friendlyName || port.manufacturer}` : ''}${port.vendorId ? ` · USB ${port.vendorId}:${port.productId || '—'}` : ''}${port.serialNumber ? ` · ${port.serialNumber}` : ''}`, port.path));
       if (ports.some(port => port.path === selected)) $('#mesh-port').value = selected;
       this.portsLoaded = true;
     } catch (error) { this.showError(`USB serial: ${error.message}`); }
@@ -109,7 +131,7 @@ export class MeshCoreUi {
   async connect() {
     if (this.localBusy || this.data.connected) return;
     const attempt = ++this.attempt; this.localBusy = true; this.localError = ''; this.render();
-    let session;
+    let session, bluetoothSelected = false;
     const current = () => { if (attempt !== this.attempt) throw new Error('Connection cancelled.'); };
     try {
       if (this.transport === 'bluetooth') {
@@ -117,8 +139,9 @@ export class MeshCoreUi {
         if (!this.socketReady()) throw new Error('The local app connection is reconnecting. Try again in a moment.');
         // Keep requestDevice inside the original click gesture; no await before it.
         window.sdrDesktop?.armMeshBluetooth();
-        const device = await navigator.bluetooth.requestDevice({ filters: [{ services: [SERVICE] }] });
-        current(); this.device = device;
+        const discovery = $('#mesh-ble-all').checked ? { acceptAllDevices: true, optionalServices: [SERVICE] } : { filters: [{ services: [SERVICE] }, { namePrefix: 'MeshCore' }, { namePrefix: 'Meshcore' }], optionalServices: [SERVICE] };
+        const device = await navigator.bluetooth.requestDevice(discovery);
+        current(); this.device = device; bluetoothSelected = true;
         device.addEventListener('gattserverdisconnected', () => { if (this.device === device && this.bleSession) void this.bleFailed('The Bluetooth node disconnected. Select Connect node to pair again.'); });
         const gatt = await device.gatt.connect(); current();
         const service = await gatt.getPrimaryService(SERVICE); current();
@@ -130,19 +153,19 @@ export class MeshCoreUi {
           if (token) this.readQueue = this.readQueue.then(() => this.api('/api/meshcore/ble/rx', { session: token, frame })).catch(error => { if (this.bleSession === token) void this.bleFailed(error.message); });
         });
         await reader.startNotifications(); current();
-        const data = await this.api('/api/meshcore/connect', { transport: 'bluetooth' }); session = data.session;
+        const data = await this.api('/api/meshcore/connect', { transport: 'bluetooth', modelId: this.profileId }); session = data.session;
         current(); this.bleSession = session; this.writeQueue = Promise.resolve(); this.readQueue = Promise.resolve(); this.update(data);
         this.heartbeat = setInterval(() => { if (this.bleSession === session) this.api('/api/meshcore/ble/heartbeat', { session }).catch(error => void this.bleFailed(error.message)); }, 10000);
         await this.api('/api/meshcore/ble/start', { session }); current();
       } else {
-        const data = await this.api('/api/meshcore/connect', { transport: this.transport, path: $('#mesh-port').value, host: $('#mesh-host').value, port: Number($('#mesh-tcp-port').value) });
+        const data = await this.api('/api/meshcore/connect', { transport: this.transport, modelId: this.profileId, path: $('#mesh-port').value, host: $('#mesh-host').value, port: Number($('#mesh-tcp-port').value) });
         session = data.session; current(); this.update(data);
       }
     } catch (error) {
       if (session && attempt !== this.attempt) await this.api('/api/meshcore/disconnect', { session }).catch(() => {});
       if (attempt === this.attempt) {
         if (this.bleSession) await this.bleFailed(error.message); else this.closeGatt();
-        this.localError = error.name === 'NotFoundError' ? 'No Bluetooth node selected. You can try again when the node is ready.' : error.message;
+        this.localError = error.name === 'NotFoundError' ? bluetoothSelected ? 'The selected device does not expose the MeshCore companion Bluetooth service and characteristics. Confirm its firmware and connection mode.' : 'No Bluetooth node selected. You can try again when the node is ready.' : error.message;
       }
     } finally { if (attempt === this.attempt) { this.localBusy = false; this.render(); } }
   }
@@ -178,6 +201,9 @@ export class MeshCoreUi {
   socketClosed() { if (this.bleSession) void this.bleFailed('The local Bluetooth bridge disconnected. Connect the node again.'); }
   update(data) {
     this.data = data;
+    if (['connecting', 'syncing', 'connected'].includes(data.phase) && data.config.modelId !== this.profileId) {
+      this.profileId = meshProfile(this.catalog, data.config.modelId)?.id || 'auto'; $('#mesh-model').value = this.profileId;
+    }
     if (['connecting', 'syncing', 'connected'].includes(data.phase) && this.transport !== data.config.transport) {
       this.selectTransport(data.config.transport, true);
       $('#mesh-host').value = data.config.host || ''; $('#mesh-tcp-port').value = data.config.port || 5000;
@@ -289,13 +315,23 @@ export class MeshCoreUi {
   }
   render() {
     const data = this.data, busy = this.localBusy || ['connecting', 'syncing'].includes(data.phase), locked = busy || data.connected;
+    const profile = this.profile();
     const labels = { disconnected: 'Not connected', connecting: 'Connecting…', syncing: 'Syncing node…', connected: 'Node connected', error: 'Connection interrupted' };
     $('#mesh-state').dataset.phase = busy ? 'connecting' : data.phase;
     $('#mesh-state span').textContent = this.localBusy ? 'Connecting…' : labels[data.phase] || data.phase;
-    for (const button of document.querySelectorAll('[data-mesh-transport]')) button.disabled = locked;
+    for (const button of document.querySelectorAll('[data-mesh-transport]')) {
+      const available = profile.transports.includes(button.dataset.meshTransport);
+      button.disabled = locked || !available;
+      button.title = available ? `${meshTransportName(button.dataset.meshTransport)} · requires the matching companion firmware` : `Not available in this board’s companion firmware definitions. Use ${profile.transports.map(meshTransportName).join(' or ')}.`;
+    }
+    $('#mesh-model').disabled = locked || !this.catalogLoaded; $('#mesh-ble-all').disabled = locked;
+    $('#mesh-profile-capabilities').textContent = `${profile.platform ? profile.platform + ' · ' : ''}${profile.transports.map(meshTransportName).join(' · ')}`;
+    const catalogVersion = this.catalog.release?.tag.replace('companion-', '') || '';
+    $('#mesh-profile-note').textContent = profile.id === 'auto' ? `Standard companion protocol · ${this.catalog.devices.length} board profiles${catalogVersion ? ` (${catalogVersion})` : ''}. Auto also accepts compatible unlisted/custom nodes.` : `Interfaces across ${catalogVersion || 'upstream'} firmware builds; your installed build selects what is active. ${profile.transports.includes('wifi') ? 'Enable and configure Wi-Fi on the node before using TCP.' : 'Wi-Fi is unavailable in this profile; use USB or Bluetooth where listed.'}`;
+    $('#mesh-connection-help').textContent = meshConnectionHelp(profile, this.transport);
     for (const id of ['mesh-host', 'mesh-tcp-port', 'mesh-port']) $('#' + id).disabled = locked;
     $('#mesh-ports-refresh').disabled = locked || this.loadingPorts;
-    $('#mesh-connect').disabled = locked;
+    $('#mesh-connect').disabled = locked || !this.catalogLoaded;
     $('#mesh-connect').textContent = data.connected ? 'Connected' : busy ? 'Connecting…' : this.transport === 'bluetooth' ? 'Choose Bluetooth node →' : 'Connect node →';
     $('#mesh-disconnect').classList.toggle('hidden', !locked);
     $('#mesh-disconnect').textContent = busy ? 'Cancel connection' : 'Disconnect';
@@ -304,10 +340,11 @@ export class MeshCoreUi {
     $('#mesh-error').textContent = this.localError || data.error || ''; $('#mesh-error').classList.toggle('hidden', !$('#mesh-error').textContent);
     $('#mesh-warning').textContent = data.warning || ''; $('#mesh-warning').classList.toggle('hidden', !data.warning);
     const node = data.node;
-    $('#mesh-node-name').textContent = node?.name || 'Heltec V3 / MeshCore companion';
+    $('#mesh-node-name').textContent = node?.name || (profile.id === 'auto' ? 'MeshCore companion node' : profile.name);
     $('#mesh-node-detail').textContent = node ? `${node.publicKey.slice(0, 16)}… · ${data.config.transport === 'usb' ? `${data.config.path} · USB` : data.config.transport === 'wifi' ? `${data.config.host}:${data.config.port} · Wi-Fi` : 'Bluetooth LE'}${node.protocol ? ` · Protocol ${node.protocol}` : ''}${data.connected ? '' : ' · Offline'}` : 'Connect to read your node’s identity and radio settings.';
     if (node?.firmwareVersion) $('#mesh-node-detail').textContent += ` · Firmware ${node.firmwareVersion}`;
     $('#mesh-node-detail').title = node ? `${node.publicKey}\n${node.model || 'MeshCore'}${node.buildDate ? ` · ${node.buildDate}` : ''}` : '';
+    $('#mesh-node-model').textContent = node ? `Device: ${node.detectedProfile?.name || node.model || 'Model not reported'}${node.detectedProfile?.platform ? ` · ${node.detectedProfile.platform}` : ''}` : '';
     $('#mesh-node-frequency').textContent = node ? `${Number(node.frequency).toFixed(3)} MHz` : '—';
     $('#mesh-node-radio').textContent = node ? `SF${node.spreadingFactor} · ${node.bandwidth} kHz · CR${node.codingRate}` : '—';
     $('#mesh-node-battery').textContent = node?.batteryMillivolts ? `${(node.batteryMillivolts / 1000).toFixed(2)} V` : '—';

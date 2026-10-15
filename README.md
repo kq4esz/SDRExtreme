@@ -4,7 +4,7 @@ SDR Extreme is a Windows desktop receiver suite with native RTL-SDR USB access, 
 
 ## Start the app
 
-1. Download **SDR-Extreme-Setup-0.7.1-x64.exe** from [GitHub Releases](https://github.com/kq4esz/SDRExtreme/releases/latest), run the installer, then launch **SDR Extreme** from the desktop or Start menu. The installer includes Electron, the local service, USB libraries and decoders; Node.js is not required. For a source checkout, use **`launch-sdr-extreme.cmd`** after the setup below.
+1. Download **SDR-Extreme-Setup-0.8.0-x64.exe** from [GitHub Releases](https://github.com/kq4esz/SDRExtreme/releases/latest), run the installer, then launch **SDR Extreme** from the desktop or Start menu. The installer includes Electron, the local service, USB libraries and decoders; Node.js is not required. For a source checkout, use **`launch-sdr-extreme.cmd`** after the setup below.
 2. Open **Settings → RTL-SDR device manager**. Click **Refresh**, select your attached receiver, and save the hardware settings.
 3. Go to **Live radio** and click **Start listening**. Select a memory or tune to a frequency.
 4. Go to **KiwiSDR network** to choose a receiver on the world map or in the station list. Select a station, then click **Check & listen**. Its listening interface opens inside the app; **Open receiver in a new window** offers a dedicated desktop window if a receiver blocks embedding.
@@ -18,23 +18,58 @@ The local UI service uses `127.0.0.1:17890` for the desktop interface and audio/
 ## MeshCore companion client
 
 Open **MeshCore** in the sidebar or press **Ctrl+5**. Connect a node running
-MeshCore **companion** firmware. Heltec V3 with firmware 1.17.1 is the target
-device; each firmware build determines which transports are available.
+MeshCore **companion** firmware. The client uses the shared companion protocol
+across manufacturers. Choose **Auto / other compatible node**, or select a
+specific model to see its USB, Bluetooth and Wi-Fi connection choices.
+There is no Heltec-only connection restriction. Model and firmware information
+reported by the connected node appear below the connection controls.
+
+The bundled catalog covers **94 official companion board profiles** from
+MeshCore's **companion-v1.18.0** release, checked October 15, 2026. This includes
+Heltec, RAKwireless, Seeed Studio, LilyGO, Elecrow ThinkNode, Waveshare, and other
+manufacturers, with radio/display variants listed separately. See the full
+[device and transport table](docs/meshcore-devices.md). Auto also accepts
+compatible unlisted boards and custom firmware using the same protocol.
+
+The model selector offers interfaces across the board's companion builds;
+the firmware actually installed on the node determines which are enabled.
+Wi-Fi is disabled for profiles without an upstream Wi-Fi companion interface.
+Use their supported USB and/or Bluetooth connection. USB-only hardware remains
+USB-only; a desktop client cannot add a Bluetooth or Wi-Fi radio. Interfaces
+defined only in source are marked as requiring a custom firmware build in the
+connection instructions. Selecting a model does not flash or configure its firmware.
 
 - **USB:** plug in a USB data cable, refresh the COM port list, select the
-  Heltec's port, then connect. The serial connection uses **115200 baud**.
+  node's port, then connect. The serial connection uses **115200 baud**.
   Install the USB serial driver appropriate to the board if Windows does not
   expose a COM port. Close other applications using that port. Do not replace
-  the Heltec's serial driver with the RTL-SDR WinUSB driver.
+  the node's serial driver with the RTL-SDR WinUSB driver. nRF52 and RP2040
+  boards must be in normal USB serial mode, not their UF2 bootloader. Boards
+  exposing a UART may require a supported USB-to-UART adapter.
 - **Bluetooth:** enable Bluetooth in Windows, run BLE companion firmware,
   click **Choose Bluetooth node**, select the node, and enter/confirm its PIN.
   Device selection and PIN prompts are provided inside the desktop app.
   Close other MeshCore apps connected to the node. A browser console requires
-  a browser with Web Bluetooth support, such as Chrome or Edge.
+  a browser with Web Bluetooth support, such as Chrome or Edge. Normal discovery
+  accepts the MeshCore service UUID and MeshCore device-name prefixes. If a
+  custom name or incomplete advertisement hides the node, select **Show all
+  Bluetooth devices**; the selected device must still expose the MeshCore
+  companion service and characteristics before it can connect.
 - **Wi-Fi:** run firmware exposing the MeshCore companion TCP service, then
   enter the node IP/hostname and TCP port (default **5000**). This is the binary
   companion service, not a node's HTTP page. Wi-Fi support is not added to a
   USB/BLE-only firmware build by selecting this option.
+
+USB serial uses the bundled native SerialPort binding. Bluetooth LE uses the
+Windows Bluetooth stack through Electron's GATT support, with an in-app device
+chooser and PIN pairing. No external MeshCore application or Python client is
+required. The standard protocol connection works with older compatible firmware,
+including the previously used 1.17.1; the catalog does not force a firmware update.
+
+Repeaters, room servers, bootloaders and standalone chat firmware do not
+automatically expose the companion chat protocol. To use such a board as the
+local chat client, it needs compatible companion firmware. The app does not
+change its role or flash firmware automatically.
 
 The client reads the node identity, LoRa profile, battery voltage, configured
 channels and contact list, and retrieves waiting messages. Select a channel
@@ -72,8 +107,12 @@ MeshCore runs independently of the RTL-SDR receiver.
 
 The implementation uses the [official JavaScript library](https://github.com/meshcore-dev/meshcore.js)
 and [MeshCore companion protocol](https://github.com/meshcore-dev/MeshCore/blob/main/docs/companion_protocol.md).
-Physical node reception, RF delivery and Bluetooth pairing depend on the
-connected hardware and firmware; they cannot be established by a package build.
+The model catalog is bundled for offline use. Update it for a later release
+with `pnpm update:meshcore-devices`, review the generated JSON/table, and publish
+an application update. This reads upstream metadata without downloading firmware
+or executing upstream code. Physical node reception, RF delivery and Bluetooth
+pairing depend on the connected hardware and firmware; they cannot be established
+for all board models by a package build or catalog generation.
 
 ## Windows installation and automatic updates
 

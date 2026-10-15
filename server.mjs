@@ -14,7 +14,7 @@ import { MemoryScanner, scanPlan, spectrumSnr } from './lib/memory-scanner.mjs';
 import { DigitalDecoder, digitalRuntime } from './lib/digital-decoder.mjs';
 import { HdRadio, hdRuntime } from './lib/hd-radio.mjs';
 import { hdBandForFrequency, hdProgram } from './lib/hd-options.mjs';
-import { MeshCoreClient } from './lib/meshcore.mjs';
+import { MeshCoreClient, meshcoreCatalog } from './lib/meshcore.mjs';
 
 const ROOT = path.dirname(fileURLToPath(import.meta.url));
 const APP_VERSION = JSON.parse(fs.readFileSync(path.join(ROOT, 'package.json'), 'utf8')).version;
@@ -795,6 +795,7 @@ const server = http.createServer(async (req, res) => {
   try {
     if (url.pathname === '/api/state' && req.method === 'GET') return sendJson(res, 200, { status: status(), channels, settings, digitalRuntime: digitalRuntime(), digitalHistory, hdRuntime: hdRuntime() });
     if (url.pathname === '/api/meshcore/state' && req.method === 'GET') return sendJson(res, 200, meshcore.snapshot());
+    if (url.pathname === '/api/meshcore/devices' && req.method === 'GET') return sendJson(res, 200, meshcoreCatalog);
     if (url.pathname === '/api/meshcore/ports' && req.method === 'GET') return sendJson(res, 200, { ports: await meshcore.ports() });
     if (url.pathname === '/api/meshcore/connect' && req.method === 'POST') return sendJson(res, 200, meshcore.connect(await parseBody(req, 4096)));
     if (url.pathname === '/api/meshcore/disconnect' && req.method === 'POST') {
@@ -910,7 +911,7 @@ const server = http.createServer(async (req, res) => {
     }
     if (url.pathname === '/api/shutdown' && req.method === 'POST') { meshcore.disconnect(); stopScan(); await stopHd(); await stopReceiver(); await stopDigital(); stopWsjtBridge(); sendJson(res, 200, { stopped: true }); setTimeout(() => { for (const client of clients) client.destroy(); server.close(); }, 100); return; }
     const relative = url.pathname === '/' ? 'index.html' : decodeURIComponent(url.pathname.slice(1));
-    const publicFiles = new Set(['index.html', 'app.js', 'app.css', 'meshcore-ui.js', 'meshcore.css', 'kiwi-network.js', 'hd-radio-ui.js', 'lib/channel-protocols.mjs', 'lib/current-memory.mjs', 'lib/hd-options.mjs', 'lib/playback-buffer.mjs', 'assets/app-icon.svg', 'assets/app-icon.png']);
+    const publicFiles = new Set(['index.html', 'app.js', 'app.css', 'meshcore-ui.js', 'meshcore.css', 'kiwi-network.js', 'hd-radio-ui.js', 'lib/meshcore-devices.mjs', 'lib/channel-protocols.mjs', 'lib/current-memory.mjs', 'lib/hd-options.mjs', 'lib/playback-buffer.mjs', 'assets/app-icon.svg', 'assets/app-icon.png']);
     const leafletFiles = new Set(['leaflet.js', 'leaflet.css', 'images/layers.png', 'images/layers-2x.png', 'images/marker-icon.png', 'images/marker-icon-2x.png', 'images/marker-shadow.png']);
     const vendorName = relative.startsWith('vendor/leaflet/') ? relative.slice('vendor/leaflet/'.length) : '';
     if (!publicFiles.has(relative) && !leafletFiles.has(vendorName)) { res.writeHead(404); res.end('Not found'); return; }

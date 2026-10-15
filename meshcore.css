@@ -2,6 +2,12 @@
 
 /* Conversation categories and unread messages. Counts stay visible in the
    compact navigation, where ordinary text labels are hidden. */
+.mesh-profile-row{display:flex;align-items:center;gap:20px;margin:17px 0 6px;padding:0 0 15px;border-bottom:1px solid var(--line)}
+.mesh-profile-select{flex:1;min-width:250px;max-width:420px}.mesh-profile-select .field-label{margin-top:0}.mesh-profile-select select{height:39px;font-size:12px}
+.mesh-profile-copy{flex:1;min-width:0}.mesh-profile-copy strong{font:11px var(--mono);line-height:1.7;color:var(--cyan)}.mesh-profile-copy p{margin:5px 0 0;font-size:10px;line-height:1.7;color:var(--muted)}
+.mesh-ble-discovery{display:flex;align-items:center;gap:7px;margin-top:9px;color:var(--muted);font-size:10px;line-height:1.6}.mesh-transport-fields .mesh-ble-discovery input{width:13px;height:13px;margin:0;accent-color:var(--lime)}
+#mesh-node-model:empty{display:none}
+@media(max-width:1050px){.mesh-profile-row{align-items:stretch;flex-direction:column;gap:11px}.mesh-profile-select{max-width:none;min-width:0}}
 .mesh-category-tabs{display:grid;grid-template-columns:1fr 1fr;gap:4px;padding:4px;margin:0 12px 13px;background:#0a131b;border:1px solid #26343e;border-radius:8px}
 .mesh-category-tabs [role=tab]{display:flex;justify-content:center;align-items:center;gap:6px;padding:9px 6px;min-width:0;border:1px solid transparent;border-radius:5px;background:transparent;color:var(--muted);font:500 11px var(--sans)}
 .mesh-category-tabs [role=tab][aria-selected=true]{background:#22342a;border-color:#405438;color:var(--lime)}

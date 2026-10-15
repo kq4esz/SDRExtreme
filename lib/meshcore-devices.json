@@ -1,0 +1,3370 @@
+{
+  "schema": 1,
+  "checkedAt": "2026-10-15",
+  "release": {
+    "tag": "companion-v1.18.0",
+    "url": "https://github.com/meshcore-dev/MeshCore/releases/tag/companion-v1.18.0",
+    "publishedAt": "2026-10-15T10:20:19Z",
+    "sourceTree": "81dbae592ffad40b4212bc0b37e82b38da08f4bc"
+  },
+  "flasher": "https://flasher.meshcore.io/config.json",
+  "devices": [
+    {
+      "id": "thinknode_m1",
+      "name": "Elecrow ThinkNode M1",
+      "family": "Elecrow ThinkNode",
+      "platform": "nRF52",
+      "aliases": [
+        "ThinkNode_M1",
+        "Elecrow ThinkNode M1"
+      ],
+      "transports": [
+        "usb",
+        "bluetooth"
+      ],
+      "publishedTransports": [
+        "usb",
+        "bluetooth"
+      ],
+      "source": "https://github.com/meshcore-dev/MeshCore/blob/companion-v1.18.0/variants/thinknode_m1/platformio.ini",
+      "builds": [
+        {
+          "name": "ThinkNode_M1_companion_radio_ble",
+          "transports": [
+            "bluetooth"
+          ],
+          "published": true
+        },
+        {
+          "name": "ThinkNode_M1_companion_radio_usb",
+          "transports": [
+            "usb"
+          ],
+          "published": true
+        }
+      ]
+    },
+    {
+      "id": "thinknode_m2",
+      "name": "Elecrow ThinkNode M2",
+      "family": "Elecrow ThinkNode",
+      "platform": "ESP32",
+      "aliases": [
+        "ThinkNode_M2",
+        "Elecrow ThinkNode M2"
+      ],
+      "transports": [
+        "usb",
+        "bluetooth",
+        "wifi"
+      ],
+      "publishedTransports": [
+        "usb",
+        "bluetooth"
+      ],
+      "source": "https://github.com/meshcore-dev/MeshCore/blob/companion-v1.18.0/variants/thinknode_m2/platformio.ini",
+      "builds": [
+        {
+          "name": "ThinkNode_M2_companion_radio_ble",
+          "transports": [
+            "bluetooth"
+          ],
+          "published": true
+        },
+        {
+          "name": "ThinkNode_M2_companion_radio_usb",
+          "transports": [
+            "usb"
+          ],
+          "published": true
+        },
+        {
+          "name": "ThinkNode_M2_companion_radio_wifi",
+          "transports": [
+            "wifi"
+          ],
+          "published": false
+        }
+      ]
+    },
+    {
+      "id": "thinknode_m3",
+      "name": "Elecrow ThinkNode M3",
+      "family": "Elecrow ThinkNode",
+      "platform": "nRF52",
+      "aliases": [
+        "ThinkNode_M3",
+        "Elecrow ThinkNode M3"
+      ],
+      "transports": [
+        "usb",
+        "bluetooth"
+      ],
+      "publishedTransports": [
+        "usb",
+        "bluetooth"
+      ],
+      "source": "https://github.com/meshcore-dev/MeshCore/blob/companion-v1.18.0/variants/thinknode_m3/platformio.ini",
+      "builds": [
+        {
+          "name": "ThinkNode_M3_companion_radio_usb",
+          "transports": [
+            "usb"
+          ],
+          "published": true
+        },
+        {
+          "name": "ThinkNode_M3_companion_radio_ble",
+          "transports": [
+            "bluetooth"
+          ],
+          "published": true
+        }
+      ]
+    },
+    {
+      "id": "thinknode_m5",
+      "name": "Elecrow ThinkNode M5",
+      "family": "Elecrow ThinkNode",
+      "platform": "ESP32",
+      "aliases": [
+        "ThinkNode_M5",
+        "Elecrow ThinkNode M5"
+      ],
+      "transports": [
+        "usb",
+        "bluetooth",
+        "wifi"
+      ],
+      "publishedTransports": [
+        "usb",
+        "bluetooth"
+      ],
+      "source": "https://github.com/meshcore-dev/MeshCore/blob/companion-v1.18.0/variants/thinknode_m5/platformio.ini",
+      "builds": [
+        {
+          "name": "ThinkNode_M5_companion_radio_ble",
+          "transports": [
+            "bluetooth"
+          ],
+          "published": true
+        },
+        {
+          "name": "ThinkNode_M5_companion_radio_usb",
+          "transports": [
+            "usb"
+          ],
+          "published": true
+        },
+        {
+          "name": "ThinkNode_M5_companion_radio_wifi",
+          "transports": [
+            "wifi"
+          ],
+          "published": false
+        }
+      ]
+    },
+    {
+      "id": "thinknode_m6",
+      "name": "Elecrow ThinkNode M6",
+      "family": "Elecrow ThinkNode",
+      "platform": "nRF52",
+      "aliases": [
+        "ThinkNode_M6",
+        "Elecrow ThinkNode M6"
+      ],
+      "transports": [
+        "usb",
+        "bluetooth"
+      ],
+      "publishedTransports": [
+        "usb",
+        "bluetooth"
+      ],
+      "source": "https://github.com/meshcore-dev/MeshCore/blob/companion-v1.18.0/variants/thinknode_m6/platformio.ini",
+      "builds": [
+        {
+          "name": "ThinkNode_M6_companion_radio_ble",
+          "transports": [
+            "bluetooth"
+          ],
+          "published": true
+        },
+        {
+          "name": "ThinkNode_M6_companion_radio_usb",
+          "transports": [
+            "usb"
+          ],
+          "published": true
+        }
+      ]
+    },
+    {
+      "id": "thinknode_m7",
+      "name": "Elecrow ThinkNode M7",
+      "family": "Elecrow ThinkNode",
+      "platform": "ESP32",
+      "aliases": [
+        "ThinkNode_M7",
+        "Elecrow ThinkNode M7"
+      ],
+      "transports": [
+        "usb",
+        "bluetooth",
+        "wifi"
+      ],
+      "publishedTransports": [
+        "usb",
+        "bluetooth",
+        "wifi"
+      ],
+      "source": "https://github.com/meshcore-dev/MeshCore/blob/companion-v1.18.0/variants/thinknode_m7/platformio.ini",
+      "builds": [
+        {
+          "name": "ThinkNode_M7_companion_radio_ble",
+          "transports": [
+            "bluetooth",
+            "wifi"
+          ],
+          "published": true
+        },
+        {
+          "name": "ThinkNode_M7_companion_radio_usb",
+          "transports": [
+            "usb"
+          ],
+          "published": true
+        },
+        {
+          "name": "ThinkNode_M7_companion_radio_wifi",
+          "transports": [
+            "wifi"
+          ],
+          "published": false
+        }
+      ]
+    },
+    {
+      "id": "thinknode_m4",
+      "name": "ThinkNode M4",
+      "family": "Elecrow ThinkNode",
+      "platform": "nRF52",
+      "aliases": [
+        "ThinkNode_M4",
+        "ThinkNode M4"
+      ],
+      "transports": [
+        "usb",
+        "bluetooth"
+      ],
+      "publishedTransports": [
+        "usb",
+        "bluetooth"
+      ],
+      "source": "https://github.com/meshcore-dev/MeshCore/blob/companion-v1.18.0/variants/thinknode_m4/platformio.ini",
+      "builds": [
+        {
+          "name": "ThinkNode_M4_companion_radio_usb",
+          "transports": [
+            "usb"
+          ],
+          "published": true
+        },
+        {
+          "name": "ThinkNode_M4_companion_radio_ble",
+          "transports": [
+            "bluetooth"
+          ],
+          "published": true
+        }
+      ]
+    },
+    {
+      "id": "thinknode_m8",
+      "name": "ThinkNode M8",
+      "family": "Elecrow ThinkNode",
+      "platform": "nRF52",
+      "aliases": [
+        "ThinkNode_M8",
+        "ThinkNode M8"
+      ],
+      "transports": [
+        "usb",
+        "bluetooth"
+      ],
+      "publishedTransports": [
+        "usb",
+        "bluetooth"
+      ],
+      "source": "https://github.com/meshcore-dev/MeshCore/blob/companion-v1.18.0/variants/thinknode_m8/platformio.ini",
+      "builds": [
+        {
+          "name": "ThinkNode_M8_companion_radio_ble",
+          "transports": [
+            "bluetooth"
+          ],
+          "published": true
+        },
+        {
+          "name": "ThinkNode_M8_companion_radio_usb",
+          "transports": [
+            "usb"
+          ],
+          "published": true
+        }
+      ]
+    },
+    {
+      "id": "heltec_ct62",
+      "name": "Heltec ct62",
+      "family": "Heltec",
+      "platform": "ESP32",
+      "aliases": [
+        "Heltec_ct62",
+        "Heltec ct62"
+      ],
+      "transports": [
+        "usb",
+        "bluetooth"
+      ],
+      "publishedTransports": [
+        "usb",
+        "bluetooth"
+      ],
+      "source": "https://github.com/meshcore-dev/MeshCore/blob/companion-v1.18.0/variants/heltec_ct62/platformio.ini",
+      "builds": [
+        {
+          "name": "Heltec_ct62_companion_radio_usb",
+          "transports": [
+            "usb"
+          ],
+          "published": true
+        },
+        {
+          "name": "Heltec_ct62_companion_radio_ble",
+          "transports": [
+            "bluetooth"
+          ],
+          "published": true
+        }
+      ]
+    },
+    {
+      "id": "heltec_t096",
+      "name": "Heltec Mesh Node T096",
+      "family": "Heltec",
+      "platform": "nRF52",
+      "aliases": [
+        "Heltec_t096",
+        "Heltec Mesh Node T096"
+      ],
+      "transports": [
+        "usb",
+        "bluetooth"
+      ],
+      "publishedTransports": [
+        "usb",
+        "bluetooth"
+      ],
+      "source": "https://github.com/meshcore-dev/MeshCore/blob/companion-v1.18.0/variants/heltec_t096/platformio.ini",
+      "builds": [
+        {
+          "name": "Heltec_t096_companion_radio_ble",
+          "transports": [
+            "bluetooth"
+          ],
+          "published": true
+        },
+        {
+          "name": "Heltec_t096_companion_radio_usb",
+          "transports": [
+            "usb"
+          ],
+          "published": true
+        }
+      ]
+    },
+    {
+      "id": "heltec_t1",
+      "name": "Heltec Mesh Node T1",
+      "family": "Heltec",
+      "platform": "nRF52",
+      "aliases": [
+        "Heltec_t1",
+        "Heltec Mesh Node T1"
+      ],
+      "transports": [
+        "usb",
+        "bluetooth"
+      ],
+      "publishedTransports": [
+        "usb",
+        "bluetooth"
+      ],
+      "source": "https://github.com/meshcore-dev/MeshCore/blob/companion-v1.18.0/variants/heltec_t1/platformio.ini",
+      "builds": [
+        {
+          "name": "Heltec_t1_companion_radio_ble",
+          "transports": [
+            "bluetooth"
+          ],
+          "published": true
+        },
+        {
+          "name": "Heltec_t1_companion_radio_usb",
+          "transports": [
+            "usb"
+          ],
+          "published": true
+        }
+      ]
+    },
+    {
+      "id": "mesh_pocket",
+      "name": "Heltec MeshPocket",
+      "family": "Heltec",
+      "platform": "nRF52",
+      "aliases": [
+        "Mesh_pocket",
+        "Heltec MeshPocket"
+      ],
+      "transports": [
+        "usb",
+        "bluetooth"
+      ],
+      "publishedTransports": [
+        "usb",
+        "bluetooth"
+      ],
+      "source": "https://github.com/meshcore-dev/MeshCore/blob/companion-v1.18.0/variants/mesh_pocket/platformio.ini",
+      "builds": [
+        {
+          "name": "Mesh_pocket_companion_radio_ble",
+          "transports": [
+            "bluetooth"
+          ],
+          "published": true
+        },
+        {
+          "name": "Mesh_pocket_companion_radio_usb",
+          "transports": [
+            "usb"
+          ],
+          "published": true
+        }
+      ]
+    },
+    {
+      "id": "heltec_tower_v2",
+      "name": "Heltec MeshTower V2",
+      "family": "Heltec",
+      "platform": "nRF52",
+      "aliases": [
+        "Heltec_tower_v2",
+        "Heltec MeshTower V2"
+      ],
+      "transports": [
+        "usb",
+        "bluetooth"
+      ],
+      "publishedTransports": [
+        "usb",
+        "bluetooth"
+      ],
+      "source": "https://github.com/meshcore-dev/MeshCore/blob/companion-v1.18.0/variants/heltec_tower_v2/platformio.ini",
+      "builds": [
+        {
+          "name": "Heltec_tower_v2_companion_radio_ble",
+          "transports": [
+            "bluetooth"
+          ],
+          "published": true
+        },
+        {
+          "name": "Heltec_tower_v2_companion_radio_usb",
+          "transports": [
+            "usb"
+          ],
+          "published": true
+        }
+      ]
+    },
+    {
+      "id": "heltec_rc32",
+      "name": "heltec rc32",
+      "family": "Heltec",
+      "platform": "ESP32",
+      "aliases": [
+        "heltec_rc32",
+        "heltec rc32"
+      ],
+      "transports": [
+        "usb",
+        "bluetooth",
+        "wifi"
+      ],
+      "publishedTransports": [
+        "usb",
+        "bluetooth"
+      ],
+      "source": "https://github.com/meshcore-dev/MeshCore/blob/companion-v1.18.0/variants/heltec_rc32/platformio.ini",
+      "builds": [
+        {
+          "name": "heltec_rc32_companion_radio_usb",
+          "transports": [
+            "usb"
+          ],
+          "published": true
+        },
+        {
+          "name": "heltec_rc32_companion_radio_ble",
+          "transports": [
+            "bluetooth"
+          ],
+          "published": true
+        },
+        {
+          "name": "heltec_rc32_companion_radio_wifi",
+          "transports": [
+            "wifi"
+          ],
+          "published": false
+        }
+      ]
+    },
+    {
+      "id": "heltec_rc32_without_display",
+      "name": "heltec rc32 without display",
+      "family": "Heltec",
+      "platform": "ESP32",
+      "aliases": [
+        "heltec_rc32_without_display",
+        "heltec rc32 without display"
+      ],
+      "transports": [
+        "usb",
+        "bluetooth",
+        "wifi"
+      ],
+      "publishedTransports": [
+        "usb",
+        "bluetooth"
+      ],
+      "source": "https://github.com/meshcore-dev/MeshCore/blob/companion-v1.18.0/variants/heltec_rc32/platformio.ini",
+      "builds": [
+        {
+          "name": "heltec_rc32_without_display_companion_radio_usb",
+          "transports": [
+            "usb"
+          ],
+          "published": true
+        },
+        {
+          "name": "heltec_rc32_without_display_companion_radio_ble",
+          "transports": [
+            "bluetooth"
+          ],
+          "published": true
+        },
+        {
+          "name": "heltec_rc32_without_display_companion_radio_wifi",
+          "transports": [
+            "wifi"
+          ],
+          "published": false
+        }
+      ]
+    },
+    {
+      "id": "heltec_t114",
+      "name": "Heltec T114",
+      "family": "Heltec",
+      "platform": "nRF52",
+      "aliases": [
+        "Heltec_t114",
+        "Heltec T114"
+      ],
+      "transports": [
+        "usb",
+        "bluetooth"
+      ],
+      "publishedTransports": [
+        "usb",
+        "bluetooth"
+      ],
+      "source": "https://github.com/meshcore-dev/MeshCore/blob/companion-v1.18.0/variants/heltec_t114/platformio.ini",
+      "builds": [
+        {
+          "name": "Heltec_t114_companion_radio_ble",
+          "transports": [
+            "bluetooth"
+          ],
+          "published": true
+        },
+        {
+          "name": "Heltec_t114_companion_radio_usb",
+          "transports": [
+            "usb"
+          ],
+          "published": true
+        }
+      ]
+    },
+    {
+      "id": "heltec_t114_without_display",
+      "name": "Heltec T114 (without display)",
+      "family": "Heltec",
+      "platform": "nRF52",
+      "aliases": [
+        "Heltec_t114_without_display",
+        "Heltec T114 (without display)"
+      ],
+      "transports": [
+        "usb",
+        "bluetooth"
+      ],
+      "publishedTransports": [
+        "usb",
+        "bluetooth"
+      ],
+      "source": "https://github.com/meshcore-dev/MeshCore/blob/companion-v1.18.0/variants/heltec_t114/platformio.ini",
+      "builds": [
+        {
+          "name": "Heltec_t114_without_display_companion_radio_ble",
+          "transports": [
+            "bluetooth"
+          ],
+          "published": true
+        },
+        {
+          "name": "Heltec_t114_without_display_companion_radio_usb",
+          "transports": [
+            "usb"
+          ],
+          "published": true
+        }
+      ]
+    },
+    {
+      "id": "heltec_v2",
+      "name": "Heltec v2",
+      "family": "Heltec",
+      "platform": "ESP32",
+      "aliases": [
+        "Heltec_v2",
+        "Heltec v2"
+      ],
+      "transports": [
+        "usb",
+        "bluetooth",
+        "wifi"
+      ],
+      "publishedTransports": [
+        "usb",
+        "bluetooth"
+      ],
+      "source": "https://github.com/meshcore-dev/MeshCore/blob/companion-v1.18.0/variants/heltec_v2/platformio.ini",
+      "builds": [
+        {
+          "name": "Heltec_v2_companion_radio_usb",
+          "transports": [
+            "usb"
+          ],
+          "published": true
+        },
+        {
+          "name": "Heltec_v2_companion_radio_ble",
+          "transports": [
+            "bluetooth"
+          ],
+          "published": true
+        },
+        {
+          "name": "Heltec_v2_companion_radio_wifi",
+          "transports": [
+            "wifi"
+          ],
+          "published": false
+        }
+      ]
+    },
+    {
+      "id": "heltec_v3",
+      "name": "Heltec v3",
+      "family": "Heltec",
+      "platform": "ESP32",
+      "aliases": [
+        "Heltec_v3",
+        "Heltec v3"
+      ],
+      "transports": [
+        "usb",
+        "bluetooth",
+        "wifi"
+      ],
+      "publishedTransports": [
+        "usb",
+        "bluetooth",
+        "wifi"
+      ],
+      "source": "https://github.com/meshcore-dev/MeshCore/blob/companion-v1.18.0/variants/heltec_v3/platformio.ini",
+      "builds": [
+        {
+          "name": "Heltec_v3_companion_radio_usb",
+          "transports": [
+            "usb"
+          ],
+          "published": true
+        },
+        {
+          "name": "Heltec_v3_companion_radio_ble",
+          "transports": [
+            "bluetooth",
+            "wifi"
+          ],
+          "published": true
+        },
+        {
+          "name": "Heltec_v3_companion_radio_wifi",
+          "transports": [
+            "wifi"
+          ],
+          "published": false
+        }
+      ]
+    },
+    {
+      "id": "heltec_v4",
+      "name": "Heltec v4",
+      "family": "Heltec",
+      "platform": "ESP32",
+      "aliases": [
+        "heltec_v4",
+        "Heltec v4"
+      ],
+      "transports": [
+        "usb",
+        "bluetooth",
+        "wifi"
+      ],
+      "publishedTransports": [
+        "usb",
+        "bluetooth",
+        "wifi"
+      ],
+      "source": "https://github.com/meshcore-dev/MeshCore/blob/companion-v1.18.0/variants/heltec_v4/platformio.ini",
+      "builds": [
+        {
+          "name": "heltec_v4_companion_radio_usb",
+          "transports": [
+            "usb"
+          ],
+          "published": true
+        },
+        {
+          "name": "heltec_v4_companion_radio_ble",
+          "transports": [
+            "bluetooth",
+            "wifi"
+          ],
+          "published": true
+        },
+        {
+          "name": "heltec_v4_companion_radio_wifi",
+          "transports": [
+            "wifi"
+          ],
+          "published": false
+        }
+      ]
+    },
+    {
+      "id": "heltec_v4_tft",
+      "name": "Heltec v4 + Expansion Kit (Touch)",
+      "family": "Heltec",
+      "platform": "ESP32",
+      "aliases": [
+        "heltec_v4_tft",
+        "Heltec v4 + Expansion Kit (Touch)"
+      ],
+      "transports": [
+        "usb",
+        "bluetooth",
+        "wifi"
+      ],
+      "publishedTransports": [
+        "usb",
+        "bluetooth"
+      ],
+      "source": "https://github.com/meshcore-dev/MeshCore/blob/companion-v1.18.0/variants/heltec_v4/platformio.ini",
+      "builds": [
+        {
+          "name": "heltec_v4_tft_companion_radio_usb",
+          "transports": [
+            "usb"
+          ],
+          "published": true
+        },
+        {
+          "name": "heltec_v4_tft_companion_radio_ble",
+          "transports": [
+            "bluetooth"
+          ],
+          "published": true
+        },
+        {
+          "name": "heltec_v4_tft_companion_radio_wifi",
+          "transports": [
+            "wifi"
+          ],
+          "published": false
+        }
+      ]
+    },
+    {
+      "id": "heltec_v4_r8",
+      "name": "Heltec v4 R8",
+      "family": "Heltec",
+      "platform": "ESP32",
+      "aliases": [
+        "heltec_v4_r8",
+        "Heltec v4 R8"
+      ],
+      "transports": [
+        "usb",
+        "bluetooth",
+        "wifi"
+      ],
+      "publishedTransports": [
+        "usb",
+        "bluetooth",
+        "wifi"
+      ],
+      "source": "https://github.com/meshcore-dev/MeshCore/blob/companion-v1.18.0/variants/heltec_v4_r8/platformio.ini",
+      "builds": [
+        {
+          "name": "heltec_v4_r8_companion_radio_usb",
+          "transports": [
+            "usb"
+          ],
+          "published": true
+        },
+        {
+          "name": "heltec_v4_r8_companion_radio_ble",
+          "transports": [
+            "bluetooth",
+            "wifi"
+          ],
+          "published": true
+        },
+        {
+          "name": "heltec_v4_r8_companion_radio_wifi",
+          "transports": [
+            "wifi"
+          ],
+          "published": false
+        }
+      ]
+    },
+    {
+      "id": "heltec_v4_r8_tft",
+      "name": "heltec v4 r8 tft",
+      "family": "Heltec",
+      "platform": "ESP32",
+      "aliases": [
+        "heltec_v4_r8_tft",
+        "heltec v4 r8 tft"
+      ],
+      "transports": [
+        "usb",
+        "bluetooth",
+        "wifi"
+      ],
+      "publishedTransports": [
+        "usb",
+        "bluetooth"
+      ],
+      "source": "https://github.com/meshcore-dev/MeshCore/blob/companion-v1.18.0/variants/heltec_v4_r8/platformio.ini",
+      "builds": [
+        {
+          "name": "heltec_v4_r8_tft_companion_radio_usb",
+          "transports": [
+            "usb"
+          ],
+          "published": true
+        },
+        {
+          "name": "heltec_v4_r8_tft_companion_radio_ble",
+          "transports": [
+            "bluetooth"
+          ],
+          "published": true
+        },
+        {
+          "name": "heltec_v4_r8_tft_companion_radio_wifi",
+          "transports": [
+            "wifi"
+          ],
+          "published": false
+        }
+      ]
+    },
+    {
+      "id": "heltec_e213",
+      "name": "Heltec Vision Master E213",
+      "family": "Heltec",
+      "platform": "ESP32",
+      "aliases": [
+        "Heltec_E213",
+        "Heltec Vision Master E213"
+      ],
+      "transports": [
+        "usb",
+        "bluetooth"
+      ],
+      "publishedTransports": [
+        "usb",
+        "bluetooth"
+      ],
+      "source": "https://github.com/meshcore-dev/MeshCore/blob/companion-v1.18.0/variants/heltec_e213/platformio.ini",
+      "builds": [
+        {
+          "name": "Heltec_E213_companion_radio_ble",
+          "transports": [
+            "bluetooth"
+          ],
+          "published": true
+        },
+        {
+          "name": "Heltec_E213_companion_radio_usb",
+          "transports": [
+            "usb"
+          ],
+          "published": true
+        }
+      ]
+    },
+    {
+      "id": "heltec_wireless_paper",
+      "name": "Heltec Wireless Paper",
+      "family": "Heltec",
+      "platform": "ESP32",
+      "aliases": [
+        "Heltec_Wireless_Paper",
+        "Heltec Wireless Paper"
+      ],
+      "transports": [
+        "usb",
+        "bluetooth",
+        "wifi"
+      ],
+      "publishedTransports": [
+        "usb",
+        "bluetooth",
+        "wifi"
+      ],
+      "source": "https://github.com/meshcore-dev/MeshCore/blob/companion-v1.18.0/variants/heltec_wireless_paper/platformio.ini",
+      "builds": [
+        {
+          "name": "Heltec_Wireless_Paper_companion_radio_ble",
+          "transports": [
+            "bluetooth",
+            "wifi"
+          ],
+          "published": true
+        },
+        {
+          "name": "Heltec_Wireless_Paper_companion_radio_usb",
+          "transports": [
+            "usb"
+          ],
+          "published": true
+        }
+      ]
+    },
+    {
+      "id": "heltec_wireless_tracker",
+      "name": "Heltec Wireless Tracker",
+      "family": "Heltec",
+      "platform": "ESP32",
+      "aliases": [
+        "Heltec_Wireless_Tracker",
+        "Heltec Wireless Tracker"
+      ],
+      "transports": [
+        "usb",
+        "bluetooth"
+      ],
+      "publishedTransports": [
+        "usb",
+        "bluetooth"
+      ],
+      "source": "https://github.com/meshcore-dev/MeshCore/blob/companion-v1.18.0/variants/heltec_tracker/platformio.ini",
+      "builds": [
+        {
+          "name": "Heltec_Wireless_Tracker_companion_radio_usb",
+          "transports": [
+            "usb"
+          ],
+          "published": true
+        },
+        {
+          "name": "Heltec_Wireless_Tracker_companion_radio_ble",
+          "transports": [
+            "bluetooth"
+          ],
+          "published": true
+        }
+      ]
+    },
+    {
+      "id": "heltec_tracker_v2",
+      "name": "Heltec Wireless Tracker v2",
+      "family": "Heltec",
+      "platform": "ESP32",
+      "aliases": [
+        "heltec_tracker_v2",
+        "Heltec Wireless Tracker v2"
+      ],
+      "transports": [
+        "usb",
+        "bluetooth",
+        "wifi"
+      ],
+      "publishedTransports": [
+        "usb",
+        "bluetooth"
+      ],
+      "source": "https://github.com/meshcore-dev/MeshCore/blob/companion-v1.18.0/variants/heltec_tracker_v2/platformio.ini",
+      "builds": [
+        {
+          "name": "heltec_tracker_v2_companion_radio_usb",
+          "transports": [
+            "usb"
+          ],
+          "published": true
+        },
+        {
+          "name": "heltec_tracker_v2_companion_radio_ble",
+          "transports": [
+            "bluetooth"
+          ],
+          "published": true
+        },
+        {
+          "name": "heltec_tracker_v2_companion_radio_wifi",
+          "transports": [
+            "wifi"
+          ],
+          "published": false
+        }
+      ]
+    },
+    {
+      "id": "heltec_wsl3",
+      "name": "Heltec WSL3",
+      "family": "Heltec",
+      "platform": "ESP32",
+      "aliases": [
+        "Heltec_WSL3",
+        "Heltec WSL3"
+      ],
+      "transports": [
+        "usb",
+        "bluetooth",
+        "wifi"
+      ],
+      "publishedTransports": [
+        "usb",
+        "bluetooth",
+        "wifi"
+      ],
+      "source": "https://github.com/meshcore-dev/MeshCore/blob/companion-v1.18.0/variants/heltec_v3/platformio.ini",
+      "builds": [
+        {
+          "name": "Heltec_WSL3_companion_radio_ble",
+          "transports": [
+            "bluetooth",
+            "wifi"
+          ],
+          "published": true
+        },
+        {
+          "name": "Heltec_WSL3_companion_radio_usb",
+          "transports": [
+            "usb"
+          ],
+          "published": true
+        },
+        {
+          "name": "Heltec_WSL3_companion_radio_wifi",
+          "transports": [
+            "wifi"
+          ],
+          "published": false
+        }
+      ]
+    },
+    {
+      "id": "lilygo_tlora_v2_1_1_6",
+      "name": "LilyGo LoRa32 V2.1_1.6",
+      "family": "LilyGO",
+      "platform": "ESP32",
+      "aliases": [
+        "LilyGo_TLora_V2_1_1_6",
+        "LilyGo LoRa32 V2.1_1.6"
+      ],
+      "transports": [
+        "usb",
+        "bluetooth",
+        "wifi"
+      ],
+      "publishedTransports": [
+        "usb",
+        "bluetooth"
+      ],
+      "source": "https://github.com/meshcore-dev/MeshCore/blob/companion-v1.18.0/variants/lilygo_tlora_v2_1/platformio.ini",
+      "builds": [
+        {
+          "name": "LilyGo_TLora_V2_1_1_6_companion_radio_usb",
+          "transports": [
+            "usb"
+          ],
+          "published": true
+        },
+        {
+          "name": "LilyGo_TLora_V2_1_1_6_companion_radio_ble",
+          "transports": [
+            "bluetooth"
+          ],
+          "published": true
+        },
+        {
+          "name": "LilyGo_TLora_V2_1_1_6_companion_radio_wifi",
+          "transports": [
+            "wifi"
+          ],
+          "published": false
+        }
+      ]
+    },
+    {
+      "id": "lilygo_t_impulse_plus",
+      "name": "LilyGo T Impulse Plus",
+      "family": "LilyGO",
+      "platform": "nRF52",
+      "aliases": [
+        "LilyGo_T_Impulse_Plus",
+        "LilyGo T Impulse Plus"
+      ],
+      "transports": [
+        "bluetooth"
+      ],
+      "publishedTransports": [
+        "bluetooth"
+      ],
+      "source": "https://github.com/meshcore-dev/MeshCore/blob/companion-v1.18.0/variants/lilygo_t_impulse_plus/platformio.ini",
+      "builds": [
+        {
+          "name": "LilyGo_T_Impulse_Plus_companion_radio_ble",
+          "transports": [
+            "bluetooth"
+          ],
+          "published": true
+        }
+      ]
+    },
+    {
+      "id": "tbeam_sx1262",
+      "name": "LilyGo T-Beam (SX1262)",
+      "family": "LilyGO",
+      "platform": "ESP32",
+      "aliases": [
+        "Tbeam_SX1262",
+        "LilyGo T-Beam (SX1262)"
+      ],
+      "transports": [
+        "bluetooth"
+      ],
+      "publishedTransports": [
+        "bluetooth"
+      ],
+      "source": "https://github.com/meshcore-dev/MeshCore/blob/companion-v1.18.0/variants/lilygo_tbeam_SX1262/platformio.ini",
+      "builds": [
+        {
+          "name": "Tbeam_SX1262_companion_radio_ble",
+          "transports": [
+            "bluetooth"
+          ],
+          "published": true
+        }
+      ]
+    },
+    {
+      "id": "tbeam_sx1276",
+      "name": "LilyGo T-Beam 1.2 (SX1276)",
+      "family": "LilyGO",
+      "platform": "ESP32",
+      "aliases": [
+        "Tbeam_SX1276",
+        "LilyGo T-Beam 1.2 (SX1276)"
+      ],
+      "transports": [
+        "bluetooth"
+      ],
+      "publishedTransports": [
+        "bluetooth"
+      ],
+      "source": "https://github.com/meshcore-dev/MeshCore/blob/companion-v1.18.0/variants/lilygo_tbeam_SX1276/platformio.ini",
+      "builds": [
+        {
+          "name": "Tbeam_SX1276_companion_radio_ble",
+          "transports": [
+            "bluetooth"
+          ],
+          "published": true
+        }
+      ]
+    },
+    {
+      "id": "lilygo_tbeam_1w",
+      "name": "LilyGo T-Beam 1W",
+      "family": "LilyGO",
+      "platform": "ESP32",
+      "aliases": [
+        "LilyGo_TBeam_1W",
+        "LilyGo T-Beam 1W"
+      ],
+      "transports": [
+        "usb",
+        "bluetooth",
+        "wifi"
+      ],
+      "publishedTransports": [
+        "usb",
+        "bluetooth"
+      ],
+      "source": "https://github.com/meshcore-dev/MeshCore/blob/companion-v1.18.0/variants/lilygo_tbeam_1w/platformio.ini",
+      "builds": [
+        {
+          "name": "LilyGo_TBeam_1W_companion_radio_usb",
+          "transports": [
+            "usb"
+          ],
+          "published": true
+        },
+        {
+          "name": "LilyGo_TBeam_1W_companion_radio_ble",
+          "transports": [
+            "bluetooth"
+          ],
+          "published": true
+        },
+        {
+          "name": "LilyGo_TBeam_1W_companion_radio_wifi",
+          "transports": [
+            "wifi"
+          ],
+          "published": false
+        }
+      ]
+    },
+    {
+      "id": "t_beam_s3_supreme_sx1262",
+      "name": "LilyGo T-Beam Supreme (SX1262)",
+      "family": "LilyGO",
+      "platform": "ESP32",
+      "aliases": [
+        "T_Beam_S3_Supreme_SX1262",
+        "LilyGo T-Beam Supreme (SX1262)"
+      ],
+      "transports": [
+        "bluetooth",
+        "wifi"
+      ],
+      "publishedTransports": [
+        "bluetooth"
+      ],
+      "source": "https://github.com/meshcore-dev/MeshCore/blob/companion-v1.18.0/variants/lilygo_tbeam_supreme_SX1262/platformio.ini",
+      "builds": [
+        {
+          "name": "T_Beam_S3_Supreme_SX1262_companion_radio_ble",
+          "transports": [
+            "bluetooth"
+          ],
+          "published": true
+        },
+        {
+          "name": "T_Beam_S3_Supreme_SX1262_companion_radio_wifi",
+          "transports": [
+            "wifi"
+          ],
+          "published": false
+        }
+      ]
+    },
+    {
+      "id": "lilygo_tdeck",
+      "name": "LilyGo T-Deck",
+      "family": "LilyGO",
+      "platform": "ESP32",
+      "aliases": [
+        "LilyGo_TDeck",
+        "LilyGo T-Deck"
+      ],
+      "transports": [
+        "usb",
+        "bluetooth"
+      ],
+      "publishedTransports": [
+        "usb",
+        "bluetooth"
+      ],
+      "source": "https://github.com/meshcore-dev/MeshCore/blob/companion-v1.18.0/variants/lilygo_tdeck/platformio.ini",
+      "builds": [
+        {
+          "name": "LilyGo_TDeck_companion_radio_usb",
+          "transports": [
+            "usb"
+          ],
+          "published": true
+        },
+        {
+          "name": "LilyGo_TDeck_companion_radio_ble",
+          "transports": [
+            "bluetooth"
+          ],
+          "published": true
+        }
+      ]
+    },
+    {
+      "id": "lilygo_t-echo",
+      "name": "LilyGo T-Echo",
+      "family": "LilyGO",
+      "platform": "nRF52",
+      "aliases": [
+        "LilyGo_T-Echo",
+        "LilyGo T-Echo"
+      ],
+      "transports": [
+        "usb",
+        "bluetooth"
+      ],
+      "publishedTransports": [
+        "usb",
+        "bluetooth"
+      ],
+      "source": "https://github.com/meshcore-dev/MeshCore/blob/companion-v1.18.0/variants/lilygo_techo/platformio.ini",
+      "builds": [
+        {
+          "name": "LilyGo_T-Echo_companion_radio_ble",
+          "transports": [
+            "bluetooth"
+          ],
+          "published": true
+        },
+        {
+          "name": "LilyGo_T-Echo_companion_radio_usb",
+          "transports": [
+            "usb"
+          ],
+          "published": true
+        }
+      ]
+    },
+    {
+      "id": "lilygo_t-echo_card",
+      "name": "LilyGo T-Echo Card",
+      "family": "LilyGO",
+      "platform": "nRF52",
+      "aliases": [
+        "LilyGo_T-Echo_Card",
+        "LilyGo T-Echo Card"
+      ],
+      "transports": [
+        "usb",
+        "bluetooth"
+      ],
+      "publishedTransports": [
+        "usb",
+        "bluetooth"
+      ],
+      "source": "https://github.com/meshcore-dev/MeshCore/blob/companion-v1.18.0/variants/lilygo_techo_card/platformio.ini",
+      "builds": [
+        {
+          "name": "LilyGo_T-Echo_Card_companion_radio_ble",
+          "transports": [
+            "bluetooth"
+          ],
+          "published": true
+        },
+        {
+          "name": "LilyGo_T-Echo_Card_companion_radio_usb",
+          "transports": [
+            "usb"
+          ],
+          "published": true
+        }
+      ]
+    },
+    {
+      "id": "lilygo_t-echo-lite",
+      "name": "LilyGo T-Echo Lite",
+      "family": "LilyGO",
+      "platform": "nRF52",
+      "aliases": [
+        "LilyGo_T-Echo-Lite",
+        "LilyGo T-Echo Lite"
+      ],
+      "transports": [
+        "usb",
+        "bluetooth"
+      ],
+      "publishedTransports": [
+        "usb",
+        "bluetooth"
+      ],
+      "source": "https://github.com/meshcore-dev/MeshCore/blob/companion-v1.18.0/variants/lilygo_techo_lite/platformio.ini",
+      "builds": [
+        {
+          "name": "LilyGo_T-Echo-Lite_companion_radio_ble",
+          "transports": [
+            "bluetooth"
+          ],
+          "published": true
+        },
+        {
+          "name": "LilyGo_T-Echo-Lite_companion_radio_usb",
+          "transports": [
+            "usb"
+          ],
+          "published": true
+        }
+      ]
+    },
+    {
+      "id": "lilygo_t-echo-lite_non_shell",
+      "name": "LilyGo T-Echo-Lite non shell",
+      "family": "LilyGO",
+      "platform": "nRF52",
+      "aliases": [
+        "LilyGo_T-Echo-Lite_non_shell",
+        "LilyGo T-Echo-Lite non shell"
+      ],
+      "transports": [
+        "usb",
+        "bluetooth"
+      ],
+      "publishedTransports": [
+        "usb",
+        "bluetooth"
+      ],
+      "source": "https://github.com/meshcore-dev/MeshCore/blob/companion-v1.18.0/variants/lilygo_techo_lite/platformio.ini",
+      "builds": [
+        {
+          "name": "LilyGo_T-Echo-Lite_non_shell_companion_radio_ble",
+          "transports": [
+            "bluetooth"
+          ],
+          "published": true
+        },
+        {
+          "name": "LilyGo_T-Echo-Lite_non_shell_companion_radio_usb",
+          "transports": [
+            "usb"
+          ],
+          "published": true
+        }
+      ]
+    },
+    {
+      "id": "lilygo_t3s3_sx1262",
+      "name": "LilyGo T3 S3 (SX126x)",
+      "family": "LilyGO",
+      "platform": "ESP32",
+      "aliases": [
+        "LilyGo_T3S3_sx1262",
+        "LilyGo T3 S3 (SX126x)"
+      ],
+      "transports": [
+        "usb",
+        "bluetooth"
+      ],
+      "publishedTransports": [
+        "usb",
+        "bluetooth"
+      ],
+      "source": "https://github.com/meshcore-dev/MeshCore/blob/companion-v1.18.0/variants/lilygo_t3s3/platformio.ini",
+      "builds": [
+        {
+          "name": "LilyGo_T3S3_sx1262_companion_radio_usb",
+          "transports": [
+            "usb"
+          ],
+          "published": true
+        },
+        {
+          "name": "LilyGo_T3S3_sx1262_companion_radio_ble",
+          "transports": [
+            "bluetooth"
+          ],
+          "published": true
+        }
+      ]
+    },
+    {
+      "id": "lilygo_t3s3_sx1276",
+      "name": "LilyGo T3 S3 (SX127x)",
+      "family": "LilyGO",
+      "platform": "ESP32",
+      "aliases": [
+        "LilyGo_T3S3_sx1276",
+        "LilyGo T3 S3 (SX127x)"
+      ],
+      "transports": [
+        "usb",
+        "bluetooth"
+      ],
+      "publishedTransports": [
+        "usb",
+        "bluetooth"
+      ],
+      "source": "https://github.com/meshcore-dev/MeshCore/blob/companion-v1.18.0/variants/lilygo_t3s3_sx1276/platformio.ini",
+      "builds": [
+        {
+          "name": "LilyGo_T3S3_sx1276_companion_radio_usb",
+          "transports": [
+            "usb"
+          ],
+          "published": true
+        },
+        {
+          "name": "LilyGo_T3S3_sx1276_companion_radio_ble",
+          "transports": [
+            "bluetooth"
+          ],
+          "published": true
+        }
+      ]
+    },
+    {
+      "id": "lilygo_teth_elite_sx1262",
+      "name": "LilyGo TETH Elite sx1262",
+      "family": "LilyGO",
+      "platform": "ESP32",
+      "aliases": [
+        "LilyGo_TETH_Elite_sx1262",
+        "LilyGo TETH Elite sx1262"
+      ],
+      "transports": [
+        "usb",
+        "bluetooth"
+      ],
+      "publishedTransports": [
+        "usb",
+        "bluetooth"
+      ],
+      "source": "https://github.com/meshcore-dev/MeshCore/blob/companion-v1.18.0/variants/lilygo_teth_elite/platformio.ini",
+      "builds": [
+        {
+          "name": "LilyGo_TETH_Elite_sx1262_companion_radio_usb",
+          "transports": [
+            "usb"
+          ],
+          "published": true
+        },
+        {
+          "name": "LilyGo_TETH_Elite_sx1262_companion_radio_ble",
+          "transports": [
+            "bluetooth"
+          ],
+          "published": true
+        }
+      ]
+    },
+    {
+      "id": "ebyte_eora-s3",
+      "name": "Ebyte EoRa-S3",
+      "family": "Other manufacturers",
+      "platform": "ESP32",
+      "aliases": [
+        "Ebyte_EoRa-S3",
+        "Ebyte EoRa-S3"
+      ],
+      "transports": [
+        "usb",
+        "bluetooth"
+      ],
+      "publishedTransports": [
+        "usb",
+        "bluetooth"
+      ],
+      "source": "https://github.com/meshcore-dev/MeshCore/blob/companion-v1.18.0/variants/ebyte_eora_s3/platformio.ini",
+      "builds": [
+        {
+          "name": "Ebyte_EoRa-S3_companion_radio_usb",
+          "transports": [
+            "usb"
+          ],
+          "published": true
+        },
+        {
+          "name": "Ebyte_EoRa-S3_companion_radio_ble",
+          "transports": [
+            "bluetooth"
+          ],
+          "published": true
+        }
+      ]
+    },
+    {
+      "id": "gat562_30s_mesh_kit",
+      "name": "GAT-IoT GAT562 30s",
+      "family": "Other manufacturers",
+      "platform": "nRF52",
+      "aliases": [
+        "GAT562_30S_Mesh_Kit",
+        "GAT-IoT GAT562 30s"
+      ],
+      "transports": [
+        "usb",
+        "bluetooth"
+      ],
+      "publishedTransports": [
+        "usb",
+        "bluetooth"
+      ],
+      "source": "https://github.com/meshcore-dev/MeshCore/blob/companion-v1.18.0/variants/gat562_30s_mesh_kit/platformio.ini",
+      "builds": [
+        {
+          "name": "GAT562_30S_Mesh_Kit_companion_radio_usb",
+          "transports": [
+            "usb"
+          ],
+          "published": true
+        },
+        {
+          "name": "GAT562_30S_Mesh_Kit_companion_radio_ble",
+          "transports": [
+            "bluetooth"
+          ],
+          "published": true
+        }
+      ]
+    },
+    {
+      "id": "gat562_mesh_tracker_pro",
+      "name": "GAT-IoT GAT562 Tracker",
+      "family": "Other manufacturers",
+      "platform": "nRF52",
+      "aliases": [
+        "GAT562_Mesh_Tracker_Pro",
+        "GAT-IoT GAT562 Tracker"
+      ],
+      "transports": [
+        "usb",
+        "bluetooth"
+      ],
+      "publishedTransports": [
+        "usb",
+        "bluetooth"
+      ],
+      "source": "https://github.com/meshcore-dev/MeshCore/blob/companion-v1.18.0/variants/gat562_mesh_tracker_pro/platformio.ini",
+      "builds": [
+        {
+          "name": "GAT562_Mesh_Tracker_Pro_companion_radio_usb",
+          "transports": [
+            "usb"
+          ],
+          "published": true
+        },
+        {
+          "name": "GAT562_Mesh_Tracker_Pro_companion_radio_ble",
+          "transports": [
+            "bluetooth"
+          ],
+          "published": true
+        }
+      ]
+    },
+    {
+      "id": "gat562_mesh_watch13",
+      "name": "GAT562 Mesh Watch13",
+      "family": "Other manufacturers",
+      "platform": "nRF52",
+      "aliases": [
+        "GAT562_Mesh_Watch13",
+        "GAT562 Mesh Watch13"
+      ],
+      "transports": [
+        "bluetooth"
+      ],
+      "publishedTransports": [
+        "bluetooth"
+      ],
+      "source": "https://github.com/meshcore-dev/MeshCore/blob/companion-v1.18.0/variants/gat562_mesh_watch13/platformio.ini",
+      "builds": [
+        {
+          "name": "GAT562_Mesh_Watch13_companion_radio_ble",
+          "transports": [
+            "bluetooth"
+          ],
+          "published": true
+        }
+      ]
+    },
+    {
+      "id": "ikoka_handheld_nrf_e22_30dbm_096",
+      "name": "ikoka handheld nrf e22 30dbm 096",
+      "family": "Other manufacturers",
+      "platform": "nRF52",
+      "aliases": [
+        "ikoka_handheld_nrf_e22_30dbm_096",
+        "ikoka handheld nrf e22 30dbm 096"
+      ],
+      "transports": [
+        "usb",
+        "bluetooth"
+      ],
+      "publishedTransports": [
+        "usb",
+        "bluetooth"
+      ],
+      "source": "https://github.com/meshcore-dev/MeshCore/blob/companion-v1.18.0/variants/ikoka_handheld_nrf/platformio.ini",
+      "builds": [
+        {
+          "name": "ikoka_handheld_nrf_e22_30dbm_096_companion_radio_ble",
+          "transports": [
+            "bluetooth"
+          ],
+          "published": true
+        },
+        {
+          "name": "ikoka_handheld_nrf_e22_30dbm_096_companion_radio_usb",
+          "transports": [
+            "usb"
+          ],
+          "published": true
+        }
+      ]
+    },
+    {
+      "id": "ikoka_handheld_nrf_e22_30dbm_096_rotated",
+      "name": "ikoka handheld nrf e22 30dbm 096 rotated",
+      "family": "Other manufacturers",
+      "platform": "nRF52",
+      "aliases": [
+        "ikoka_handheld_nrf_e22_30dbm_096_rotated",
+        "ikoka handheld nrf e22 30dbm 096 rotated"
+      ],
+      "transports": [
+        "usb",
+        "bluetooth"
+      ],
+      "publishedTransports": [
+        "usb",
+        "bluetooth"
+      ],
+      "source": "https://github.com/meshcore-dev/MeshCore/blob/companion-v1.18.0/variants/ikoka_handheld_nrf/platformio.ini",
+      "builds": [
+        {
+          "name": "ikoka_handheld_nrf_e22_30dbm_096_rotated_companion_radio_ble",
+          "transports": [
+            "bluetooth"
+          ],
+          "published": true
+        },
+        {
+          "name": "ikoka_handheld_nrf_e22_30dbm_096_rotated_companion_radio_usb",
+          "transports": [
+            "usb"
+          ],
+          "published": true
+        }
+      ]
+    },
+    {
+      "id": "ikoka_nano_nrf_22dbm",
+      "name": "Ikoka Nano (22 dBm)",
+      "family": "Other manufacturers",
+      "platform": "nRF52",
+      "aliases": [
+        "ikoka_nano_nrf_22dbm",
+        "Ikoka Nano (22 dBm)"
+      ],
+      "transports": [
+        "usb",
+        "bluetooth"
+      ],
+      "publishedTransports": [
+        "usb",
+        "bluetooth"
+      ],
+      "source": "https://github.com/meshcore-dev/MeshCore/blob/companion-v1.18.0/variants/ikoka_nano_nrf/platformio.ini",
+      "builds": [
+        {
+          "name": "ikoka_nano_nrf_22dbm_companion_radio_usb",
+          "transports": [
+            "usb"
+          ],
+          "published": true
+        },
+        {
+          "name": "ikoka_nano_nrf_22dbm_companion_radio_ble",
+          "transports": [
+            "bluetooth"
+          ],
+          "published": true
+        }
+      ]
+    },
+    {
+      "id": "ikoka_nano_nrf_30dbm",
+      "name": "Ikoka Nano (30 dBm)",
+      "family": "Other manufacturers",
+      "platform": "nRF52",
+      "aliases": [
+        "ikoka_nano_nrf_30dbm",
+        "Ikoka Nano (30 dBm)"
+      ],
+      "transports": [
+        "usb",
+        "bluetooth"
+      ],
+      "publishedTransports": [
+        "usb",
+        "bluetooth"
+      ],
+      "source": "https://github.com/meshcore-dev/MeshCore/blob/companion-v1.18.0/variants/ikoka_nano_nrf/platformio.ini",
+      "builds": [
+        {
+          "name": "ikoka_nano_nrf_30dbm_companion_radio_usb",
+          "transports": [
+            "usb"
+          ],
+          "published": true
+        },
+        {
+          "name": "ikoka_nano_nrf_30dbm_companion_radio_ble",
+          "transports": [
+            "bluetooth"
+          ],
+          "published": true
+        }
+      ]
+    },
+    {
+      "id": "ikoka_nano_nrf_33dbm",
+      "name": "Ikoka Nano (33 dBm)",
+      "family": "Other manufacturers",
+      "platform": "nRF52",
+      "aliases": [
+        "ikoka_nano_nrf_33dbm",
+        "Ikoka Nano (33 dBm)"
+      ],
+      "transports": [
+        "usb",
+        "bluetooth"
+      ],
+      "publishedTransports": [
+        "usb",
+        "bluetooth"
+      ],
+      "source": "https://github.com/meshcore-dev/MeshCore/blob/companion-v1.18.0/variants/ikoka_nano_nrf/platformio.ini",
+      "builds": [
+        {
+          "name": "ikoka_nano_nrf_33dbm_companion_radio_usb",
+          "transports": [
+            "usb"
+          ],
+          "published": true
+        },
+        {
+          "name": "ikoka_nano_nrf_33dbm_companion_radio_ble",
+          "transports": [
+            "bluetooth"
+          ],
+          "published": true
+        }
+      ]
+    },
+    {
+      "id": "ikoka_stick_nrf_22dbm",
+      "name": "Ikoka Stick (22 dBm)",
+      "family": "Other manufacturers",
+      "platform": "nRF52",
+      "aliases": [
+        "ikoka_stick_nrf_22dbm",
+        "Ikoka Stick (22 dBm)"
+      ],
+      "transports": [
+        "usb",
+        "bluetooth"
+      ],
+      "publishedTransports": [
+        "usb",
+        "bluetooth"
+      ],
+      "source": "https://github.com/meshcore-dev/MeshCore/blob/companion-v1.18.0/variants/ikoka_stick_nrf/platformio.ini",
+      "builds": [
+        {
+          "name": "ikoka_stick_nrf_22dbm_companion_radio_usb",
+          "transports": [
+            "usb"
+          ],
+          "published": true
+        },
+        {
+          "name": "ikoka_stick_nrf_22dbm_companion_radio_ble",
+          "transports": [
+            "bluetooth"
+          ],
+          "published": true
+        }
+      ]
+    },
+    {
+      "id": "ikoka_stick_nrf_30dbm",
+      "name": "Ikoka Stick (30 dBm)",
+      "family": "Other manufacturers",
+      "platform": "nRF52",
+      "aliases": [
+        "ikoka_stick_nrf_30dbm",
+        "Ikoka Stick (30 dBm)"
+      ],
+      "transports": [
+        "usb",
+        "bluetooth"
+      ],
+      "publishedTransports": [
+        "usb",
+        "bluetooth"
+      ],
+      "source": "https://github.com/meshcore-dev/MeshCore/blob/companion-v1.18.0/variants/ikoka_stick_nrf/platformio.ini",
+      "builds": [
+        {
+          "name": "ikoka_stick_nrf_30dbm_companion_radio_usb",
+          "transports": [
+            "usb"
+          ],
+          "published": true
+        },
+        {
+          "name": "ikoka_stick_nrf_30dbm_companion_radio_ble",
+          "transports": [
+            "bluetooth"
+          ],
+          "published": true
+        }
+      ]
+    },
+    {
+      "id": "ikoka_stick_nrf_33dbm",
+      "name": "Ikoka Stick (33 dBm)",
+      "family": "Other manufacturers",
+      "platform": "nRF52",
+      "aliases": [
+        "ikoka_stick_nrf_33dbm",
+        "Ikoka Stick (33 dBm)"
+      ],
+      "transports": [
+        "usb",
+        "bluetooth"
+      ],
+      "publishedTransports": [
+        "usb",
+        "bluetooth"
+      ],
+      "source": "https://github.com/meshcore-dev/MeshCore/blob/companion-v1.18.0/variants/ikoka_stick_nrf/platformio.ini",
+      "builds": [
+        {
+          "name": "ikoka_stick_nrf_33dbm_companion_radio_usb",
+          "transports": [
+            "usb"
+          ],
+          "published": true
+        },
+        {
+          "name": "ikoka_stick_nrf_33dbm_companion_radio_ble",
+          "transports": [
+            "bluetooth"
+          ],
+          "published": true
+        }
+      ]
+    },
+    {
+      "id": "keepteenlt1",
+      "name": "Keepteen LT1",
+      "family": "Other manufacturers",
+      "platform": "nRF52",
+      "aliases": [
+        "KeepteenLT1",
+        "Keepteen LT1"
+      ],
+      "transports": [
+        "usb",
+        "bluetooth"
+      ],
+      "publishedTransports": [
+        "usb",
+        "bluetooth"
+      ],
+      "source": "https://github.com/meshcore-dev/MeshCore/blob/companion-v1.18.0/variants/keepteen_lt1/platformio.ini",
+      "builds": [
+        {
+          "name": "KeepteenLT1_companion_radio_usb",
+          "transports": [
+            "usb"
+          ],
+          "published": true
+        },
+        {
+          "name": "KeepteenLT1_companion_radio_ble",
+          "transports": [
+            "bluetooth"
+          ],
+          "published": true
+        }
+      ]
+    },
+    {
+      "id": "m5stack_unit_c6l",
+      "name": "M5Stack Unit C6L",
+      "family": "Other manufacturers",
+      "platform": "ESP32",
+      "aliases": [
+        "M5Stack_Unit_C6L",
+        "M5Stack Unit C6L"
+      ],
+      "transports": [
+        "usb",
+        "bluetooth"
+      ],
+      "publishedTransports": [
+        "usb",
+        "bluetooth"
+      ],
+      "source": "https://github.com/meshcore-dev/MeshCore/blob/companion-v1.18.0/variants/m5stack_unit_c6l/platformio.ini",
+      "builds": [
+        {
+          "name": "M5Stack_Unit_C6L_companion_radio_ble",
+          "transports": [
+            "bluetooth"
+          ],
+          "published": true
+        },
+        {
+          "name": "M5Stack_Unit_C6L_companion_radio_usb",
+          "transports": [
+            "usb"
+          ],
+          "published": true
+        }
+      ]
+    },
+    {
+      "id": "meshadventurer_sx1262",
+      "name": "Meshadventurer sx1262",
+      "family": "Other manufacturers",
+      "platform": "ESP32",
+      "aliases": [
+        "Meshadventurer_sx1262",
+        "Meshadventurer sx1262"
+      ],
+      "transports": [
+        "usb",
+        "bluetooth"
+      ],
+      "publishedTransports": [
+        "usb",
+        "bluetooth"
+      ],
+      "source": "https://github.com/meshcore-dev/MeshCore/blob/companion-v1.18.0/variants/meshadventurer/platformio.ini",
+      "builds": [
+        {
+          "name": "Meshadventurer_sx1262_companion_radio_usb",
+          "transports": [
+            "usb"
+          ],
+          "published": true
+        },
+        {
+          "name": "Meshadventurer_sx1262_companion_radio_ble",
+          "transports": [
+            "bluetooth"
+          ],
+          "published": true
+        }
+      ]
+    },
+    {
+      "id": "meshadventurer_sx1268",
+      "name": "Meshadventurer sx1268",
+      "family": "Other manufacturers",
+      "platform": "ESP32",
+      "aliases": [
+        "Meshadventurer_sx1268",
+        "Meshadventurer sx1268"
+      ],
+      "transports": [
+        "usb",
+        "bluetooth"
+      ],
+      "publishedTransports": [
+        "usb",
+        "bluetooth"
+      ],
+      "source": "https://github.com/meshcore-dev/MeshCore/blob/companion-v1.18.0/variants/meshadventurer/platformio.ini",
+      "builds": [
+        {
+          "name": "Meshadventurer_sx1268_companion_radio_usb",
+          "transports": [
+            "usb"
+          ],
+          "published": true
+        },
+        {
+          "name": "Meshadventurer_sx1268_companion_radio_ble",
+          "transports": [
+            "bluetooth"
+          ],
+          "published": true
+        }
+      ]
+    },
+    {
+      "id": "meshnology_w12",
+      "name": "meshnology w12",
+      "family": "Other manufacturers",
+      "platform": "ESP32",
+      "aliases": [
+        "meshnology_w12",
+        "meshnology w12"
+      ],
+      "transports": [
+        "usb",
+        "bluetooth",
+        "wifi"
+      ],
+      "publishedTransports": [
+        "usb",
+        "bluetooth"
+      ],
+      "source": "https://github.com/meshcore-dev/MeshCore/blob/companion-v1.18.0/variants/meshnology_w12/platformio.ini",
+      "builds": [
+        {
+          "name": "meshnology_w12_companion_radio_usb",
+          "transports": [
+            "usb"
+          ],
+          "published": true
+        },
+        {
+          "name": "meshnology_w12_companion_radio_ble",
+          "transports": [
+            "bluetooth"
+          ],
+          "published": true
+        },
+        {
+          "name": "meshnology_w12_companion_radio_wifi",
+          "transports": [
+            "wifi"
+          ],
+          "published": false
+        }
+      ]
+    },
+    {
+      "id": "meshtiny",
+      "name": "Meshtiny",
+      "family": "Other manufacturers",
+      "platform": "nRF52",
+      "aliases": [
+        "Meshtiny",
+        "Meshtiny"
+      ],
+      "transports": [
+        "usb",
+        "bluetooth"
+      ],
+      "publishedTransports": [
+        "usb",
+        "bluetooth"
+      ],
+      "source": "https://github.com/meshcore-dev/MeshCore/blob/companion-v1.18.0/variants/meshtiny/platformio.ini",
+      "builds": [
+        {
+          "name": "Meshtiny_companion_radio_usb",
+          "transports": [
+            "usb"
+          ],
+          "published": true
+        },
+        {
+          "name": "Meshtiny_companion_radio_ble",
+          "transports": [
+            "bluetooth"
+          ],
+          "published": true
+        }
+      ]
+    },
+    {
+      "id": "minewsemi_me25ls01",
+      "name": "Minewsemi me25ls01",
+      "family": "Other manufacturers",
+      "platform": "nRF52",
+      "aliases": [
+        "Minewsemi_me25ls01",
+        "Minewsemi me25ls01"
+      ],
+      "transports": [
+        "usb",
+        "bluetooth"
+      ],
+      "publishedTransports": [
+        "usb",
+        "bluetooth"
+      ],
+      "source": "https://github.com/meshcore-dev/MeshCore/blob/companion-v1.18.0/variants/minewsemi_me25ls01/platformio.ini",
+      "builds": [
+        {
+          "name": "Minewsemi_me25ls01_companion_radio_ble",
+          "transports": [
+            "bluetooth"
+          ],
+          "published": true
+        },
+        {
+          "name": "Minewsemi_me25ls01_companion_radio_usb",
+          "transports": [
+            "usb"
+          ],
+          "published": true
+        }
+      ]
+    },
+    {
+      "id": "muzi_base_duo",
+      "name": "muzi base duo",
+      "family": "Other manufacturers",
+      "platform": "nRF52",
+      "aliases": [
+        "muzi_base_duo",
+        "muzi base duo"
+      ],
+      "transports": [
+        "usb",
+        "bluetooth"
+      ],
+      "publishedTransports": [
+        "usb",
+        "bluetooth"
+      ],
+      "source": "https://github.com/meshcore-dev/MeshCore/blob/companion-v1.18.0/variants/muzi_base/platformio.ini",
+      "builds": [
+        {
+          "name": "muzi_base_duo_companion_radio_usb",
+          "transports": [
+            "usb"
+          ],
+          "published": true
+        },
+        {
+          "name": "muzi_base_duo_companion_radio_ble",
+          "transports": [
+            "bluetooth"
+          ],
+          "published": true
+        }
+      ]
+    },
+    {
+      "id": "muzi_base_duo_superio",
+      "name": "muzi base duo superIO",
+      "family": "Other manufacturers",
+      "platform": "nRF52",
+      "aliases": [
+        "muzi_base_duo_superIO",
+        "muzi base duo superIO"
+      ],
+      "transports": [
+        "bluetooth"
+      ],
+      "publishedTransports": [
+        "bluetooth"
+      ],
+      "source": "https://github.com/meshcore-dev/MeshCore/blob/companion-v1.18.0/variants/muzi_base/platformio.ini",
+      "builds": [
+        {
+          "name": "muzi_base_duo_superIO_companion_radio_ble",
+          "transports": [
+            "bluetooth"
+          ],
+          "published": true
+        }
+      ]
+    },
+    {
+      "id": "muzi_base_uno",
+      "name": "muzi base uno",
+      "family": "Other manufacturers",
+      "platform": "nRF52",
+      "aliases": [
+        "muzi_base_uno",
+        "muzi base uno"
+      ],
+      "transports": [
+        "usb",
+        "bluetooth"
+      ],
+      "publishedTransports": [
+        "usb",
+        "bluetooth"
+      ],
+      "source": "https://github.com/meshcore-dev/MeshCore/blob/companion-v1.18.0/variants/muzi_base/platformio.ini",
+      "builds": [
+        {
+          "name": "muzi_base_uno_companion_radio_usb",
+          "transports": [
+            "usb"
+          ],
+          "published": true
+        },
+        {
+          "name": "muzi_base_uno_companion_radio_ble",
+          "transports": [
+            "bluetooth"
+          ],
+          "published": true
+        }
+      ]
+    },
+    {
+      "id": "muzi_base_uno_superio",
+      "name": "muzi base uno superIO",
+      "family": "Other manufacturers",
+      "platform": "nRF52",
+      "aliases": [
+        "muzi_base_uno_superIO",
+        "muzi base uno superIO"
+      ],
+      "transports": [
+        "bluetooth"
+      ],
+      "publishedTransports": [
+        "bluetooth"
+      ],
+      "source": "https://github.com/meshcore-dev/MeshCore/blob/companion-v1.18.0/variants/muzi_base/platformio.ini",
+      "builds": [
+        {
+          "name": "muzi_base_uno_superIO_companion_radio_ble",
+          "transports": [
+            "bluetooth"
+          ],
+          "published": true
+        }
+      ]
+    },
+    {
+      "id": "r1neo",
+      "name": "Muzi Works R1 Neo",
+      "family": "Other manufacturers",
+      "platform": "nRF52",
+      "aliases": [
+        "R1Neo",
+        "Muzi Works R1 Neo"
+      ],
+      "transports": [
+        "usb",
+        "bluetooth"
+      ],
+      "publishedTransports": [
+        "usb",
+        "bluetooth"
+      ],
+      "source": "https://github.com/meshcore-dev/MeshCore/blob/companion-v1.18.0/variants/muziworks_r1_neo/platformio.ini",
+      "builds": [
+        {
+          "name": "R1Neo_companion_radio_usb",
+          "transports": [
+            "usb"
+          ],
+          "published": true
+        },
+        {
+          "name": "R1Neo_companion_radio_ble",
+          "transports": [
+            "bluetooth"
+          ],
+          "published": true
+        }
+      ]
+    },
+    {
+      "id": "promicro",
+      "name": "ProMicro nrf52 (faketec)",
+      "family": "Other manufacturers",
+      "platform": "nRF52",
+      "aliases": [
+        "ProMicro",
+        "ProMicro nrf52 (faketec)"
+      ],
+      "transports": [
+        "usb",
+        "bluetooth"
+      ],
+      "publishedTransports": [
+        "usb",
+        "bluetooth"
+      ],
+      "source": "https://github.com/meshcore-dev/MeshCore/blob/companion-v1.18.0/variants/promicro/platformio.ini",
+      "builds": [
+        {
+          "name": "ProMicro_companion_radio_usb",
+          "transports": [
+            "usb"
+          ],
+          "published": true
+        },
+        {
+          "name": "ProMicro_companion_radio_ble",
+          "transports": [
+            "bluetooth"
+          ],
+          "published": true
+        }
+      ]
+    },
+    {
+      "id": "picow",
+      "name": "Raspberry Pi Pico W + LoRa radio",
+      "family": "Other manufacturers",
+      "platform": "RP2040",
+      "aliases": [
+        "PicoW",
+        "Raspberry Pi Pico W + LoRa radio"
+      ],
+      "transports": [
+        "usb",
+        "bluetooth",
+        "wifi"
+      ],
+      "publishedTransports": [
+        "usb",
+        "bluetooth"
+      ],
+      "source": "https://github.com/meshcore-dev/MeshCore/blob/companion-v1.18.0/variants/rpi_picow/platformio.ini",
+      "builds": [
+        {
+          "name": "PicoW_companion_radio_usb",
+          "transports": [
+            "usb"
+          ],
+          "published": true
+        },
+        {
+          "name": "PicoW_companion_radio_ble",
+          "transports": [
+            "bluetooth"
+          ],
+          "published": true
+        },
+        {
+          "name": "PicoW_companion_radio",
+          "transports": [
+            "usb",
+            "bluetooth",
+            "wifi"
+          ],
+          "published": false
+        },
+        {
+          "name": "PicoW_companion_radio_wifi",
+          "transports": [
+            "wifi"
+          ],
+          "published": false
+        }
+      ]
+    },
+    {
+      "id": "tiny_relay",
+      "name": "Tiny Relay",
+      "family": "Other manufacturers",
+      "platform": "STM32",
+      "aliases": [
+        "Tiny_Relay",
+        "Tiny Relay"
+      ],
+      "transports": [
+        "usb"
+      ],
+      "publishedTransports": [
+        "usb"
+      ],
+      "source": "https://github.com/meshcore-dev/MeshCore/blob/companion-v1.18.0/variants/tiny_relay/platformio.ini",
+      "builds": [
+        {
+          "name": "Tiny_Relay_companion_radio_usb",
+          "transports": [
+            "usb"
+          ],
+          "published": true
+        }
+      ]
+    },
+    {
+      "id": "nano_g2_ultra",
+      "name": "UnitEng Nano G2 Ultra",
+      "family": "Other manufacturers",
+      "platform": "nRF52",
+      "aliases": [
+        "Nano_G2_Ultra",
+        "UnitEng Nano G2 Ultra"
+      ],
+      "transports": [
+        "usb",
+        "bluetooth"
+      ],
+      "publishedTransports": [
+        "usb",
+        "bluetooth"
+      ],
+      "source": "https://github.com/meshcore-dev/MeshCore/blob/companion-v1.18.0/variants/nano_g2_ultra/platformio.ini",
+      "builds": [
+        {
+          "name": "Nano_G2_Ultra_companion_radio_ble",
+          "transports": [
+            "bluetooth"
+          ],
+          "published": true
+        },
+        {
+          "name": "Nano_G2_Ultra_companion_radio_usb",
+          "transports": [
+            "usb"
+          ],
+          "published": true
+        }
+      ]
+    },
+    {
+      "id": "station_g2",
+      "name": "UnitEng Station G2",
+      "family": "Other manufacturers",
+      "platform": "ESP32",
+      "aliases": [
+        "Station_G2",
+        "UnitEng Station G2"
+      ],
+      "transports": [
+        "usb",
+        "bluetooth",
+        "wifi"
+      ],
+      "publishedTransports": [
+        "usb"
+      ],
+      "source": "https://github.com/meshcore-dev/MeshCore/blob/companion-v1.18.0/variants/station_g2/platformio.ini",
+      "builds": [
+        {
+          "name": "Station_G2_companion_radio_usb",
+          "transports": [
+            "usb"
+          ],
+          "published": true
+        },
+        {
+          "name": "Station_G2_companion_radio_ble",
+          "transports": [
+            "bluetooth"
+          ],
+          "published": false
+        },
+        {
+          "name": "Station_G2_companion_radio_wifi",
+          "transports": [
+            "wifi"
+          ],
+          "published": false
+        }
+      ]
+    },
+    {
+      "id": "station_g3_esp32",
+      "name": "UnitEng/BQ Voyage Station G3",
+      "family": "Other manufacturers",
+      "platform": "ESP32",
+      "aliases": [
+        "Station_G3_ESP32",
+        "UnitEng/BQ Voyage Station G3"
+      ],
+      "transports": [
+        "usb",
+        "bluetooth",
+        "wifi"
+      ],
+      "publishedTransports": [
+        "usb"
+      ],
+      "source": "https://github.com/meshcore-dev/MeshCore/blob/companion-v1.18.0/variants/station_g3_esp32/platformio.ini",
+      "builds": [
+        {
+          "name": "Station_G3_ESP32_companion_radio_usb",
+          "transports": [
+            "usb"
+          ],
+          "published": true
+        },
+        {
+          "name": "Station_G3_ESP32_companion_radio_ble",
+          "transports": [
+            "bluetooth"
+          ],
+          "published": false
+        },
+        {
+          "name": "Station_G3_ESP32_companion_radio_wifi",
+          "transports": [
+            "wifi"
+          ],
+          "published": false
+        }
+      ]
+    },
+    {
+      "id": "rak_11310",
+      "name": "RAK 11310",
+      "family": "RAKwireless",
+      "platform": "RP2040",
+      "aliases": [
+        "RAK_11310",
+        "RAK 11310"
+      ],
+      "transports": [
+        "usb"
+      ],
+      "publishedTransports": [
+        "usb"
+      ],
+      "source": "https://github.com/meshcore-dev/MeshCore/blob/companion-v1.18.0/variants/rak11310/platformio.ini",
+      "builds": [
+        {
+          "name": "RAK_11310_companion_radio_usb",
+          "transports": [
+            "usb"
+          ],
+          "published": true
+        }
+      ]
+    },
+    {
+      "id": "rak_3x72",
+      "name": "RAK 3x72",
+      "family": "RAKwireless",
+      "platform": "STM32",
+      "aliases": [
+        "RAK_3x72",
+        "RAK 3x72"
+      ],
+      "transports": [
+        "usb"
+      ],
+      "publishedTransports": [
+        "usb"
+      ],
+      "source": "https://github.com/meshcore-dev/MeshCore/blob/companion-v1.18.0/variants/rak3x72/platformio.ini",
+      "builds": [
+        {
+          "name": "RAK_3x72_companion_radio_usb",
+          "transports": [
+            "usb"
+          ],
+          "published": true
+        }
+      ]
+    },
+    {
+      "id": "rak_4631",
+      "name": "RAK WisBlock / WisMesh (RAK 4631)",
+      "family": "RAKwireless",
+      "platform": "nRF52",
+      "aliases": [
+        "RAK_4631",
+        "RAK WisBlock / WisMesh (RAK 4631)"
+      ],
+      "transports": [
+        "usb",
+        "bluetooth"
+      ],
+      "publishedTransports": [
+        "usb",
+        "bluetooth"
+      ],
+      "source": "https://github.com/meshcore-dev/MeshCore/blob/companion-v1.18.0/variants/rak4631/platformio.ini",
+      "builds": [
+        {
+          "name": "RAK_4631_companion_radio_usb",
+          "transports": [
+            "usb"
+          ],
+          "published": true
+        },
+        {
+          "name": "RAK_4631_companion_radio_ble",
+          "transports": [
+            "bluetooth"
+          ],
+          "published": true
+        }
+      ]
+    },
+    {
+      "id": "rak_3112",
+      "name": "RAK WisBlock 3112",
+      "family": "RAKwireless",
+      "platform": "ESP32",
+      "aliases": [
+        "RAK_3112",
+        "RAK WisBlock 3112"
+      ],
+      "transports": [
+        "usb",
+        "bluetooth",
+        "wifi"
+      ],
+      "publishedTransports": [
+        "usb",
+        "bluetooth",
+        "wifi"
+      ],
+      "source": "https://github.com/meshcore-dev/MeshCore/blob/companion-v1.18.0/variants/rak3112/platformio.ini",
+      "builds": [
+        {
+          "name": "RAK_3112_companion_radio_usb",
+          "transports": [
+            "usb"
+          ],
+          "published": true
+        },
+        {
+          "name": "RAK_3112_companion_radio_ble",
+          "transports": [
+            "bluetooth",
+            "wifi"
+          ],
+          "published": true
+        },
+        {
+          "name": "RAK_3112_companion_radio_wifi",
+          "transports": [
+            "wifi"
+          ],
+          "published": false
+        }
+      ]
+    },
+    {
+      "id": "rak_3401",
+      "name": "RAK WisMesh 1W Booster (3401 + 13302)",
+      "family": "RAKwireless",
+      "platform": "nRF52",
+      "aliases": [
+        "RAK_3401",
+        "RAK WisMesh 1W Booster (3401 + 13302)"
+      ],
+      "transports": [
+        "usb",
+        "bluetooth"
+      ],
+      "publishedTransports": [
+        "usb",
+        "bluetooth"
+      ],
+      "source": "https://github.com/meshcore-dev/MeshCore/blob/companion-v1.18.0/variants/rak3401/platformio.ini",
+      "builds": [
+        {
+          "name": "RAK_3401_companion_radio_usb",
+          "transports": [
+            "usb"
+          ],
+          "published": true
+        },
+        {
+          "name": "RAK_3401_companion_radio_ble",
+          "transports": [
+            "bluetooth"
+          ],
+          "published": true
+        }
+      ]
+    },
+    {
+      "id": "rak_wismesh_tag",
+      "name": "RAK WisMesh Tag",
+      "family": "RAKwireless",
+      "platform": "nRF52",
+      "aliases": [
+        "RAK_WisMesh_Tag",
+        "RAK WisMesh Tag"
+      ],
+      "transports": [
+        "usb",
+        "bluetooth"
+      ],
+      "publishedTransports": [
+        "usb",
+        "bluetooth"
+      ],
+      "source": "https://github.com/meshcore-dev/MeshCore/blob/companion-v1.18.0/variants/rak_wismesh_tag/platformio.ini",
+      "builds": [
+        {
+          "name": "RAK_WisMesh_Tag_companion_radio_usb",
+          "transports": [
+            "usb"
+          ],
+          "published": true
+        },
+        {
+          "name": "RAK_WisMesh_Tag_companion_radio_ble",
+          "transports": [
+            "bluetooth"
+          ],
+          "published": true
+        }
+      ]
+    },
+    {
+      "id": "meshtracker_x1",
+      "name": "Seeed Studio SenseCAP MeshTracker X1",
+      "family": "Seeed Studio",
+      "platform": "nRF52",
+      "aliases": [
+        "MeshTracker_X1",
+        "Seeed Studio SenseCAP MeshTracker X1"
+      ],
+      "transports": [
+        "usb",
+        "bluetooth"
+      ],
+      "publishedTransports": [
+        "usb",
+        "bluetooth"
+      ],
+      "source": "https://github.com/meshcore-dev/MeshCore/blob/companion-v1.18.0/variants/meshtracker_x1/platformio.ini",
+      "builds": [
+        {
+          "name": "MeshTracker_X1_companion_radio_usb",
+          "transports": [
+            "usb"
+          ],
+          "published": true
+        },
+        {
+          "name": "MeshTracker_X1_companion_radio_ble",
+          "transports": [
+            "bluetooth"
+          ],
+          "published": true
+        }
+      ]
+    },
+    {
+      "id": "sensecap_solar",
+      "name": "Seeed Studio SenseCAP Solar Node P1",
+      "family": "Seeed Studio",
+      "platform": "nRF52",
+      "aliases": [
+        "SenseCap_Solar",
+        "Seeed Studio SenseCAP Solar Node P1"
+      ],
+      "transports": [
+        "usb",
+        "bluetooth"
+      ],
+      "publishedTransports": [
+        "usb",
+        "bluetooth"
+      ],
+      "source": "https://github.com/meshcore-dev/MeshCore/blob/companion-v1.18.0/variants/sensecap_solar/platformio.ini",
+      "builds": [
+        {
+          "name": "SenseCap_Solar_companion_radio_ble",
+          "transports": [
+            "bluetooth"
+          ],
+          "published": true
+        },
+        {
+          "name": "SenseCap_Solar_companion_radio_usb",
+          "transports": [
+            "usb"
+          ],
+          "published": true
+        }
+      ]
+    },
+    {
+      "id": "t1000e",
+      "name": "Seeed Studio SenseCAP T1000-E",
+      "family": "Seeed Studio",
+      "platform": "nRF52",
+      "aliases": [
+        "t1000e",
+        "Seeed Studio SenseCAP T1000-E"
+      ],
+      "transports": [
+        "usb",
+        "bluetooth"
+      ],
+      "publishedTransports": [
+        "usb",
+        "bluetooth"
+      ],
+      "source": "https://github.com/meshcore-dev/MeshCore/blob/companion-v1.18.0/variants/t1000-e/platformio.ini",
+      "builds": [
+        {
+          "name": "t1000e_companion_radio_usb",
+          "transports": [
+            "usb"
+          ],
+          "published": true
+        },
+        {
+          "name": "t1000e_companion_radio_ble",
+          "transports": [
+            "bluetooth"
+          ],
+          "published": true
+        }
+      ]
+    },
+    {
+      "id": "wiotrackerl1eink",
+      "name": "Seeed Studio Wio Tracker L1 EINK",
+      "family": "Seeed Studio",
+      "platform": "nRF52",
+      "aliases": [
+        "WioTrackerL1Eink",
+        "Seeed Studio Wio Tracker L1 EINK"
+      ],
+      "transports": [
+        "bluetooth"
+      ],
+      "publishedTransports": [
+        "bluetooth"
+      ],
+      "source": "https://github.com/meshcore-dev/MeshCore/blob/companion-v1.18.0/variants/wio-tracker-l1-eink/platformio.ini",
+      "builds": [
+        {
+          "name": "WioTrackerL1Eink_companion_radio_ble",
+          "transports": [
+            "bluetooth"
+          ],
+          "published": true
+        }
+      ]
+    },
+    {
+      "id": "wiotrackerl1",
+      "name": "Seeed Studio Wio Tracker L1 Pro",
+      "family": "Seeed Studio",
+      "platform": "nRF52",
+      "aliases": [
+        "WioTrackerL1",
+        "Seeed Studio Wio Tracker L1 Pro"
+      ],
+      "transports": [
+        "usb",
+        "bluetooth"
+      ],
+      "publishedTransports": [
+        "usb",
+        "bluetooth"
+      ],
+      "source": "https://github.com/meshcore-dev/MeshCore/blob/companion-v1.18.0/variants/wio-tracker-l1/platformio.ini",
+      "builds": [
+        {
+          "name": "WioTrackerL1_companion_radio_usb",
+          "transports": [
+            "usb"
+          ],
+          "published": true
+        },
+        {
+          "name": "WioTrackerL1_companion_radio_ble",
+          "transports": [
+            "bluetooth"
+          ],
+          "published": true
+        }
+      ]
+    },
+    {
+      "id": "xiao_c3",
+      "name": "Seeed Studio Xiao C3",
+      "family": "Seeed Studio",
+      "platform": "ESP32",
+      "aliases": [
+        "Xiao_C3",
+        "Seeed Studio Xiao C3"
+      ],
+      "transports": [
+        "usb",
+        "bluetooth",
+        "wifi"
+      ],
+      "publishedTransports": [
+        "usb",
+        "bluetooth"
+      ],
+      "source": "https://github.com/meshcore-dev/MeshCore/blob/companion-v1.18.0/variants/xiao_c3/platformio.ini",
+      "builds": [
+        {
+          "name": "Xiao_C3_companion_radio_ble",
+          "transports": [
+            "bluetooth"
+          ],
+          "published": true
+        },
+        {
+          "name": "Xiao_C3_companion_radio_usb",
+          "transports": [
+            "usb"
+          ],
+          "published": true
+        },
+        {
+          "name": "Xiao_C3_companion_radio_wifi",
+          "transports": [
+            "wifi"
+          ],
+          "published": false
+        }
+      ]
+    },
+    {
+      "id": "xiao_nrf52",
+      "name": "Seeed Studio Xiao nRF52 WIO",
+      "family": "Seeed Studio",
+      "platform": "nRF52",
+      "aliases": [
+        "Xiao_nrf52",
+        "Seeed Studio Xiao nRF52 WIO"
+      ],
+      "transports": [
+        "usb",
+        "bluetooth"
+      ],
+      "publishedTransports": [
+        "usb",
+        "bluetooth"
+      ],
+      "source": "https://github.com/meshcore-dev/MeshCore/blob/companion-v1.18.0/variants/xiao_nrf52/platformio.ini",
+      "builds": [
+        {
+          "name": "Xiao_nrf52_companion_radio_ble",
+          "transports": [
+            "bluetooth"
+          ],
+          "published": true
+        },
+        {
+          "name": "Xiao_nrf52_companion_radio_usb",
+          "transports": [
+            "usb"
+          ],
+          "published": true
+        }
+      ]
+    },
+    {
+      "id": "xiao_s3_wio",
+      "name": "Seeed Studio Xiao S3 WIO",
+      "family": "Seeed Studio",
+      "platform": "ESP32",
+      "aliases": [
+        "Xiao_S3_WIO",
+        "Seeed Studio Xiao S3 WIO"
+      ],
+      "transports": [
+        "usb",
+        "bluetooth",
+        "wifi"
+      ],
+      "publishedTransports": [
+        "usb",
+        "bluetooth",
+        "wifi"
+      ],
+      "source": "https://github.com/meshcore-dev/MeshCore/blob/companion-v1.18.0/variants/xiao_s3_wio/platformio.ini",
+      "builds": [
+        {
+          "name": "Xiao_S3_WIO_companion_radio_usb",
+          "transports": [
+            "usb"
+          ],
+          "published": true
+        },
+        {
+          "name": "Xiao_S3_WIO_companion_radio_ble",
+          "transports": [
+            "bluetooth",
+            "wifi"
+          ],
+          "published": true
+        },
+        {
+          "name": "Xiao_S3_WIO_companion_radio_wifi",
+          "transports": [
+            "wifi"
+          ],
+          "published": false
+        }
+      ]
+    },
+    {
+      "id": "wio_wm1110",
+      "name": "wio wm1110",
+      "family": "Seeed Studio",
+      "platform": "nRF52",
+      "aliases": [
+        "wio_wm1110",
+        "wio wm1110"
+      ],
+      "transports": [
+        "bluetooth"
+      ],
+      "publishedTransports": [
+        "bluetooth"
+      ],
+      "source": "https://github.com/meshcore-dev/MeshCore/blob/companion-v1.18.0/variants/wio_wm1110/platformio.ini",
+      "builds": [
+        {
+          "name": "wio_wm1110_companion_radio_ble",
+          "transports": [
+            "bluetooth"
+          ],
+          "published": true
+        }
+      ]
+    },
+    {
+      "id": "wio-e5",
+      "name": "wio-e5",
+      "family": "Seeed Studio",
+      "platform": "STM32",
+      "aliases": [
+        "wio-e5",
+        "wio-e5"
+      ],
+      "transports": [
+        "usb"
+      ],
+      "publishedTransports": [
+        "usb"
+      ],
+      "source": "https://github.com/meshcore-dev/MeshCore/blob/companion-v1.18.0/variants/wio-e5-dev/platformio.ini",
+      "builds": [
+        {
+          "name": "wio-e5_companion_radio_usb",
+          "transports": [
+            "usb"
+          ],
+          "published": true
+        }
+      ]
+    },
+    {
+      "id": "wio-e5-mini",
+      "name": "wio-e5-mini",
+      "family": "Seeed Studio",
+      "platform": "STM32",
+      "aliases": [
+        "wio-e5-mini",
+        "wio-e5-mini"
+      ],
+      "transports": [
+        "usb"
+      ],
+      "publishedTransports": [
+        "usb"
+      ],
+      "source": "https://github.com/meshcore-dev/MeshCore/blob/companion-v1.18.0/variants/wio-e5-mini/platformio.ini",
+      "builds": [
+        {
+          "name": "wio-e5-mini_companion_radio_usb",
+          "transports": [
+            "usb"
+          ],
+          "published": true
+        }
+      ]
+    },
+    {
+      "id": "wiotrackerl1-1w",
+      "name": "WioTrackerL1-1W",
+      "family": "Seeed Studio",
+      "platform": "nRF52",
+      "aliases": [
+        "WioTrackerL1-1W",
+        "WioTrackerL1-1W"
+      ],
+      "transports": [
+        "usb",
+        "bluetooth"
+      ],
+      "publishedTransports": [
+        "usb",
+        "bluetooth"
+      ],
+      "source": "https://github.com/meshcore-dev/MeshCore/blob/companion-v1.18.0/variants/wio-tracker-l1-1w/platformio.ini",
+      "builds": [
+        {
+          "name": "WioTrackerL1-1W_companion_radio_usb",
+          "transports": [
+            "usb"
+          ],
+          "published": true
+        },
+        {
+          "name": "WioTrackerL1-1W_companion_radio_ble",
+          "transports": [
+            "bluetooth"
+          ],
+          "published": true
+        }
+      ]
+    },
+    {
+      "id": "xiao_rp2040",
+      "name": "Xiao rp2040",
+      "family": "Seeed Studio",
+      "platform": "RP2040",
+      "aliases": [
+        "Xiao_rp2040",
+        "Xiao rp2040"
+      ],
+      "transports": [
+        "usb"
+      ],
+      "publishedTransports": [
+        "usb"
+      ],
+      "source": "https://github.com/meshcore-dev/MeshCore/blob/companion-v1.18.0/variants/xiao_rp2040/platformio.ini",
+      "builds": [
+        {
+          "name": "Xiao_rp2040_companion_radio_usb",
+          "transports": [
+            "usb"
+          ],
+          "published": true
+        }
+      ]
+    },
+    {
+      "id": "xiao_s3",
+      "name": "Xiao S3",
+      "family": "Seeed Studio",
+      "platform": "ESP32",
+      "aliases": [
+        "Xiao_S3",
+        "Xiao S3"
+      ],
+      "transports": [
+        "usb",
+        "bluetooth",
+        "wifi"
+      ],
+      "publishedTransports": [
+        "usb",
+        "bluetooth",
+        "wifi"
+      ],
+      "source": "https://github.com/meshcore-dev/MeshCore/blob/companion-v1.18.0/variants/xiao_s3/platformio.ini",
+      "builds": [
+        {
+          "name": "Xiao_S3_companion_radio_ble",
+          "transports": [
+            "bluetooth",
+            "wifi"
+          ],
+          "published": true
+        },
+        {
+          "name": "Xiao_S3_companion_radio_usb",
+          "transports": [
+            "usb"
+          ],
+          "published": true
+        }
+      ]
+    },
+    {
+      "id": "waveshare_rp2040_lora",
+      "name": "waveshare rp2040 lora",
+      "family": "Waveshare",
+      "platform": "RP2040",
+      "aliases": [
+        "waveshare_rp2040_lora",
+        "waveshare rp2040 lora"
+      ],
+      "transports": [
+        "usb"
+      ],
+      "publishedTransports": [
+        "usb"
+      ],
+      "source": "https://github.com/meshcore-dev/MeshCore/blob/companion-v1.18.0/variants/waveshare_rp2040_lora/platformio.ini",
+      "builds": [
+        {
+          "name": "waveshare_rp2040_lora_companion_radio_usb",
+          "transports": [
+            "usb"
+          ],
+          "published": true
+        }
+      ]
+    },
+    {
+      "id": "waveshare_s3_lr1121",
+      "name": "Waveshare S3 LR1121",
+      "family": "Waveshare",
+      "platform": "ESP32",
+      "aliases": [
+        "Waveshare_S3_LR1121",
+        "Waveshare S3 LR1121"
+      ],
+      "transports": [
+        "usb",
+        "bluetooth"
+      ],
+      "publishedTransports": [
+        "usb",
+        "bluetooth"
+      ],
+      "source": "https://github.com/meshcore-dev/MeshCore/blob/companion-v1.18.0/variants/waveshare_esp32s3_lr1121/platformio.ini",
+      "builds": [
+        {
+          "name": "Waveshare_S3_LR1121_companion_radio_usb",
+          "transports": [
+            "usb"
+          ],
+          "published": true
+        },
+        {
+          "name": "Waveshare_S3_LR1121_companion_radio_ble",
+          "transports": [
+            "bluetooth"
+          ],
+          "published": true
+        }
+      ]
+    }
+  ]
+}

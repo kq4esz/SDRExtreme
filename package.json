@@ -1,6 +1,6 @@
 {
   "name": "sdr-extreme",
-  "version": "0.7.1",
+  "version": "0.8.0",
   "private": true,
   "type": "module",
   "description": "Windows SDR desktop suite with RTL-SDR USB, digital decoders, KiwiSDR and a MeshCore client.",
@@ -22,6 +22,7 @@
     "test": "node --test test/*.test.mjs",
     "test:ui": "node scripts/verify-memory-ui.mjs",
     "diagnose:usb": "node scripts/diagnose-usb.mjs",
+    "update:meshcore-devices": "node scripts/update-meshcore-catalog.mjs",
     "build:win": "electron-builder --win nsis --x64 --publish never",
     "build:dir": "electron-builder --win --x64 --dir --publish never",
     "release:win": "pnpm build:win && pnpm release:checksums && node scripts/publish-release.mjs",
