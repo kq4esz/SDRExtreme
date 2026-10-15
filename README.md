@@ -4,7 +4,7 @@ SDR Extreme is a Windows desktop receiver suite with native RTL-SDR USB access, 
 
 ## Start the app
 
-1. Download **SDR-Extreme-Setup-0.9.0-x64.exe** from [GitHub Releases](https://github.com/kq4esz/SDRExtreme/releases/latest), run the installer, then launch **SDR Extreme** from the desktop or Start menu. The installer includes Electron, the local service, USB libraries and decoders; Node.js is not required. For a source checkout, use **`launch-sdr-extreme.cmd`** after the setup below.
+1. Download **SDR-Extreme-Setup-0.10.0-x64.exe** from [GitHub Releases](https://github.com/kq4esz/SDRExtreme/releases/latest), run the installer, then launch **SDR Extreme** from the desktop or Start menu. The installer includes Electron, the local service, USB libraries and decoders; Node.js is not required. For a source checkout, use **`launch-sdr-extreme.cmd`** after the setup below.
 2. Open **Settings → RTL-SDR device manager**. Click **Refresh**, select your attached receiver, and save the hardware settings.
 3. Go to **Live radio** and click **Start listening**. Select a memory or tune to a frequency.
 4. Go to **KiwiSDR network** to choose a receiver on the world map or in the station list. Select a station, then click **Check & listen**. Its listening interface opens inside the app; **Open receiver in a new window** offers a dedicated desktop window if a receiver blocks embedding.
@@ -130,12 +130,38 @@ not revoke authorization stored in the repeater's ACL. Reconnects require login
 again. This feature uses the companion's LoRa radio; it does not connect the PC
 directly to a repeater's USB console. See [repeater details and protocol references](docs/meshcore-repeaters.md).
 
-Direct messages display delivery confirmation only when the recipient's ACK
-arrives. A timeout means **Delivery unconfirmed** and is not automatically
-retransmitted. Channel messages show **Sent to node**, which is not a receipt
-from other channel members. The composer counts UTF-8 bytes and reserves
-space for the sender name on channel messages. Enter sends; Shift+Enter adds
-a line. Disconnection cancels pending operations; reconnect manually to resume.
+### Message receipts, retries and paths
+
+Direct chat messages make **up to four attempts**, stopping immediately when
+the recipient's ACK confirms delivery. Retries retain the original timestamp
+and use protocol attempt numbers 0–3. Late ACKs from earlier attempts still
+confirm the same chat entry. After two unacknowledged attempts on a known route,
+remaining attempts can reset that contact's route to flood discovery. Waits
+follow the node's estimated timeout. Permanent errors stop retries immediately;
+temporary busy/full errors receive bounded backoff.
+
+Each channel message requests **four broadcasts, spaced 20 seconds apart**,
+within a maximum of four total send attempts. Retransmitted channel broadcasts
+use fresh wire timestamps so relay duplicate caches do not discard them. Other
+clients may therefore display duplicates. Channels have no recipient ACKs:
+**Sent to node** remains explicitly **recipient receipt unavailable**, even
+after all four broadcasts. No channel message is falsely marked delivered.
+
+Click **Receipt & path** on a sent message for its ACK, round-trip time,
+attempts and route information. Delivered direct messages show relay counts
+when available. An outbound route snapshot, a route learned near delivery and
+an observed ACK return path are labeled separately. MeshCore's normal receipt
+does not supply a complete verified forward path. Unknown paths or relay names
+remain unknown, and short-hash identity collisions are marked ambiguous. Zero
+relay hops means one direct radio link. See [delivery details](docs/meshcore-delivery.md).
+
+Pending messages are queued as individual chat entries; an ACK stops further
+attempts. Receipts and attempt history are saved locally. Disconnect or app
+restart stops pending attempts, and reconnecting never silently resends them.
+Repeater console commands retain their reply-based confirmation and do not
+automatically replay administrative operations. The composer counts UTF-8 bytes
+and reserves sender-name space for channel messages. Enter sends; Shift+Enter
+adds a line.
 
 Up to 1,500 messages are retained in `meshcore.json` in the saved data folder,
 scoped to the connected node's public identity. Message text is stored locally

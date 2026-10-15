@@ -24,6 +24,8 @@ module.exports = async function checkPackage(context) {
     'lib/meshcore.mjs',
     'lib/meshcore-conversations.mjs',
     'lib/meshcore-repeater.mjs',
+    'lib/meshcore-delivery.mjs',
+    'lib/meshcore-paths.mjs',
     'lib/meshcore-devices.mjs',
     'lib/meshcore-devices.json',
     'lib/MESHCORE_CATALOG_LICENSE.txt',

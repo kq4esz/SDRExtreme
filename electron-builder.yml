@@ -30,6 +30,7 @@ files:
   - README.md
   - docs/meshcore-devices.md
   - docs/meshcore-repeaters.md
+  - docs/meshcore-delivery.md
   - LICENSE
   - THIRD_PARTY_NOTICES.md
   - '!**/local-data/**'

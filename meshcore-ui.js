@@ -1,5 +1,6 @@
 import { meshProfile, meshConnectionHelp, meshTransportName } from './lib/meshcore-devices.mjs';
 import { normalizeMeshLayout, meshConversations, orderedMeshTargets } from './lib/meshcore-conversations.mjs';
+import { deliveryLabel, deliveryHopLabel } from './lib/meshcore-paths.mjs';
 
 const SERVICE = '6e400001-b5a3-f393-e0a9-e50e24dcca9e';
 const RX = '6e400002-b5a3-f393-e0a9-e50e24dcca9e';
@@ -7,7 +8,6 @@ const TX = '6e400003-b5a3-f393-e0a9-e50e24dcca9e';
 const $ = selector => document.querySelector(selector);
 const bytes = text => new TextEncoder().encode(text).length;
 const element = (tag, className, text) => { const item = document.createElement(tag); item.className = className; if (text !== undefined) item.textContent = text; return item; };
-const STATUS = { sending: 'Sending…', 'sent-to-node': 'Sent to node · channel messages have no delivery receipt', 'awaiting-ack': 'Waiting for delivery receipt', delivered: 'Delivered', unconfirmed: 'Delivery unconfirmed', failed: 'Rejected by node' };
 
 export class MeshCoreUi {
   constructor({ api, toast, socketReady }) {
@@ -49,6 +49,11 @@ export class MeshCoreUi {
     const repeaterComposer = element('form', 'mesh-composer mesh-repeater-composer hidden'); repeaterComposer.id = 'mesh-repeater-command-form';
     repeaterComposer.innerHTML = `<div class="mesh-repeater-shortcuts" role="group" aria-label="Repeater command shortcuts"><button type="button" data-mesh-command="ver">Version</button><button type="button" data-mesh-command="clock">Clock</button><button type="button" data-mesh-command="get radio">Radio settings</button><a href="https://docs.meshcore.io/cli_commands/" target="_blank" rel="noopener noreferrer">Command reference ↗</a></div><label class="sr-only" for="mesh-repeater-command">Repeater command</label><input id="mesh-repeater-command" autocomplete="off" maxlength="150" placeholder="Log in with admin access to send commands…" disabled><div class="mesh-composer-bottom"><span id="mesh-repeater-command-hint">Commands and replies stay in this session only.</span><span id="mesh-repeater-byte-count">0 / 150 bytes</span><button type="submit" class="primary-button" id="mesh-repeater-send" disabled>Send command ↗</button></div>`;
     $('#mesh-message-form').after(repeaterComposer);
+    const deliveryDialog = element('dialog', 'app-dialog mesh-delivery-dialog'); deliveryDialog.id = 'mesh-delivery-dialog'; deliveryDialog.setAttribute('aria-labelledby', 'mesh-delivery-title');
+    deliveryDialog.innerHTML = '<div class="dialog-head"><div><div class="section-kicker">MESSAGE DELIVERY</div><h2 id="mesh-delivery-title">Receipt & path</h2></div><button type="button" class="icon-button" id="mesh-delivery-close" aria-label="Close delivery details">×</button></div><div id="mesh-delivery-content" class="mesh-delivery-content"></div><div class="dialog-actions"><button type="button" class="outline-button" id="mesh-delivery-done">Done</button></div>';
+    $('#page-meshcore').append(deliveryDialog);
+    for (const id of ['mesh-delivery-close', 'mesh-delivery-done']) $('#' + id).addEventListener('click', () => deliveryDialog.close());
+    deliveryDialog.addEventListener('close', () => { this.deliveryMessageId = null; });
     $('#mesh-repeater-login-form').addEventListener('submit', event => { event.preventDefault(); void this.repeaterAction('login'); });
     $('#mesh-repeater-logout').addEventListener('click', () => void this.repeaterAction('logout'));
     $('#mesh-repeater-status').addEventListener('click', () => void this.repeaterAction('status'));
@@ -267,6 +272,10 @@ export class MeshCoreUi {
     if (this.drag && this.drag.node !== data.node?.publicKey) this.finishDrag(false);
     if (data.node?.publicKey === this.data.node?.publicKey && this.data.layout?.revision > (data.layout?.revision || 0)) data = { ...data, layout: this.data.layout };
     if (data.connectionId !== this.data.connectionId) { $('#mesh-repeater-password').value = ''; $('#mesh-repeater-command').value = ''; }
+    if (data.connectionId && data.connectionId === this.data.connectionId) {
+      const existing = new Map(this.data.messages.filter(row => row.direction === 'out' && row.delivery).map(row => [row.id, row]));
+      data = { ...data, messages: data.messages.map(row => existing.get(row.id)?.delivery.revision > (row.delivery?.revision ?? -1) ? existing.get(row.id) : row) };
+    }
     this.data = data;
     if (['connecting', 'syncing', 'connected'].includes(data.phase) && data.config.modelId !== this.profileId) {
       this.profileId = meshProfile(this.catalog, data.config.modelId)?.id || 'auto'; $('#mesh-model').value = this.profileId;
@@ -555,7 +564,8 @@ export class MeshCoreUi {
     $('#mesh-chat-tag').textContent = target ? target.repeater ? 'REPEATER' : target.channel ? 'CHANNEL' : 'DIRECT' : 'MESHCORE';
     $('#mesh-messages').classList.toggle('mesh-repeater-log', Boolean(target?.repeater));
     $('#mesh-messages').setAttribute('aria-label', target?.repeater ? 'Repeater command replies' : 'Conversation messages');
-    const signature = `${this.selected}:${messages.map(row => row.id + row.status).join(',')}`;
+    this.renderDeliveryDetails();
+    const signature = `${this.selected}:${messages.map(row => `${row.id}:${row.status}:${row.delivery?.revision || 0}`).join(',')}`;
     if (signature === this.messageSignature) {
       if (this.forceScroll) this.jumpToLatest(); this.forceScroll = false;
       return;
@@ -573,7 +583,12 @@ export class MeshCoreUi {
       item.append(element('p', 'mesh-message-text', row.text));
       const date = new Date((row.timestamp || 0) * 1000), meta = element('div', 'mesh-message-meta');
       meta.append(element('time', '', Number.isNaN(date.valueOf()) ? '' : date.toLocaleString(undefined, { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })));
-      if (row.direction === 'out' && !target?.repeater) meta.append(element('span', `mesh-delivery ${row.status}`, STATUS[row.status] || row.status));
+      if (row.direction === 'out' && !target?.repeater) {
+        meta.append(element('span', `mesh-delivery ${row.status}`, deliveryLabel(row)));
+        const hops = deliveryHopLabel(row); if (hops) meta.append(element('span', 'mesh-delivery-hops', hops));
+        const details = element('button', 'mesh-delivery-details', 'Receipt & path'); details.type = 'button'; details.setAttribute('aria-label', `View delivery receipt and path for message sent ${date.toLocaleString()}`);
+        details.addEventListener('click', () => { this.deliveryMessageId = row.id; this.deliveryDialogSignature = null; this.renderDeliveryDetails(); $('#mesh-delivery-dialog').showModal(); }); meta.append(details);
+      }
       else if (Number.isFinite(row.snr)) meta.append(element('span', '', `SNR ${row.snr} dB`));
       item.append(meta); if (row.error) item.title = row.error; container.append(item);
     }
@@ -590,7 +605,65 @@ export class MeshCoreUi {
     $('#mesh-byte-count').textContent = `${size} / ${this.maxBytes} bytes`; $('#mesh-byte-count').classList.toggle('over-limit', size > this.maxBytes);
     $('#mesh-send').disabled = !enabled || this.sending || !size || size > this.maxBytes;
     $('#mesh-send').textContent = this.sending ? 'Sending…' : 'Send ↗';
-    $('#mesh-send-hint').textContent = target && !target.writable ? 'This entry is read-only. Select a chat contact or configured channel.' : target?.channel ? 'Channel sends confirm acceptance by your node.' : 'Messages travel through your connected LoRa node.';
+    $('#mesh-send-hint').textContent = target && !target.writable ? 'This entry is read-only. Select a chat contact or configured channel.' : target?.channel ? `${this.data.deliveryPolicy?.channelTransmissions || 4} spaced broadcasts · channel recipient receipts are unavailable.` : 'Up to 4 attempts · stops when the recipient ACK confirms delivery.';
+  }
+  renderDeliveryDetails() {
+    if (!this.deliveryMessageId) return;
+    const row = this.data.messages.find(message => message.id === this.deliveryMessageId), dialog = $('#mesh-delivery-dialog');
+    if (!row) { if (dialog.open) dialog.close(); this.deliveryMessageId = null; return; }
+    const signature = `${row.id}:${row.status}:${row.delivery?.revision || 0}`;
+    if (signature === this.deliveryDialogSignature) return;
+    this.deliveryDialogSignature = signature;
+    const content = $('#mesh-delivery-content'), delivery = row.delivery, receipt = delivery?.receipt;
+    content.replaceChildren();
+    content.append(element('p', `mesh-delivery-summary ${row.status}`, deliveryLabel(row)));
+    const sent = new Date(row.timestamp * 1000).toLocaleString();
+    content.append(element('p', 'mesh-delivery-explainer', `Sent ${sent} · ${delivery?.destinationName || (row.recipient.startsWith('channel:') ? 'Channel ' + row.recipient.slice(8) : row.recipient.slice(8, 20))}`));
+    if (row.status === 'delivered') {
+      content.append(element('p', 'mesh-delivery-explainer', 'The recipient’s ACK confirms delivery to its node. This is not a read receipt.'));
+      const fields = element('dl', 'mesh-delivery-receipt');
+      for (const [name, value] of [['CONFIRMED', receipt?.receivedAt ? new Date(receipt.receivedAt).toLocaleString() : 'Recorded by a previous app version'], ['ROUND TRIP', Number.isFinite(receipt?.roundTripMs ?? row.roundTrip) ? `${receipt?.roundTripMs ?? row.roundTrip} ms` : 'Not reported'], ['ACK CODE', Number.isInteger(receipt?.ackCode ?? row.ack) ? '0x' + (receipt?.ackCode ?? row.ack).toString(16).padStart(8, '0') : 'Not recorded']]) {
+        const field = element('div', ''); field.append(element('dt', '', name), element('dd', '', value)); fields.append(field);
+      }
+      content.append(fields);
+    } else if (delivery?.type === 'channel' || row.recipient.startsWith('channel:')) content.append(element('p', 'mesh-delivery-explainer', 'MeshCore channels broadcast without individual recipient ACKs. Node acceptance or a relayed copy cannot prove that channel members received this message. Recipient delivery and a complete per-recipient path are unavailable.'));
+    else content.append(element('p', 'mesh-delivery-explainer', 'Delivery remains unconfirmed until a matching recipient ACK arrives. A missing ACK does not prove that the message was lost.'));
+    if (row.error) content.append(element('p', 'mesh-delivery-problem', row.error));
+    if (receipt?.learnedRoute) this.appendDeliveryPath(content, 'Learned route near delivery', receipt.learnedRoute, delivery, false,
+      'The companion reported this outbound route near the ACK. It is not an independent trace of the message’s forward path.');
+    if (receipt?.ackReturnPath) this.appendDeliveryPath(content, 'Observed ACK return path', receipt.ackReturnPath, delivery, true,
+      receipt.ackReturnPath.kind === 'flood-return' ? 'Relay hashes observed on the matching ACK packet returning to your companion.' : 'A routed ACK consumes its relay list while travelling. The remaining list does not reveal its full return path or hop count.');
+    if (!delivery?.attempts.length) content.append(element('p', 'mesh-delivery-explainer', delivery ? 'No send attempts have started yet.' : 'This older message has no recorded attempt or path details.'));
+    for (const attempt of delivery?.attempts || []) {
+      const card = element('section', 'mesh-delivery-attempt');
+      const states = { sending: 'Sending', accepted: 'Accepted by local node', 'awaiting-ack': 'Waiting for ACK', 'no-ack': 'No ACK in the wait window', delivered: 'Recipient ACK received', rejected: 'Local send rejected', cancelled: 'Cancelled after an earlier ACK' };
+      card.append(element('h3', '', `Attempt ${attempt.number} / ${delivery.maxAttempts} · ${states[attempt.state] || attempt.state}`));
+      card.append(element('p', 'mesh-delivery-explainer', `${new Date(attempt.transmittedAt || attempt.startedAt).toLocaleString()}${attempt.mode ? ' · ' + attempt.mode : ''}${attempt.acceptedAt ? ' · accepted by companion' : ''}`));
+      if (attempt.error) card.append(element('p', 'mesh-delivery-problem', attempt.error));
+      if (attempt.routeRecovery) card.append(element('p', 'mesh-delivery-explainer', attempt.routeRecovery));
+      if (attempt.route) this.appendDeliveryPath(card, 'Outbound route at send time', attempt.route, delivery, false,
+        'Captured from the companion contact immediately before sending. A receipt confirms delivery; it does not independently verify each relay identity.');
+      content.append(card);
+    }
+    content.append(element('p', 'mesh-delivery-explainer', 'Hop counts here count relays: zero relay hops means one direct radio link. Short relay hashes can match multiple nodes; ambiguous or unknown identities are shown explicitly.'));
+  }
+  appendDeliveryPath(container, title, path, delivery, reverse, explanation) {
+    const section = element('section', 'mesh-delivery-path'); section.append(element('h4', '', title));
+    const known = Number.isInteger(path.hops), label = known ? `${path.hops} relay hops · ${path.hops + 1} radio link${path.hops ? 's' : ''}` : path.kind === 'flood' ? 'Flood broadcast · complete route not reported' : 'Complete route and hop count not reported';
+    section.append(element('p', 'mesh-delivery-path-count', label));
+    if (known) {
+      const chain = element('ol', 'mesh-path-chain');
+      chain.append(element('li', 'mesh-path-endpoint', reverse ? delivery?.destinationName || 'Recipient' : delivery?.sourceName || 'Your companion'));
+      for (const node of path.nodes || []) {
+        const item = element('li', 'mesh-path-relay'), matches = node.matches || [];
+        item.append(element('strong', '', matches.length === 1 ? matches[0].name : matches.length > 1 ? 'Ambiguous relay' : 'Unidentified relay'));
+        item.append(element('code', '', node.hash));
+        if (matches.length > 1) item.append(element('small', '', `Possible matches: ${matches.map(match => match.name).join(', ')}`));
+        chain.append(item);
+      }
+      chain.append(element('li', 'mesh-path-endpoint', reverse ? delivery?.sourceName || 'Your companion' : delivery?.destinationName || 'Recipient')); section.append(chain);
+    }
+    section.append(element('p', 'mesh-delivery-explainer', explanation)); container.append(section);
   }
   renderRepeater() {
     const target = this.targets().find(row => row.id === this.selected), repeater = Boolean(target?.repeater);
