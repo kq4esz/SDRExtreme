@@ -806,6 +806,7 @@ const server = http.createServer(async (req, res) => {
     if (url.pathname === '/api/meshcore/refresh' && req.method === 'POST') return sendJson(res, 200, await meshcore.refresh());
     if (url.pathname === '/api/meshcore/send' && req.method === 'POST') return sendJson(res, 200, await meshcore.send(await parseBody(req, 4096)));
     if (url.pathname === '/api/meshcore/read' && req.method === 'POST') return sendJson(res, 200, meshcore.markRead(await parseBody(req, 128000)));
+    if (url.pathname === '/api/meshcore/organize' && req.method === 'POST') return sendJson(res, 200, meshcore.organize(await parseBody(req, 4096)));
     if (url.pathname === '/api/meshcore/ble/start' && req.method === 'POST') { const body = await parseBody(req, 4096); return sendJson(res, 200, meshcore.startBle(body.session)); }
     if (url.pathname === '/api/meshcore/ble/rx' && req.method === 'POST') { const body = await parseBody(req, 4096); meshcore.receiveBle(body.session, body.frame); return sendJson(res, 200, { received: true }); }
     if (url.pathname === '/api/meshcore/ble/heartbeat' && req.method === 'POST') { const body = await parseBody(req, 4096); meshcore.checkBle(body.session); return sendJson(res, 200, { active: true }); }
@@ -911,7 +912,7 @@ const server = http.createServer(async (req, res) => {
     }
     if (url.pathname === '/api/shutdown' && req.method === 'POST') { meshcore.disconnect(); stopScan(); await stopHd(); await stopReceiver(); await stopDigital(); stopWsjtBridge(); sendJson(res, 200, { stopped: true }); setTimeout(() => { for (const client of clients) client.destroy(); server.close(); }, 100); return; }
     const relative = url.pathname === '/' ? 'index.html' : decodeURIComponent(url.pathname.slice(1));
-    const publicFiles = new Set(['index.html', 'app.js', 'app.css', 'meshcore-ui.js', 'meshcore.css', 'kiwi-network.js', 'hd-radio-ui.js', 'lib/meshcore-devices.mjs', 'lib/channel-protocols.mjs', 'lib/current-memory.mjs', 'lib/hd-options.mjs', 'lib/playback-buffer.mjs', 'assets/app-icon.svg', 'assets/app-icon.png']);
+    const publicFiles = new Set(['index.html', 'app.js', 'app.css', 'meshcore-ui.js', 'meshcore.css', 'kiwi-network.js', 'hd-radio-ui.js', 'lib/meshcore-devices.mjs', 'lib/meshcore-conversations.mjs', 'lib/channel-protocols.mjs', 'lib/current-memory.mjs', 'lib/hd-options.mjs', 'lib/playback-buffer.mjs', 'assets/app-icon.svg', 'assets/app-icon.png']);
     const leafletFiles = new Set(['leaflet.js', 'leaflet.css', 'images/layers.png', 'images/layers-2x.png', 'images/marker-icon.png', 'images/marker-icon-2x.png', 'images/marker-shadow.png']);
     const vendorName = relative.startsWith('vendor/leaflet/') ? relative.slice('vendor/leaflet/'.length) : '';
     if (!publicFiles.has(relative) && !leafletFiles.has(vendorName)) { res.writeHead(404); res.end('Not found'); return; }

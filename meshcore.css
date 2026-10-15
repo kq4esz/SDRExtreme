@@ -1,5 +1,32 @@
 .mesh-state{display:flex;align-items:center;gap:9px;font:11px var(--mono);color:var(--muted);padding:10px 13px;border:1px solid var(--line);border-radius:7px;background:#101a23}.mesh-state i{width:7px;height:7px;border-radius:50%;background:#5d6d7a}.mesh-state[data-phase=connected]{color:var(--lime);border-color:#465a35}.mesh-state[data-phase=connected] i{background:var(--lime);box-shadow:0 0 9px #c7f34555}.mesh-state[data-phase=connecting] i{background:var(--orange);animation:mesh-pulse 1.3s infinite}.mesh-state[data-phase=error] i{background:var(--red)}
 
+/* Personal conversation layout; actions are siblings of the open-chat button. */
+.mesh-favorites-filter{display:flex;align-items:center;gap:6px;margin:0 17px 9px;padding:6px 10px;border:1px solid var(--line);border-radius:5px;background:transparent;color:var(--muted);font:11px var(--mono);cursor:pointer}
+.mesh-favorites-filter[aria-pressed=true]{color:#f6d77b;border-color:#746039;background:#322b1d}
+.mesh-list-help{margin:0 17px 9px;color:var(--muted);font:10px/1.6 var(--mono);min-height:32px}
+.mesh-list-section{display:flex;justify-content:space-between;gap:8px;padding:11px 7px 7px;color:var(--muted);font:9px var(--mono);letter-spacing:.1em}
+.mesh-conversation-row{display:grid;grid-template-columns:18px minmax(0,1fr) 24px;align-items:center;gap:2px;border:1px solid transparent;border-radius:7px;margin-bottom:4px;padding:3px;position:relative}
+.mesh-conversation-row:hover{background:#15232a;border-color:#2e4248}
+.mesh-conversation-row.selected{border-color:#405139;background:#203028}
+.mesh-conversation-row .mesh-conversation{min-width:0;margin:0;padding:7px 3px;gap:8px;border:0;background:transparent;border-radius:4px}
+.mesh-conversation-row .mesh-conversation-icon{width:27px;height:29px;flex:0 0 27px}
+.mesh-conversation-row .mesh-conversation-copy{min-width:0}
+.mesh-conversation-row .mesh-conversation-copy small{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.mesh-drag-handle,.mesh-row-action{display:flex;align-items:center;justify-content:center;padding:0;border:0;border-radius:4px;background:transparent;color:var(--muted);height:24px;font:17px/1 var(--mono)}
+.mesh-drag-handle{width:18px;cursor:grab;letter-spacing:-4px;text-indent:-4px;align-self:stretch;height:auto;min-height:48px;user-select:none}
+.mesh-drag-handle:active{cursor:grabbing}
+.mesh-row-actions{display:flex;flex-direction:column;gap:1px}
+.mesh-row-action{width:24px;cursor:pointer}
+.mesh-row-action:hover,.mesh-drag-handle:hover{background:#ffffff0c;color:var(--text)}
+.mesh-row-action.is-favorite{color:#f6d77b}
+.mesh-row-action.is-pinned{color:var(--lime);background:#c7f34512}
+.mesh-row-action:disabled,.mesh-drag-handle:disabled{opacity:.4;cursor:default}
+.mesh-row-action:focus-visible,.mesh-drag-handle:focus-visible,.mesh-favorites-filter:focus-visible{outline:2px solid var(--lime);outline-offset:1px}
+.mesh-conversation-row.mesh-row-dragging{opacity:.45}
+.mesh-conversation-row.mesh-drop-before:before,.mesh-conversation-row.mesh-drop-after:after{content:"";position:absolute;left:0;right:0;height:2px;background:var(--lime);pointer-events:none;box-shadow:0 0 5px #c7f34555}
+.mesh-drop-before:before{top:-3px}.mesh-drop-after:after{bottom:-3px}
+.mesh-category-tabs button[draggable=true]{cursor:grab}.mesh-category-tabs button.mesh-tab-dragging{opacity:.45}.mesh-category-tabs button.mesh-tab-drop{outline:2px solid var(--lime);outline-offset:-2px}
+
 /* Conversation categories and unread messages. Counts stay visible in the
    compact navigation, where ordinary text labels are hidden. */
 .mesh-profile-row{display:flex;align-items:center;gap:20px;margin:17px 0 6px;padding:0 0 15px;border-bottom:1px solid var(--line)}

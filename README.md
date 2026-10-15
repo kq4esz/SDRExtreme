@@ -4,7 +4,7 @@ SDR Extreme is a Windows desktop receiver suite with native RTL-SDR USB access, 
 
 ## Start the app
 
-1. Download **SDR-Extreme-Setup-0.8.0-x64.exe** from [GitHub Releases](https://github.com/kq4esz/SDRExtreme/releases/latest), run the installer, then launch **SDR Extreme** from the desktop or Start menu. The installer includes Electron, the local service, USB libraries and decoders; Node.js is not required. For a source checkout, use **`launch-sdr-extreme.cmd`** after the setup below.
+1. Download **SDR-Extreme-Setup-0.8.1-x64.exe** from [GitHub Releases](https://github.com/kq4esz/SDRExtreme/releases/latest), run the installer, then launch **SDR Extreme** from the desktop or Start menu. The installer includes Electron, the local service, USB libraries and decoders; Node.js is not required. For a source checkout, use **`launch-sdr-extreme.cmd`** after the setup below.
 2. Open **Settings → RTL-SDR device manager**. Click **Refresh**, select your attached receiver, and save the hardware settings.
 3. Go to **Live radio** and click **Start listening**. Select a memory or tune to a frequency.
 4. Go to **KiwiSDR network** to choose a receiver on the world map or in the station list. Select a station, then click **Check & listen**. Its listening interface opens inside the app; **Open receiver in a new window** offers a dedicated desktop window if a receiver blocks embedding.
@@ -83,7 +83,19 @@ conversation selection and search. Switching between them keeps unsent drafts.
 Unread badges show the number of new incoming messages for each conversation,
 the total for each category tab, and the overall total beside MeshCore in the
 main navigation. Outgoing messages and delivery receipts do not add to these
-counts. Search does not hide a category's unread total.
+counts. Search and Favorites do not hide a category's unread total.
+
+Drag an entry by its **⋮⋮** handle to rearrange the list. Click its **star** to
+favorite it, and use **Favorites** above the list to show only starred entries.
+Click the **pin** to keep a channel or chat in the **Pinned** section above
+the regular list. Favorites and pins are independent. Drag within either group
+to arrange it; dropping on an entry in the other group adopts that entry's
+pinned/unpinned status. Search and Favorites preserve the order of hidden entries.
+You can also drag the **Channels / Contacts** tabs to swap their positions.
+For keyboard access, focus a drag handle and press **Alt+Up / Down**, or focus
+a category tab and press **Alt+Left / Right**. Layout, favorites, pins and tab
+order are saved locally for each node and restored when it reconnects after an
+app restart. Syncing the node or receiving messages keeps that saved layout.
 
 Messages become read when their conversation is open in the visible, focused
 MeshCore workspace and scrolled to the latest message. If you are reading older

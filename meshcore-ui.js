@@ -1,4 +1,5 @@
 import { meshProfile, meshConnectionHelp, meshTransportName } from './lib/meshcore-devices.mjs';
+import { normalizeMeshLayout, meshConversations, orderedMeshTargets } from './lib/meshcore-conversations.mjs';
 
 const SERVICE = '6e400001-b5a3-f393-e0a9-e50e24dcca9e';
 const RX = '6e400002-b5a3-f393-e0a9-e50e24dcca9e';
@@ -6,7 +7,6 @@ const TX = '6e400003-b5a3-f393-e0a9-e50e24dcca9e';
 const $ = selector => document.querySelector(selector);
 const bytes = text => new TextEncoder().encode(text).length;
 const element = (tag, className, text) => { const item = document.createElement(tag); item.className = className; if (text !== undefined) item.textContent = text; return item; };
-const TYPES = { 1: 'Companion', 2: 'Repeater', 3: 'Room server' };
 const STATUS = { sending: 'Sending…', 'sent-to-node': 'Sent to node · channel messages have no delivery receipt', 'awaiting-ack': 'Waiting for delivery receipt', delivered: 'Delivered', unconfirmed: 'Delivery unconfirmed', failed: 'Rejected by node' };
 
 export class MeshCoreUi {
@@ -16,6 +16,7 @@ export class MeshCoreUi {
     this.transport = 'usb'; this.attempt = 0; this.writeQueue = Promise.resolve(); this.readQueue = Promise.resolve(); this.selected = '';
     this.category = 'channels'; this.categorySelections = { channels: '', contacts: '' }; this.pendingReads = new Set();
     this.catalog = { devices: [], release: null }; this.profileId = 'auto';
+    this.favoritesOnly = { channels: false, contacts: false }; this.drag = null; this.layoutSaving = false;
     $('#page-meshcore').innerHTML = `
       <div class="page-heading"><div><div class="eyebrow"><span class="eyebrow-line"></span>OFF-GRID MESSAGING</div><h1>MeshCore<span class="heading-period">.</span></h1><p>Your mesh. One connected workspace.</p></div><div class="mesh-state" id="mesh-state" role="status"><i></i><span>Not connected</span></div></div>
       <section class="mesh-connect panel" aria-label="MeshCore connection">
@@ -43,14 +44,59 @@ export class MeshCoreUi {
     $('#mesh-ports-refresh').addEventListener('click', () => void this.refreshPorts());
     $('#mesh-refresh').addEventListener('click', async () => { try { this.update(await api('/api/meshcore/refresh', {})); } catch (error) { this.showError(error.message); } });
     $('#mesh-search').addEventListener('input', () => this.renderConversations());
+    const favorites = element('button', 'mesh-favorites-filter', '☆ Favorites'); favorites.type = 'button'; favorites.id = 'mesh-favorites-filter'; favorites.setAttribute('aria-pressed', 'false');
+    $('#mesh-search').after(favorites);
+    favorites.addEventListener('click', () => { this.favoritesOnly[this.category] = !this.favoritesOnly[this.category]; this.renderConversations(); });
+    const listHelp = element('p', 'mesh-list-help', 'Drag ⋮⋮ to arrange. Star favorites or pin to the top.'); listHelp.id = 'mesh-list-help';
+    $('#mesh-conversation-list').before(listHelp);
+    const layoutStatus = element('p', 'mesh-layout-status sr-only'); layoutStatus.id = 'mesh-layout-status'; layoutStatus.setAttribute('role', 'status');
+    $('#mesh-conversation-list').after(layoutStatus);
+    $('#mesh-conversation-list').addEventListener('dragover', event => {
+      if (!this.validConversationDrag()) return;
+      event.preventDefault(); event.dataTransfer.dropEffect = 'move';
+      const bounds = $('#mesh-conversation-list').getBoundingClientRect();
+      if (event.clientY < bounds.top + 30) $('#mesh-conversation-list').scrollTop -= 12;
+      else if (event.clientY > bounds.bottom - 30) $('#mesh-conversation-list').scrollTop += 12;
+    });
+    $('#mesh-conversation-list').addEventListener('drop', event => {
+      if (!this.validConversationDrag()) return;
+      event.preventDefault();
+      const rows = this.visibleConversationRows(), target = rows.at(-1), source = this.drag;
+      this.finishDrag();
+      if (target && target.id !== source.id) void this.saveLayout({ action: 'move', category: source.category, id: source.id, target: target.id, before: false });
+    });
     for (const tab of document.querySelectorAll('[data-mesh-category]')) {
       tab.addEventListener('click', () => this.selectCategory(tab.dataset.meshCategory));
       tab.addEventListener('keydown', event => {
+        if (event.altKey && ['ArrowLeft', 'ArrowRight'].includes(event.key)) {
+          event.preventDefault();
+          const order = this.layout().tabOrder, index = order.indexOf(tab.dataset.meshCategory), next = index + (event.key === 'ArrowLeft' ? -1 : 1);
+          if (next >= 0 && next < order.length) void this.saveLayout({ action: 'tabs', order: [...order].reverse() });
+          return;
+        }
         if (!['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(event.key)) return;
         event.preventDefault();
-        const category = event.key === 'Home' ? 'channels' : event.key === 'End' ? 'contacts' : this.category === 'channels' ? 'contacts' : 'channels';
+        const order = this.layout().tabOrder;
+        const category = event.key === 'Home' ? order[0] : event.key === 'End' ? order.at(-1) : this.category === 'channels' ? 'contacts' : 'channels';
         this.selectCategory(category); $(`#mesh-tab-${category}`).focus();
       });
+      tab.addEventListener('dragstart', event => {
+        if (!this.data.node || this.layoutSaving) { event.preventDefault(); return; }
+        this.drag = { kind: 'tab', node: this.data.node.publicKey, category: tab.dataset.meshCategory };
+        event.dataTransfer.effectAllowed = 'move'; event.dataTransfer.setData('application/x-sdrextreme-meshcore-tab', this.drag.category);
+        tab.classList.add('mesh-tab-dragging');
+      });
+      tab.addEventListener('dragover', event => {
+        if (this.drag?.kind !== 'tab' || this.drag.node !== this.data.node?.publicKey || this.drag.category === tab.dataset.meshCategory) return;
+        event.preventDefault(); event.dataTransfer.dropEffect = 'move'; tab.classList.add('mesh-tab-drop');
+      });
+      tab.addEventListener('dragleave', () => tab.classList.remove('mesh-tab-drop'));
+      tab.addEventListener('drop', event => {
+        if (this.drag?.kind !== 'tab' || this.drag.node !== this.data.node?.publicKey || this.drag.category === tab.dataset.meshCategory) return;
+        event.preventDefault(); event.stopPropagation(); const order = [...this.layout().tabOrder].reverse(); this.finishDrag();
+        void this.saveLayout({ action: 'tabs', order });
+      });
+      tab.addEventListener('dragend', () => this.finishDrag());
     }
     const jump = element('button', 'mesh-unread-jump hidden'); jump.type = 'button'; jump.id = 'mesh-unread-jump';
     $('#mesh-message-form').before(jump);
@@ -200,6 +246,8 @@ export class MeshCoreUi {
   socketOpened() { this.api('/api/meshcore/state').then(data => this.update(data)).catch(() => {}); }
   socketClosed() { if (this.bleSession) void this.bleFailed('The local Bluetooth bridge disconnected. Connect the node again.'); }
   update(data) {
+    if (this.drag && this.drag.node !== data.node?.publicKey) this.finishDrag(false);
+    if (data.node?.publicKey === this.data.node?.publicKey && this.data.layout?.revision > (data.layout?.revision || 0)) data = { ...data, layout: this.data.layout };
     this.data = data;
     if (['connecting', 'syncing', 'connected'].includes(data.phase) && data.config.modelId !== this.profileId) {
       this.profileId = meshProfile(this.catalog, data.config.modelId)?.id || 'auto'; $('#mesh-model').value = this.profileId;
@@ -211,6 +259,7 @@ export class MeshCoreUi {
     if (data.node) {
       if (this.nodeIdentity && this.nodeIdentity !== data.node.publicKey) {
         this.selected = ''; this.categorySelections = { channels: '', contacts: '' }; this.drafts = {}; $('#mesh-message').value = '';
+        this.favoritesOnly = { channels: false, contacts: false };
       }
       this.nodeIdentity = data.node.publicKey;
     }
@@ -226,36 +275,56 @@ export class MeshCoreUi {
 
   conversationData() {
     if (this.conversationsCache?.data === this.data) return this.conversationsCache;
-    const targets = this.data.channels.map(row => ({ id: `channel:${row.index}`, name: row.name, detail: `Channel ${row.index}`, channel: true, writable: true }));
-    for (const contact of this.data.contacts) targets.push({ id: `contact:${contact.publicKey}`, name: contact.name || contact.publicKey.slice(0, 12), detail: TYPES[contact.type] || 'Node', writable: contact.type === 1, publicKey: contact.publicKey });
-    const byId = new Map(targets.map(target => [target.id, target])), prefixes = new Map(), groups = new Map();
-    const unread = { channels: 0, contacts: 0, total: 0 };
-    const resolveId = recipient => {
-      if (!recipient || byId.has(recipient) || !recipient.startsWith('contact:')) return recipient;
-      if (!prefixes.has(recipient)) {
-        const matches = this.data.contacts.filter(contact => contact.publicKey.startsWith(recipient.slice(8)));
-        prefixes.set(recipient, matches.length === 1 ? `contact:${matches[0].publicKey}` : recipient);
-      }
-      return prefixes.get(recipient);
-    };
-    for (const message of this.data.messages) {
-      const recipient = resolveId(message.recipient);
-      if (!byId.has(recipient)) {
-        const target = { id: recipient, name: recipient.startsWith('channel:') ? `Channel ${recipient.slice(8)}` : message.sender || recipient.slice(8, 20), detail: 'History · not in node list', writable: false, channel: recipient.startsWith('channel:') };
-        targets.push(target); byId.set(recipient, target);
-      }
-      if (!groups.has(recipient)) groups.set(recipient, { messages: [], unread: 0 });
-      const group = groups.get(recipient); group.messages.push(message);
-      if (message.direction === 'in' && message.unread === true) {
-        group.unread++; unread[recipient.startsWith('channel:') ? 'channels' : 'contacts']++; unread.total++;
-      }
-    }
-    return this.conversationsCache = { data: this.data, targets, groups, unread, resolveId };
+    return this.conversationsCache = { data: this.data, ...meshConversations(this.data) };
   }
   targets() { return this.conversationData().targets; }
   conversationMessages() { return this.conversationData().groups.get(this.selected)?.messages || []; }
+  layout() { return normalizeMeshLayout(this.data.layout, this.conversationData().resolveId); }
+  visibleConversationRows() {
+    const query = $('#mesh-search').value.trim().toLowerCase();
+    return orderedMeshTargets(this.targets(), this.layout(), this.category)
+      .filter(row => !this.favoritesOnly[this.category] || row.favorite)
+      .filter(row => `${row.name} ${row.detail}`.toLowerCase().includes(query));
+  }
+  async saveLayout(action, focusKey = document.activeElement?.dataset.meshFocus) {
+    if (this.layoutSaving || !this.data.node) return;
+    const node = this.data.node.publicKey;
+    this.layoutSaving = true; this.renderConversations();
+    $('#mesh-layout-status').textContent = 'Saving conversation layout…';
+    try {
+      const result = await this.api('/api/meshcore/organize', { node, ...action });
+      if (result.node !== this.data.node?.publicKey) return;
+      // A state broadcast or incoming message can arrive before the HTTP reply.
+      // Merge just the layout, and never replace a newer layout revision.
+      if (result.layout.revision >= this.layout().revision) this.data = { ...this.data, layout: result.layout };
+      $('#mesh-layout-status').textContent = 'Conversation layout saved.';
+    } catch (error) {
+      $('#mesh-layout-status').textContent = 'Could not confirm the saved conversation layout.';
+      this.toast(error.message, 'error');
+    } finally {
+      this.layoutSaving = false; this.renderConversations();
+      if (node === this.data.node?.publicKey && focusKey && (!document.activeElement || document.activeElement === document.body || document.activeElement.dataset.meshFocus === focusKey)) {
+        this.focusListControl(focusKey);
+      }
+    }
+  }
+  focusListControl(key) {
+    const control = [...$('#mesh-conversation-list').querySelectorAll('[data-mesh-focus]')].find(item => item.dataset.meshFocus === key);
+    if (control) control.focus({ preventScroll: true });
+    else $('#mesh-favorites-filter').focus({ preventScroll: true });
+  }
+  validConversationDrag() {
+    return this.drag?.kind === 'conversation' && this.drag.node === this.data.node?.publicKey && this.drag.category === this.category && !this.layoutSaving;
+  }
+  finishDrag(render = true) {
+    const hadDrag = Boolean(this.drag); this.drag = null;
+    for (const item of document.querySelectorAll('.mesh-drop-before, .mesh-drop-after, .mesh-row-dragging, .mesh-tab-dragging, .mesh-tab-drop')) item.classList.remove('mesh-drop-before', 'mesh-drop-after', 'mesh-row-dragging', 'mesh-tab-dragging', 'mesh-tab-drop');
+    $('#mesh-list-help').textContent = 'Drag ⋮⋮ to arrange. Star favorites or pin to the top.';
+    if (hadDrag && render) this.renderConversations();
+  }
   selectCategory(category) {
     if (!['channels', 'contacts'].includes(category) || category === this.category) return;
+    this.finishDrag(false);
     this.categorySelections[this.category] = this.selected;
     this.category = category; $('#mesh-search').value = '';
     this.selectConversation(this.conversationData().resolveId(this.categorySelections[category]));
@@ -353,12 +422,14 @@ export class MeshCoreUi {
   }
   renderConversations() {
     const container = $('#mesh-conversation-list'), query = $('#mesh-search').value.trim().toLowerCase();
-    const { targets, groups, unread } = this.conversationData();
+    const { targets, groups, unread } = this.conversationData(), layout = this.layout();
     const badge = (id, count) => { $(id).textContent = String(count); $(id).classList.toggle('hidden', count === 0); };
     for (const category of ['channels', 'contacts']) {
       const tab = $(`#mesh-tab-${category}`), active = category === this.category;
       tab.setAttribute('aria-selected', String(active)); tab.tabIndex = active ? 0 : -1;
       tab.setAttribute('aria-label', `${category === 'channels' ? 'Channels' : 'Contacts'}, ${unread[category]} unread messages`);
+      tab.draggable = Boolean(this.data.node) && !this.layoutSaving;
+      tab.title = this.data.node ? 'Drag to swap tabs. Alt+Left / Right also moves this tab.' : 'Connect a node to save your tab order.';
       badge(`#mesh-${category}-unread`, unread[category]);
     }
     badge('#mesh-nav-unread', unread.total);
@@ -371,19 +442,86 @@ export class MeshCoreUi {
     $('#mesh-search-label').textContent = `Search ${this.category}`; $('#mesh-search').placeholder = `Search ${this.category}…`;
     const categoryTargets = targets.filter(row => Boolean(row.channel) === (this.category === 'channels'));
     $('#mesh-conversation-count').textContent = String(categoryTargets.length); $('#mesh-conversation-count').title = `${categoryTargets.length} ${this.category}`;
+    const favoriteCount = categoryTargets.filter(row => layout[this.category].favorites.includes(row.id)).length;
+    $('#mesh-favorites-filter').textContent = `${this.favoritesOnly[this.category] ? '★' : '☆'} Favorites (${favoriteCount})`;
+    $('#mesh-favorites-filter').setAttribute('aria-pressed', String(this.favoritesOnly[this.category]));
+    $('#mesh-favorites-filter').title = this.favoritesOnly[this.category] ? `Show all ${this.category}` : `Show favorite ${this.category} only`;
+    this.renderUnreadJump();
+    // Keep the native drag source alive when live messages refresh the page.
+    if (this.drag) return;
+    const tablist = $('.mesh-category-tabs');
+    if ([...tablist.children].map(tab => tab.dataset.meshCategory).join() !== layout.tabOrder.join()) {
+      const focusedTab = tablist.contains(document.activeElement) ? document.activeElement : null;
+      tablist.append(...layout.tabOrder.map(category => $(`#mesh-tab-${category}`)));
+      focusedTab?.focus({ preventScroll: true });
+    }
+    const focusedKey = container.contains(document.activeElement) ? document.activeElement.dataset.meshFocus : null;
+    const scrollTop = container.scrollTop, rows = this.visibleConversationRows(), editable = Boolean(this.data.node) && !this.layoutSaving;
     container.replaceChildren();
-    const rows = categoryTargets.filter(row => `${row.name} ${row.detail}`.toLowerCase().includes(query));
-      for (const row of rows) {
+    for (const pinned of [true, false]) {
+      const sectionRows = rows.filter(row => row.pinned === pinned);
+      if (!sectionRows.length) continue;
+      if (pinned || rows.some(row => row.pinned)) {
+        const heading = element('div', 'mesh-list-section'); heading.append(element('span', '', pinned ? 'PINNED' : this.category.toUpperCase()), element('span', '', String(sectionRows.length))); container.append(heading);
+      }
+      for (const row of sectionRows) {
         const count = groups.get(row.id)?.unread || 0;
+        const wrapper = element('div', `mesh-conversation-row${this.selected === row.id ? ' selected' : ''}${row.pinned ? ' is-pinned' : ''}`);
+        wrapper.dataset.recipient = row.id;
+        const handle = element('button', 'mesh-drag-handle', '⋮⋮'); handle.type = 'button'; handle.draggable = editable; handle.disabled = !editable;
+        handle.dataset.meshFocus = `move:${row.id}`;
+        handle.setAttribute('aria-label', `Reorder ${row.name}`); handle.title = 'Drag to reorder. Alt+Up / Down also moves this entry. Drop into Pinned to pin it; drop into the regular list to unpin it.';
+        handle.addEventListener('dragstart', event => {
+          if (!this.data.node || this.layoutSaving) { event.preventDefault(); return; }
+          this.drag = { kind: 'conversation', node: this.data.node.publicKey, category: this.category, id: row.id, pinned: row.pinned };
+          event.dataTransfer.effectAllowed = 'move'; event.dataTransfer.setData('application/x-sdrextreme-meshcore-conversation', row.id);
+          event.dataTransfer.setDragImage(wrapper, Math.min(40, wrapper.clientWidth / 2), wrapper.clientHeight / 2); wrapper.classList.add('mesh-row-dragging');
+        });
+        handle.addEventListener('dragend', () => this.finishDrag());
+        handle.addEventListener('keydown', event => {
+          if (!event.altKey || !['ArrowUp', 'ArrowDown'].includes(event.key)) return;
+          event.preventDefault(); const index = rows.findIndex(item => item.id === row.id), before = event.key === 'ArrowUp', target = rows[index + (before ? -1 : 1)];
+          if (target) void this.saveLayout({ action: 'move', category: this.category, id: row.id, target: target.id, before }, handle.dataset.meshFocus);
+        });
+        wrapper.addEventListener('dragover', event => {
+          if (!this.validConversationDrag() || this.drag.id === row.id) return;
+          event.preventDefault(); event.dataTransfer.dropEffect = 'move';
+          const before = event.clientY < wrapper.getBoundingClientRect().top + wrapper.clientHeight / 2;
+          for (const other of container.querySelectorAll('.mesh-drop-before, .mesh-drop-after')) if (other !== wrapper) other.classList.remove('mesh-drop-before', 'mesh-drop-after');
+          wrapper.classList.toggle('mesh-drop-before', before); wrapper.classList.toggle('mesh-drop-after', !before);
+          const hint = `Drop ${before ? 'above' : 'below'} ${row.name}${this.drag.pinned !== row.pinned ? row.pinned ? ' and pin to the top.' : ' and unpin.' : '.'}`;
+          if ($('#mesh-list-help').textContent !== hint) $('#mesh-list-help').textContent = hint;
+        });
+        wrapper.addEventListener('dragleave', event => { if (!wrapper.contains(event.relatedTarget)) wrapper.classList.remove('mesh-drop-before', 'mesh-drop-after'); });
+        wrapper.addEventListener('drop', event => {
+          if (!this.validConversationDrag()) return;
+          event.preventDefault(); event.stopPropagation(); const source = this.drag, before = event.clientY < wrapper.getBoundingClientRect().top + wrapper.clientHeight / 2;
+          this.finishDrag();
+          if (source.id !== row.id) void this.saveLayout({ action: 'move', category: source.category, id: source.id, target: row.id, before }, `move:${source.id}`);
+        });
         const button = element('button', `mesh-conversation${this.selected === row.id ? ' selected' : ''}${count ? ' has-unread' : ''}`); button.type = 'button'; button.setAttribute('aria-pressed', String(this.selected === row.id));
-        button.setAttribute('aria-label', `${row.name}, ${row.detail}${count ? `, ${count} unread messages` : ''}`);
+        button.dataset.meshFocus = `open:${row.id}`;
+        button.setAttribute('aria-label', `${row.name}, ${row.detail}${row.pinned ? ', pinned' : ''}${row.favorite ? ', favorite' : ''}${count ? `, ${count} unread messages` : ''}`);
+        button.title = `${row.name} · ${row.detail}`;
         button.append(element('span', `mesh-conversation-icon${row.channel ? ' channel' : ''}`, row.channel ? '#' : row.name.slice(0, 1).toUpperCase()));
         const copy = element('span', 'mesh-conversation-copy'); copy.append(element('strong', '', row.name), element('small', '', row.detail)); button.append(copy);
         if (count) { const indicator = element('span', 'mesh-unread-badge', String(count)); indicator.setAttribute('aria-hidden', 'true'); button.append(indicator); }
-        button.addEventListener('click', () => this.selectConversation(row.id)); container.append(button);
+        button.addEventListener('click', () => this.selectConversation(row.id));
+        const actions = element('div', 'mesh-row-actions');
+        const favorite = element('button', `mesh-row-action${row.favorite ? ' is-favorite' : ''}`, row.favorite ? '★' : '☆'); favorite.type = 'button'; favorite.disabled = !editable;
+        favorite.dataset.meshFocus = `favorite:${row.id}`; favorite.setAttribute('aria-pressed', String(row.favorite));
+        favorite.title = `${row.favorite ? 'Remove' : 'Add'} ${row.name} ${row.favorite ? 'from' : 'to'} favorites`; favorite.setAttribute('aria-label', favorite.title);
+        favorite.addEventListener('click', () => void this.saveLayout({ action: 'favorite', category: this.category, id: row.id, enabled: !row.favorite }, favorite.dataset.meshFocus));
+        const pin = element('button', `mesh-row-action${row.pinned ? ' is-pinned' : ''}`); pin.type = 'button'; pin.disabled = !editable;
+        pin.innerHTML = '<svg viewBox="0 0 20 20" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M6 3h8M7 3v5l-3 4h12l-3-4V3M10 12v5"/></svg>';
+        pin.dataset.meshFocus = `pin:${row.id}`; pin.setAttribute('aria-pressed', String(row.pinned)); pin.title = `${row.pinned ? 'Unpin' : 'Pin'} ${row.name}${row.pinned ? '' : ' to the top'}`; pin.setAttribute('aria-label', pin.title);
+        pin.addEventListener('click', () => void this.saveLayout({ action: 'pin', category: this.category, id: row.id, enabled: !row.pinned }, pin.dataset.meshFocus));
+        actions.append(favorite, pin); wrapper.append(handle, button, actions); container.append(wrapper);
       }
-    if (!container.childElementCount) container.append(element('p', 'mesh-list-empty', query ? `No matching ${this.category}.` : this.data.connected ? `No ${this.category} on this node. Configure them with your existing MeshCore app, then sync here.` : `Your node’s ${this.category} will appear here.`));
-    this.renderUnreadJump();
+    }
+    if (!rows.length) container.append(element('p', 'mesh-list-empty', query ? `No matching ${this.favoritesOnly[this.category] ? 'favorite ' : ''}${this.category}.` : this.favoritesOnly[this.category] ? `No favorite ${this.category} yet. Turn off Favorites, then star an entry to add it here.` : this.data.connected ? `No ${this.category} on this node. Configure them with your existing MeshCore app, then sync here.` : `Your node’s ${this.category} will appear here.`));
+    container.scrollTop = scrollTop;
+    if (focusedKey) this.focusListControl(focusedKey);
   }
   renderMessages() {
     const target = this.targets().find(row => row.id === this.selected), messages = this.conversationMessages();
