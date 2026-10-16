@@ -27,12 +27,14 @@ MeshCore group text messages have no per-recipient ACK. The app cannot establish
 delivery to every channel member or provide a verified path to each member
 without protocol support on those recipients.
 
-The current policy requests four broadcasts, spaced twenty seconds apart,
-within four total send attempts. A rejected request consumes an attempt, so
-fewer than four broadcasts may be accepted. Successful node acceptance is
-recorded separately from recipient delivery, which stays **unavailable**.
-Fresh wire timestamps make repeated broadcasts distinct to the mesh's packet
-duplicate cache. They can appear as repeated messages in other clients.
+The current policy stops immediately after the first send accepted by the local
+node. Only explicit node send errors permit another attempt, with bounded
+backoff and at most four attempts total. Local destination validation failures,
+disconnects, timeouts and ambiguous responses stop the send. A lost local reply
+does not establish that the node rejected the broadcast, so it is not retried.
+Rejected attempts retain the original wire timestamp. Successful node acceptance
+is recorded separately from recipient delivery, which stays **unavailable**.
+Accepted broadcasts are never repeated just because recipient ACKs are absent.
 
 ## Route evidence
 

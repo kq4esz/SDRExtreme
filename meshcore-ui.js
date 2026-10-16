@@ -605,7 +605,7 @@ export class MeshCoreUi {
     $('#mesh-byte-count').textContent = `${size} / ${this.maxBytes} bytes`; $('#mesh-byte-count').classList.toggle('over-limit', size > this.maxBytes);
     $('#mesh-send').disabled = !enabled || this.sending || !size || size > this.maxBytes;
     $('#mesh-send').textContent = this.sending ? 'Sending…' : 'Send ↗';
-    $('#mesh-send-hint').textContent = target && !target.writable ? 'This entry is read-only. Select a chat contact or configured channel.' : target?.channel ? `${this.data.deliveryPolicy?.channelTransmissions || 4} spaced broadcasts · channel recipient receipts are unavailable.` : 'Up to 4 attempts · stops when the recipient ACK confirms delivery.';
+    $('#mesh-send-hint').textContent = target && !target.writable ? 'This entry is read-only. Select a chat contact or configured channel.' : target?.channel ? 'One broadcast · retries only on node send errors · recipient receipt unavailable.' : 'Up to 4 attempts · stops when the recipient ACK confirms delivery.';
   }
   renderDeliveryDetails() {
     if (!this.deliveryMessageId) return;

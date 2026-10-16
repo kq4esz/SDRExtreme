@@ -4,7 +4,7 @@ SDR Extreme is a Windows desktop receiver suite with native RTL-SDR USB access, 
 
 ## Start the app
 
-1. Download **SDR-Extreme-Setup-0.10.0-x64.exe** from [GitHub Releases](https://github.com/kq4esz/SDRExtreme/releases/latest), run the installer, then launch **SDR Extreme** from the desktop or Start menu. The installer includes Electron, the local service, USB libraries and decoders; Node.js is not required. For a source checkout, use **`launch-sdr-extreme.cmd`** after the setup below.
+1. Download **SDR-Extreme-Setup-0.10.1-x64.exe** from [GitHub Releases](https://github.com/kq4esz/SDRExtreme/releases/latest), run the installer, then launch **SDR Extreme** from the desktop or Start menu. The installer includes Electron, the local service, USB libraries and decoders; Node.js is not required. For a source checkout, use **`launch-sdr-extreme.cmd`** after the setup below.
 2. Open **Settings → RTL-SDR device manager**. Click **Refresh**, select your attached receiver, and save the hardware settings.
 3. Go to **Live radio** and click **Start listening**. Select a memory or tune to a frequency.
 4. Go to **KiwiSDR network** to choose a receiver on the world map or in the station list. Select a station, then click **Check & listen**. Its listening interface opens inside the app; **Open receiver in a new window** offers a dedicated desktop window if a receiver blocks embedding.
@@ -140,12 +140,12 @@ remaining attempts can reset that contact's route to flood discovery. Waits
 follow the node's estimated timeout. Permanent errors stop retries immediately;
 temporary busy/full errors receive bounded backoff.
 
-Each channel message requests **four broadcasts, spaced 20 seconds apart**,
-within a maximum of four total send attempts. Retransmitted channel broadcasts
-use fresh wire timestamps so relay duplicate caches do not discard them. Other
-clients may therefore display duplicates. Channels have no recipient ACKs:
-**Sent to node** remains explicitly **recipient receipt unavailable**, even
-after all four broadcasts. No channel message is falsely marked delivered.
+Each channel message stops after the **first send accepted by the local node**.
+Only an explicit node send error triggers another attempt, with backoff and a
+maximum of four attempts total. Retries keep the same timestamp. Disconnects,
+timeouts and ambiguous local responses stop the send instead of repeating a
+broadcast that may already be queued. Channels have no recipient ACKs:
+**Sent to node** remains explicitly **recipient receipt unavailable**.
 
 Click **Receipt & path** on a sent message for its ACK, round-trip time,
 attempts and route information. Delivered direct messages show relay counts
