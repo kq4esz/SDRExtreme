@@ -1,6 +1,6 @@
 import { meshProfile, meshConnectionHelp, meshTransportName } from './lib/meshcore-devices.mjs';
 import { normalizeMeshLayout, meshConversations, orderedMeshTargets } from './lib/meshcore-conversations.mjs';
-import { deliveryLabel, deliveryHopLabel } from './lib/meshcore-paths.mjs';
+import { deliveryLabel, deliveryHopLabel, heardRepeatersLabel, receivedHopInfo, receivedHopLabel, relayMatches } from './lib/meshcore-paths.mjs';
 
 const SERVICE = '6e400001-b5a3-f393-e0a9-e50e24dcca9e';
 const RX = '6e400002-b5a3-f393-e0a9-e50e24dcca9e';
@@ -273,8 +273,12 @@ export class MeshCoreUi {
     if (data.node?.publicKey === this.data.node?.publicKey && this.data.layout?.revision > (data.layout?.revision || 0)) data = { ...data, layout: this.data.layout };
     if (data.connectionId !== this.data.connectionId) { $('#mesh-repeater-password').value = ''; $('#mesh-repeater-command').value = ''; }
     if (data.connectionId && data.connectionId === this.data.connectionId) {
-      const existing = new Map(this.data.messages.filter(row => row.direction === 'out' && row.delivery).map(row => [row.id, row]));
-      data = { ...data, messages: data.messages.map(row => existing.get(row.id)?.delivery.revision > (row.delivery?.revision ?? -1) ? existing.get(row.id) : row) };
+      const existing = new Map(this.data.messages.map(row => [row.id, row]));
+      data = { ...data, messages: data.messages.map(row => {
+        const previous = existing.get(row.id);
+        if (previous?.delivery?.revision > (row.delivery?.revision ?? -1)) return previous;
+        return previous?.reception?.revision > (row.reception?.revision ?? -1) ? { ...row, reception: previous.reception } : row;
+      }) };
     }
     this.data = data;
     if (['connecting', 'syncing', 'connected'].includes(data.phase) && data.config.modelId !== this.profileId) {
@@ -565,7 +569,7 @@ export class MeshCoreUi {
     $('#mesh-messages').classList.toggle('mesh-repeater-log', Boolean(target?.repeater));
     $('#mesh-messages').setAttribute('aria-label', target?.repeater ? 'Repeater command replies' : 'Conversation messages');
     this.renderDeliveryDetails();
-    const signature = `${this.selected}:${messages.map(row => `${row.id}:${row.status}:${row.delivery?.revision || 0}`).join(',')}`;
+    const signature = `${this.selected}:${messages.map(row => `${row.id}:${row.status}:${row.delivery?.revision || 0}:${row.reception?.revision || 0}`).join(',')}`;
     if (signature === this.messageSignature) {
       if (this.forceScroll) this.jumpToLatest(); this.forceScroll = false;
       return;
@@ -586,10 +590,15 @@ export class MeshCoreUi {
       if (row.direction === 'out' && !target?.repeater) {
         meta.append(element('span', `mesh-delivery ${row.status}`, deliveryLabel(row)));
         const hops = deliveryHopLabel(row); if (hops) meta.append(element('span', 'mesh-delivery-hops', hops));
-        const details = element('button', 'mesh-delivery-details', 'Receipt & path'); details.type = 'button'; details.setAttribute('aria-label', `View delivery receipt and path for message sent ${date.toLocaleString()}`);
+        const heard = heardRepeatersLabel(row); if (heard) meta.append(element('span', 'mesh-repeaters-heard', heard));
+      } else if (!target?.repeater) {
+        meta.append(element('span', 'mesh-delivery-hops', receivedHopLabel(row)));
+      }
+      if (row.direction === 'in' && Number.isFinite(row.snr)) meta.append(element('span', '', `SNR ${row.snr} dB`));
+      if (!target?.repeater) {
+        const details = element('button', 'mesh-delivery-details', 'Receipt & path'); details.type = 'button'; details.setAttribute('aria-label', `View receipt and path for message ${row.direction === 'in' ? 'received' : 'sent'} ${date.toLocaleString()}`);
         details.addEventListener('click', () => { this.deliveryMessageId = row.id; this.deliveryDialogSignature = null; this.renderDeliveryDetails(); $('#mesh-delivery-dialog').showModal(); }); meta.append(details);
       }
-      else if (Number.isFinite(row.snr)) meta.append(element('span', '', `SNR ${row.snr} dB`));
       item.append(meta); if (row.error) item.title = row.error; container.append(item);
     }
     container.scrollTop = nearBottom || this.forceScroll ? container.scrollHeight : previousScroll; this.forceScroll = false;
@@ -611,11 +620,14 @@ export class MeshCoreUi {
     if (!this.deliveryMessageId) return;
     const row = this.data.messages.find(message => message.id === this.deliveryMessageId), dialog = $('#mesh-delivery-dialog');
     if (!row) { if (dialog.open) dialog.close(); this.deliveryMessageId = null; return; }
-    const signature = `${row.id}:${row.status}:${row.delivery?.revision || 0}`;
+    const signature = `${row.id}:${row.status}:${row.delivery?.revision || 0}:${row.reception?.revision || 0}:${this.data.contactsRevision || 0}`;
     if (signature === this.deliveryDialogSignature) return;
     this.deliveryDialogSignature = signature;
     const content = $('#mesh-delivery-content'), delivery = row.delivery, receipt = delivery?.receipt;
+    this.openRebroadcastPaths = this.deliveryDetailsRowId === row.id ? new Set([...content.querySelectorAll('.mesh-rebroadcast-route[open]')].map(view => view.dataset.pathKey)) : new Set();
+    this.deliveryDetailsRowId = row.id;
     content.replaceChildren();
+    if (row.direction === 'in') { this.renderReceivedDetails(content, row); return; }
     content.append(element('p', `mesh-delivery-summary ${row.status}`, deliveryLabel(row)));
     const sent = new Date(row.timestamp * 1000).toLocaleString();
     content.append(element('p', 'mesh-delivery-explainer', `Sent ${sent} · ${delivery?.destinationName || (row.recipient.startsWith('channel:') ? 'Channel ' + row.recipient.slice(8) : row.recipient.slice(8, 20))}`));
@@ -629,6 +641,7 @@ export class MeshCoreUi {
     } else if (delivery?.type === 'channel' || row.recipient.startsWith('channel:')) content.append(element('p', 'mesh-delivery-explainer', 'MeshCore channels broadcast without individual recipient ACKs. Node acceptance or a relayed copy cannot prove that channel members received this message. Recipient delivery and a complete per-recipient path are unavailable.'));
     else content.append(element('p', 'mesh-delivery-explainer', 'Delivery remains unconfirmed until a matching recipient ACK arrives. A missing ACK does not prove that the message was lost.'));
     if (row.error) content.append(element('p', 'mesh-delivery-problem', row.error));
+    if (delivery?.type === 'channel' || row.recipient.startsWith('channel:')) this.renderHeardRepeaters(content, row);
     if (receipt?.learnedRoute) this.appendDeliveryPath(content, 'Learned route near delivery', receipt.learnedRoute, delivery, false,
       'The companion reported this outbound route near the ACK. It is not an independent trace of the message’s forward path.');
     if (receipt?.ackReturnPath) this.appendDeliveryPath(content, 'Observed ACK return path', receipt.ackReturnPath, delivery, true,
@@ -647,6 +660,51 @@ export class MeshCoreUi {
     }
     content.append(element('p', 'mesh-delivery-explainer', 'Hop counts here count relays: zero relay hops means one direct radio link. Short relay hashes can match multiple nodes; ambiguous or unknown identities are shown explicitly.'));
   }
+  renderReceivedDetails(content, row) {
+    const reception = row.reception || receivedHopInfo(row.pathLength);
+    content.append(element('p', 'mesh-delivery-summary', `Received · ${receivedHopLabel(row)}`));
+    content.append(element('p', 'mesh-delivery-explainer', `From ${row.sender || 'Sender'} · ${new Date(row.timestamp * 1000).toLocaleString()}`));
+    if (Number.isInteger(reception.hops)) content.append(element('p', 'mesh-delivery-explainer', `Your companion reported ${reception.hops} relay hop${reception.hops === 1 ? '' : 's'}, or ${reception.hops + 1} radio link${reception.hops ? 's' : ''}, for the received message.`));
+    else content.append(element('p', 'mesh-delivery-explainer', reception.kind === 'routed' ? 'The companion marked this as a routed message. Routed packets consume their relay lists, and the receive response does not report the number of traversed hops.' : 'This message has no usable hop count recorded.'));
+    if (reception.path) this.appendDeliveryPath(content, 'Observed received copy', reception.path,
+      { sourceName: row.sender || 'Sender', destinationName: this.data.node?.name || 'Your companion' }, false,
+      'A radio-log copy matched this channel message’s complete encrypted payload, hop count and SNR when available. Names are contact matches for relay hashes; the channel sender name and relay identities are not signed.');
+    else content.append(element('p', 'mesh-delivery-explainer', 'The received-message response includes hop metadata only. A full relay list is available only when a matching radio-log copy was recorded.'));
+  }
+  renderHeardRepeaters(content, row) {
+    const section = element('section', 'mesh-delivery-path'), evidence = row.delivery?.rebroadcast;
+    section.append(element('h4', '', 'Repeaters heard rebroadcasting this message'));
+    if (!evidence?.available) {
+      section.append(element('p', 'mesh-delivery-explainer', evidence ? 'Repeater observations are unavailable for this send. Your companion must provide compatible channel information and radio reception logs.' : 'This older message has no repeater observations recorded. New sends collect them while the companion is connected.'));
+      content.append(section); return;
+    }
+    section.append(element('p', 'mesh-delivery-path-count', heardRepeatersLabel(row)));
+    section.append(element('p', 'mesh-delivery-explainer', 'Each ID is the final relay hash on a matching rebroadcast heard by your companion. This counts nearby rebroadcasters you heard, not every repeater that heard your transmission or a receipt from channel members.'));
+    if (!evidence.repeatCount) section.append(element('p', 'mesh-delivery-explainer', 'No matching rebroadcast has been observed. Repeaters may have heard your message without a copy reaching your node.'));
+    const list = element('ul', 'mesh-heard-repeaters');
+    for (const relay of evidence.repeaters || []) {
+      const item = element('li', ''), current = relayMatches(relay.hash, this.data.contacts), matches = current.length ? current : relay.matches || [];
+      item.append(element('strong', '', matches.length === 1 ? matches[0].name : matches.length > 1 ? 'Ambiguous repeater' : 'Unidentified repeater'));
+      item.append(element('code', '', relay.hash));
+      if (matches.length > 1) item.append(element('small', '', `Possible names: ${matches.map(match => match.name).join(', ')}`));
+      item.append(element('small', '', `${relay.copies} repeat${relay.copies === 1 ? '' : 's'} · last heard ${new Date(relay.lastHeardAt).toLocaleTimeString()}${Number.isFinite(relay.snr) ? ` · SNR ${relay.snr} dB` : ''}${Number.isFinite(relay.rssi) ? ` · RSSI ${relay.rssi} dBm` : ''}`));
+      list.append(item);
+    }
+    section.append(list);
+    if (evidence.repeatersLimited || evidence.countLimited) section.append(element('p', 'mesh-delivery-explainer', 'The saved repeater detail limit was reached. The count describes distinct short relay IDs; hash collisions can hide multiple physical repeaters.'));
+    section.append(element('p', 'mesh-delivery-explainer', 'Sync Contacts to resolve unknown repeater names. Short hashes can match multiple repeaters, so distinct IDs do not establish the number of physical repeaters.'));
+    for (const [index, path] of (evidence.paths || []).entries()) {
+      const view = element('details', 'mesh-rebroadcast-route');
+      view.dataset.pathKey = path.signature; view.open = this.openRebroadcastPaths.has(path.signature);
+      view.append(element('summary', '', `View rebroadcast path ${index + 1} · ${path.hops} relay hops · ${path.copies} cop${path.copies === 1 ? 'y' : 'ies'}`));
+      this.appendDeliveryPath(view, 'Observed rebroadcast path', path,
+        { sourceName: row.delivery.sourceName || 'Your companion', destinationName: 'Your companion (received copy)' }, false,
+        'This is a returning broadcast copy, not a verified path to any particular channel member. Relay names are possible contact matches for short hashes.');
+      section.append(view);
+    }
+    if (evidence.pathsLimited) section.append(element('p', 'mesh-delivery-explainer', 'The first eight distinct rebroadcast paths are saved. Later copies still update the repeater and repeat counts.'));
+    content.append(section);
+  }
   appendDeliveryPath(container, title, path, delivery, reverse, explanation) {
     const section = element('section', 'mesh-delivery-path'); section.append(element('h4', '', title));
     const known = Number.isInteger(path.hops), label = known ? `${path.hops} relay hops · ${path.hops + 1} radio link${path.hops ? 's' : ''}` : path.kind === 'flood' ? 'Flood broadcast · complete route not reported' : 'Complete route and hop count not reported';
@@ -654,7 +712,7 @@ export class MeshCoreUi {
     if (known) {
       const chain = element('ol', 'mesh-path-chain');
       chain.append(element('li', 'mesh-path-endpoint', reverse ? delivery?.destinationName || 'Recipient' : delivery?.sourceName || 'Your companion'));
-      for (const node of path.nodes || []) {
+      for (const node of path.nodes || (path.hashes || []).map(hash => ({ hash, matches: relayMatches(hash, this.data.contacts) }))) {
         const item = element('li', 'mesh-path-relay'), matches = node.matches || [];
         item.append(element('strong', '', matches.length === 1 ? matches[0].name : matches.length > 1 ? 'Ambiguous relay' : 'Unidentified relay'));
         item.append(element('code', '', node.hash));
