@@ -1,6 +1,6 @@
 {
   "name": "sdr-extreme",
-  "version": "0.10.1",
+  "version": "0.10.2",
   "private": true,
   "type": "module",
   "description": "Windows SDR desktop suite with RTL-SDR USB, digital decoders, KiwiSDR and a MeshCore client.",

@@ -1,6 +1,11 @@
 const { contextBridge, ipcRenderer } = require('electron');
 if (process.isMainFrame) {
   contextBridge.exposeInMainWorld('sdrDesktop', {
+    getUpdateStatus: () => ipcRenderer.invoke('sdr:update-status'),
+    checkForUpdates: () => ipcRenderer.invoke('sdr:update-check'),
+    installUpdate: () => ipcRenderer.invoke('sdr:update-install'),
+    continueStartup: () => ipcRenderer.send('sdr:update-continue'),
+    onUpdateStatus: callback => { const listener = (_event, value) => callback(value); ipcRenderer.on('sdr:update-status', listener); return () => ipcRenderer.removeListener('sdr:update-status', listener); },
     selectRtlLibrary: () => ipcRenderer.invoke('sdr:choose-library'),
     openReceiver: id => ipcRenderer.invoke('sdr:open-receiver', id),
     armMeshBluetooth: () => ipcRenderer.send('mesh:arm'),

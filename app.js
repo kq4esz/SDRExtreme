@@ -720,12 +720,52 @@ function bindEvents() {
   $('#full-span-button').addEventListener('click',()=>toast('The RF plots show the full span captured by the active receiver.'));
   $('#spectrum-expand').addEventListener('click',()=>$('#spectrum-wrap').classList.toggle('expanded'));
 }
+let desktopUpdateStatus;
+function renderDesktopUpdate(status) {
+  desktopUpdateStatus = status;
+  const banner = $('#desktop-update'), heading = $('#desktop-update-heading'), detail = $('#desktop-update-detail'), action = $('#desktop-update-action');
+  banner.classList.toggle('hidden', !['checking', 'downloading', 'ready', 'error', 'installing'].includes(status.phase));
+  banner.classList.toggle('update-error', status.phase === 'error');
+  action.disabled = ['checking', 'downloading', 'installing'].includes(status.phase);
+  action.textContent = status.phase === 'ready' ? 'Restart and install' : status.phase === 'installing' ? 'Restarting…' : 'Check again';
+  action.title = '';
+  if (status.phase === 'checking') {
+    heading.textContent = 'Checking for updates…';
+    detail.textContent = `Installed version ${status.version}. You can keep using SDR Extreme.`;
+  } else if (status.phase === 'downloading') {
+    heading.textContent = `Downloading SDR Extreme ${status.availableVersion} · ${Math.floor(status.percent || 0)}%`;
+    detail.textContent = 'A restart button will appear when the download is ready.';
+  } else if (status.phase === 'ready') {
+    heading.textContent = `SDR Extreme ${status.availableVersion} is ready to install`;
+    detail.textContent = `You’re running ${status.version}. Restart now or close normally to install. Memories and settings are preserved.`;
+  } else if (status.phase === 'installing') {
+    heading.textContent = 'Installing update…';
+    detail.textContent = 'The receiver is stopping. SDR Extreme will reopen after installation.';
+  } else if (status.phase === 'error') {
+    heading.textContent = 'SDR Extreme could not update';
+    const retry = status.nextCheckAt ? ` Retrying at ${new Date(status.nextCheckAt).toLocaleTimeString()}.` : ' The app will retry automatically.';
+    detail.textContent = status.canInstall ? `Version ${status.availableVersion} could not install. Retry installation or run the latest setup from GitHub Releases. Memories and settings are preserved.` : `Installed version ${status.version}.${retry} Use Help → Check for updates for error details.`;
+    action.textContent = status.canInstall ? 'Retry installation' : 'Check again';
+    action.title = String(status.error || '').slice(0, 500);
+  }
+}
 async function init() {
   state.meshcore = new MeshCoreUi({api,toast,socketReady:()=>state.socket?.readyState === WebSocket.OPEN});
   state.hdUi=new HdRadioUi({api,getState:()=>state,updateStatus:next=>{state.status=next;renderStatus();},audio:async()=>{connectSocket();await setupAudio();},saveSettings,memory:draft=>openChannelDialog(draft,{draft:true}),toast});
   bindEvents();updateClock();setInterval(updateClock,1000);setInterval(renderSpectrumStatus,500);window.addEventListener('resize',()=>{drawSpectrum();drawWaterfall(true);});
   setInterval(renderPlaybackDiagnostics,1000);
   window.sdrDesktop?.onNavigate(page=>setPage(page));
+  if (window.sdrDesktop?.getUpdateStatus) {
+    window.sdrDesktop.onUpdateStatus(renderDesktopUpdate);
+    window.sdrDesktop.getUpdateStatus().then(renderDesktopUpdate).catch(error => toast(error.message, 'error'));
+    $('#desktop-update-action').addEventListener('click', async () => {
+      try {
+        if (desktopUpdateStatus?.canInstall) await window.sdrDesktop.installUpdate();
+        else await window.sdrDesktop.checkForUpdates();
+      } catch (error) { toast(`Update failed: ${error.message}`, 'error'); }
+    });
+    window.addEventListener('online', () => { if (desktopUpdateStatus?.phase === 'error') window.sdrDesktop.checkForUpdates().catch(() => {}); });
+  }
   try {
     await refreshState();
     state.network=new KiwiNetwork({api,toast,settings:()=>state.settings,onSaved:next=>{state.settings={...state.settings,...next};}});

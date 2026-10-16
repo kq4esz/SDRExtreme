@@ -15,7 +15,7 @@ const DATA_DIR = path.resolve(process.env.SDREXTREME_DATA_DIR || (app.isPackaged
 const DATA_PROFILE = createHash('sha256').update(DATA_DIR.toLowerCase()).digest('hex').slice(0, 16);
 const PORT = Number(process.env.SDREXTREME_PORT || 17890);
 const LOCAL = `http://127.0.0.1:${PORT}`;
-let window, backend, updates, quitting = false, shutdownPromise;
+let window, backend, updates, quitting = false, shutdownPromise, starting = true, backendActive = false;
 const receiverWindows = new Set();
 app.setAppUserModelId('com.sdrextreme.desktop');
 
@@ -30,7 +30,7 @@ async function state() {
 
 async function startBackend() {
   const current = await state();
-  if (current?.status?.transport === 'USB' && current.status.appVersion === APP_VERSION && current.status.dataProfile === DATA_PROFILE) return;
+  if (current?.status?.transport === 'USB' && current.status.appVersion === APP_VERSION && current.status.dataProfile === DATA_PROFILE) { backendActive = true; return; }
   if (current?.status?.host && Array.isArray(current.channels)) {
     await fetch(LOCAL + '/api/shutdown', { method: 'POST', signal: AbortSignal.timeout(2000) }).catch(() => {});
     await new Promise(resolve => setTimeout(resolve, 700));
@@ -40,6 +40,7 @@ async function startBackend() {
   backend = spawn(process.execPath, [path.join(ROOT, 'server.mjs')], {
     cwd: ROOT, windowsHide: true, env: { ...process.env, ELECTRON_RUN_AS_NODE: '1', SDREXTREME_PORT: String(PORT), SDREXTREME_DATA_DIR: DATA_DIR }, stdio: ['ignore', log, log]
   });
+  backendActive = true;
   fs.closeSync(log);
   let launchError;
   backend.once('error', error => { launchError = error; });
@@ -84,7 +85,7 @@ function createWindow() {
     { label: 'View', submenu: [{ role: 'reload' }, { role: 'togglefullscreen' }, { type: 'separator' }, { role: 'resetZoom' }, { role: 'zoomIn' }, { role: 'zoomOut' }, { type: 'separator' }, { role: 'toggleDevTools' }] },
     { label: 'Help', submenu: [
       { label: 'Check for updates…', click: () => { void updates?.check(true); } },
-      { id: 'install-update', label: 'Restart to install update', enabled: false, click: () => { void updates?.check(true); } },
+      { id: 'install-update', label: 'Restart to install update', enabled: updates?.snapshot().phase === 'ready', click: () => { void updates?.check(true); } },
       { type: 'separator' },
       { label: 'Releases on GitHub', click: () => external('https://github.com/kq4esz/SDRExtreme/releases') },
       { label: 'Open saved data folder', click: () => shell.openPath(DATA_DIR) },
@@ -101,6 +102,7 @@ ipcMain.handle('sdr:choose-library', async event => {
 });
 
 async function stopBackend() {
+  if (!backendActive) return;
   if (shutdownPromise) return shutdownPromise;
   shutdownPromise = (async () => {
     for (const receiver of receiverWindows) receiver.destroy();
@@ -124,7 +126,7 @@ ipcMain.handle('sdr:open-receiver', async (event, id) => {
 
 if (!app.requestSingleInstanceLock()) app.quit();
 else {
-  app.on('second-instance', () => { if (window) { if (window.isMinimized()) window.restore(); window.focus(); } });
+  app.on('second-instance', () => { if (window) { if (window.isMinimized()) window.restore(); window.focus(); } else updates?.focusStartup(); });
   app.whenReady().then(async () => {
     session.defaultSession.setUserAgent(`${session.defaultSession.getUserAgent()} SDRExtreme/${APP_VERSION}`);
     session.defaultSession.setPermissionRequestHandler((contents, permission, callback, details) => {
@@ -133,18 +135,20 @@ else {
     });
     session.defaultSession.setPermissionCheckHandler((contents, permission, origin) => Boolean(contents === window?.webContents && (origin === LOCAL || origin === LOCAL + '/') && ['speaker-selection', 'audio-output', 'bluetooth'].includes(permission)));
     try {
-      await startBackend(); createWindow();
       updates = createUpdates({ getWindow: () => window, dataDir: DATA_DIR,
-        beforeInstall: async () => { await stopBackend(); quitting = true; },
+        beforeInstall: stopBackend,
         onStatus: status => {
           const item = Menu.getApplicationMenu()?.getMenuItemById('install-update');
           if (item) item.enabled = status.phase === 'ready';
         } });
-      updates.start();
+      if (!await updates.start() || quitting) return;
+      await startBackend();
+      if (quitting) return;
+      createWindow(); starting = false;
     }
     catch (error) { dialog.showErrorBox('SDR Extreme could not start', error.message); app.quit(); }
   });
-  app.on('window-all-closed', () => app.quit());
+  app.on('window-all-closed', () => { if (!starting) app.quit(); });
   app.on('before-quit', event => {
     if (quitting) return; event.preventDefault(); quitting = true;
     updates?.dispose();

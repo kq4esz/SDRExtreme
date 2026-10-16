@@ -187,15 +187,37 @@ signing certificate is configured; Windows SmartScreen can display an
 unknown-publisher warning. Download from this project's releases and compare
 `SHA256SUMS.txt` when checking a downloaded installer.
 
-Installed builds check **kq4esz/SDRExtreme** releases 15 seconds after launch
-and every four hours. A newer stable version downloads in the background
-over HTTPS with SHA-512 verification. It installs after normal app exit, once
-the receiver service has stopped. **Help → Check for updates** checks manually;
-**Restart to install update** becomes available when a download is ready.
-Downloads do not stop reception. Offline/update errors are recorded in
-`updates.log` in the saved data folder and retried at the next check.
+Starting with **0.10.2**, installed builds immediately check
+**kq4esz/SDRExtreme** releases before opening the receiver. A startup screen
+shows download progress; available stable updates install automatically and
+reopen the updated app. Downloads use HTTPS and SHA-512 verification.
+**Open SDR Extreme now** continues the check/download in the background.
+Checks taking over 12 seconds and downloads taking over two minutes also
+continue in the background so a slow or offline connection does not block use.
+
+While the receiver is open, checks run hourly. An in-app notice shows downloads,
+errors, the installed/available versions, and **Restart and install** when ready.
+Background downloads install after a chosen restart or normal app exit, once
+the receiver service has stopped. **Help → Check for updates** checks manually
+and shows errors. Failed checks/downloads retry after 1, 5, 15, then 30 minutes;
+resuming Windows or the app regaining connectivity can trigger another check.
+Errors and update state are recorded in `updates.log` and `updates.json` in
+the saved data folder (**Help → Open saved data folder**).
 Automatic updates run only in packaged builds. No GitHub token is included
 in the application or needed by users to download public releases.
+
+### Clients still running an older version
+
+Versions through 0.10.1 check 15 seconds after launch and silently download;
+they install after normal exit, not immediately on opening. Use
+**Help → Check for updates**, allow the download to finish, then choose
+**Help → Restart to install update**. If that check/download fails or the version
+still stays old, close the app and run the latest setup executable from
+[GitHub Releases](https://github.com/kq4esz/SDRExtreme/releases/latest) over the
+existing installation. Use the same Windows account and installation folder.
+Memories, MeshCore history, and settings are preserved; do not uninstall or
+delete the saved data folder. This brings the corrected startup updater to
+clients that cannot retrieve it through their existing updater.
 
 ### Build and publish another version
 
