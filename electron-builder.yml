@@ -22,6 +22,9 @@ files:
   - server.mjs
   - app.js
   - app.css
+  - theme.js
+  - theme.css
+  - theme-light.css
   - index.html
   - hd-radio-ui.js
   - kiwi-network.js

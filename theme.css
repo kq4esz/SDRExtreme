@@ -1,0 +1,14 @@
+/* Keep the existing dark palette and layout; only the new settings control lives here. */
+:root{--spectrum-bg:#0d161f;--spectrum-grid:#1d2a34;--spectrum-grid-soft:#182630;--spectrum-label:#62747f;--spectrum-fill-top:#80efc02b;--spectrum-fill-bottom:#28b9b122;--spectrum-trace:#9bebc8;--spectrum-marker:#c7f36b}
+.sidebar-settings{display:flex;align-items:center;gap:4px;width:100%}
+.sidebar-settings .settings-link{flex:1;min-width:0}
+.theme-switch{display:flex;align-items:center;justify-content:center;gap:6px;flex-shrink:0;min-height:35px;padding:5px 4px;border:0;border-radius:6px;background:transparent;color:var(--muted);font:9px var(--mono)}
+.theme-switch:hover{color:var(--text);background:var(--panel)}
+.theme-switch-label{width:29px;text-align:left}
+.theme-switch-track{position:relative;display:block;width:32px;height:19px;border:1px solid var(--muted-2);border-radius:12px;background:var(--panel-2)}
+.theme-switch-thumb{position:absolute;top:2px;left:2px;width:13px;height:13px;border-radius:50%;background:var(--muted);transition:transform .16s ease,background .16s ease}
+.theme-switch[aria-checked="true"] .theme-switch-track{border-color:var(--lime)}
+.theme-switch[aria-checked="true"] .theme-switch-thumb{transform:translateX(13px);background:var(--lime)}
+@media(max-width:980px){.sidebar-settings{flex-direction:column;gap:1px}.sidebar-settings .settings-link{flex:none}.theme-switch{min-height:30px}.theme-switch-label{display:none}}
+@media(max-width:700px){.sidebar-settings{width:auto;flex-direction:row;gap:2px}.sidebar-settings .settings-link{display:flex;width:29px}.theme-switch{padding:5px 2px}.sidebar-spacer{display:none}}
+@media(prefers-reduced-motion:reduce){.theme-switch-thumb{transition:none}}

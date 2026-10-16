@@ -41,6 +41,9 @@ module.exports = async function checkPackage(context) {
     'lib/MESHCORE_CATALOG_LICENSE.txt',
     'meshcore-ui.js',
     'meshcore.css',
+    'theme.js',
+    'theme.css',
+    'theme-light.css',
     'native/win32-x64/rtlsdr.dll',
     'native/win32-x64/VCRUNTIME140.dll'
   ]) requireFile(relative);

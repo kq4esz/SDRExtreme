@@ -509,23 +509,26 @@ function receiveSpectrum(frame) {
   drawSpectrum();drawWaterfall();renderSpectrumStatus();
 }
 function activeSpectrumView(){return spectrumViews.find(view=>view.page===state.page);}
-function drawSpectrum() {
-  const view=activeSpectrumView();if(!view||view.page==='decoders'&&state.spectrumPaused)return;
+let spectrumColors;
+function drawSpectrum(force=false) {
+  const view=activeSpectrumView();if(!view||view.page==='decoders'&&state.spectrumPaused&&!force)return;
   const canvas=view.canvas,ctx=view.context;
+  if(!spectrumColors){const style=getComputedStyle(document.documentElement);spectrumColors=Object.fromEntries(['bg','grid','grid-soft','label','fill-top','fill-bottom','trace','marker'].map(key=>[key,style.getPropertyValue(`--spectrum-${key}`).trim()]));}
+  const colors=spectrumColors;
   fitCanvas(canvas,ctx);const width=canvas.clientWidth,height=canvas.clientHeight;if(!width||!height)return;
-  ctx.clearRect(0,0,width,height);ctx.fillStyle='#0d161f';ctx.fillRect(0,0,width,height);
+  ctx.clearRect(0,0,width,height);ctx.fillStyle=colors.bg;ctx.fillRect(0,0,width,height);
   const left=43,right=12,top=14,bottom=24,plotW=width-left-right,plotH=height-top-bottom;
   ctx.lineWidth=1;ctx.font='9px "DM Mono",Consolas,monospace';ctx.textAlign='right';
-  for(let i=0;i<=4;i++){const y=top+i*plotH/4;ctx.strokeStyle='#1d2a34';ctx.beginPath();ctx.moveTo(left,y);ctx.lineTo(width-right,y);ctx.stroke();ctx.fillStyle='#62747f';ctx.fillText(`${-i*25} dB`,left-8,y+3);}
-  for(let i=0;i<=8;i++){const x=left+i*plotW/8;ctx.strokeStyle='#182630';ctx.beginPath();ctx.moveTo(x,top);ctx.lineTo(x,top+plotH);ctx.stroke();}
-  const frame=state.spectrum;view.frame=frame;
+  for(let i=0;i<=4;i++){const y=top+i*plotH/4;ctx.strokeStyle=colors.grid;ctx.beginPath();ctx.moveTo(left,y);ctx.lineTo(width-right,y);ctx.stroke();ctx.fillStyle=colors.label;ctx.fillText(`${-i*25} dB`,left-8,y+3);}
+  for(let i=0;i<=8;i++){const x=left+i*plotW/8;ctx.strokeStyle=colors['grid-soft'];ctx.beginPath();ctx.moveTo(x,top);ctx.lineTo(x,top+plotH);ctx.stroke();}
+  const frame=view.page==='decoders'&&state.spectrumPaused?view.frame:state.spectrum;view.frame=frame;
   if(!frame?.bins?.length)return;
   const points=frame.bins.map((value,index)=>[left+index/(frame.bins.length-1)*plotW,top+(1-Math.max(0,Math.min(1,(value+100)/100)))*plotH]);
-  const fill=ctx.createLinearGradient(0,top,0,top+plotH);fill.addColorStop(0,'#80efc02b');fill.addColorStop(1,'#28b9b122');
+  const fill=ctx.createLinearGradient(0,top,0,top+plotH);fill.addColorStop(0,colors['fill-top']);fill.addColorStop(1,colors['fill-bottom']);
   ctx.beginPath();ctx.moveTo(points[0][0],top+plotH);for(const [x,y] of points)ctx.lineTo(x,y);ctx.lineTo(points.at(-1)[0],top+plotH);ctx.closePath();ctx.fillStyle=fill;ctx.fill();
-  ctx.beginPath();ctx.moveTo(points[0][0],points[0][1]);for(const [x,y] of points)ctx.lineTo(x,y);ctx.strokeStyle='#9bebc8';ctx.lineWidth=1.35;ctx.stroke();
+  ctx.beginPath();ctx.moveTo(points[0][0],points[0][1]);for(const [x,y] of points)ctx.lineTo(x,y);ctx.strokeStyle=colors.trace;ctx.lineWidth=1.35;ctx.stroke();
   const marker=left+((frame.tunedFrequency??frame.center)-frame.center+frame.span/2)/frame.span*plotW;
-  if(marker>=left&&marker<=left+plotW){ctx.strokeStyle='#c7f36b';ctx.setLineDash([3,4]);ctx.beginPath();ctx.moveTo(marker,top);ctx.lineTo(marker,top+plotH);ctx.stroke();ctx.setLineDash([]);}
+  if(marker>=left&&marker<=left+plotW){ctx.strokeStyle=colors.marker;ctx.setLineDash([3,4]);ctx.beginPath();ctx.moveTo(marker,top);ctx.lineTo(marker,top+plotH);ctx.stroke();ctx.setLineDash([]);}
   updateSpectrumLabels(view,frame);
 }
 function updateSpectrumLabels(view,frame) {
@@ -669,6 +672,7 @@ async function refreshState() {
   if(data.status.wsjtActive){state.ft8=true;$('#ft8-dot').classList.add('active');$('#ft8-state').textContent='Listening for WSJT-X';$('#ft8-toggle').textContent='Stop bridge';}
 }
 function bindEvents() {
+  document.addEventListener('signal-outpost:themechange',()=>{spectrumColors=null;drawSpectrum(true);});
   $$('.app-dialog button[value="cancel"]').forEach(button=>{button.type='button';button.addEventListener('click',()=>button.closest('dialog').close('cancel'));});
   for(const id of ['channel-kind','channel-mode','channel-p25-phase'])$('#'+id).addEventListener('change',updateChannelProtocolFields);
   $('#scan-select-visible').addEventListener('click',()=>{$$('[data-scan-id]:not(:disabled)').forEach(input=>state.scanSelection.add(input.dataset.scanId));renderChannelRows();});

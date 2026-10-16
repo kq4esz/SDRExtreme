@@ -20,6 +20,9 @@ export class KiwiNetwork {
       else window.open(this.session.url, '_blank', 'noopener,noreferrer');
     });
     this.$('kiwi-map-reset').addEventListener('click', () => this.map?.setView([24, 5], 2));
+    document.addEventListener('signal-outpost:themechange', () => {
+      for (const receiver of this.receivers) this.markers.get(receiver.id)?.setStyle(this.markerStyle(receiver));
+    });
   }
 
   show() {
@@ -116,7 +119,8 @@ export class KiwiNetwork {
 
   markerStyle(receiver) {
     const selected = this.selected?.id === receiver.id;
-    return { radius: selected ? 9 : 5, color: selected ? '#fff' : receiver.connectable ? '#c7f36b' : '#d89662', weight: selected ? 2 : 1, fillColor: receiver.connectable ? '#c7f36b' : '#d89662', fillOpacity: selected ? 1 : .7 };
+    const light = document.documentElement.dataset.theme === 'light', available = light ? '#3b681c' : '#c7f36b', full = light ? '#935016' : '#d89662';
+    return { radius: selected ? 9 : 5, color: selected ? light ? '#203342' : '#fff' : receiver.connectable ? available : full, weight: selected ? 2 : 1, fillColor: receiver.connectable ? available : full, fillOpacity: selected ? 1 : .7 };
   }
 
   select(id, pan = false) {

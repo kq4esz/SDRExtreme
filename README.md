@@ -21,7 +21,7 @@ old name. No profile move or uninstall is required.
 
 ## Start the app
 
-1. Download **Signal-Outpost-Setup-0.13.1-x64.exe** from [GitHub Releases](https://github.com/kq4esz/SDRExtreme/releases/latest), run the installer, then launch **Signal Outpost** from the desktop or Start menu. The installer includes Electron, the local service, USB libraries and decoders; Node.js is not required. For a source checkout, use **`launch-signal-outpost.cmd`** after the setup below.
+1. Download **Signal-Outpost-Setup-0.14.0-x64.exe** from [GitHub Releases](https://github.com/kq4esz/SDRExtreme/releases/latest), run the installer, then launch **Signal Outpost** from the desktop or Start menu. The installer includes Electron, the local service, USB libraries and decoders; Node.js is not required. For a source checkout, use **`launch-signal-outpost.cmd`** after the setup below.
 2. Open **Settings → RTL-SDR device manager**. Click **Refresh**, select your attached receiver, and save the hardware settings.
 3. Go to **Live radio** and click **Start listening**. Select a memory or tune to a frequency.
 4. Go to **KiwiSDR network** to choose a receiver on the world map or in the station list. Select a station, then click **Check & listen**. Its listening interface opens inside the app; **Open receiver in a new window** offers a dedicated desktop window if a receiver blocks embedding.
@@ -31,6 +31,18 @@ For a fresh source checkout, install Node.js **22.12 or newer**, then run `setup
 Installed builds save memory channels, preferences, the receiver directory and window size in **`%APPDATA%\SDR Extreme\data`**, outside the installation directory. Updates preserve this data. **Help → Open saved data folder** opens it. Source checkouts continue to use the ignored `local-data` folder. To migrate from a source checkout, close both versions and copy `channels.json` and `settings.json` from `local-data` into the installed build's data folder; keep a backup before replacing an existing profile. Closing the desktop app releases its receiver. In a source checkout, `stop-signal-outpost.cmd` also stops the local service.
 
 The local UI service uses `127.0.0.1:17890` for the desktop interface and audio/waterfall display. **RTL-SDR hardware access is direct USB through `rtlsdr.dll` and WinUSB, with no RTL-TCP process or port 1234 requirement.** MeshCore separately supports USB serial, Bluetooth LE and its companion TCP connection over Wi-Fi. `launch-browser-console.cmd` is an optional browser interface to the same native USB backend.
+
+## Appearance
+
+Use the **Light mode** switch beside **Settings** to change between **Dark** and
+**Light**. Dark is the default and retains the existing appearance. The app
+remembers your choice between launches. The switch also remains available in
+the compact sidebar. Switching themes keeps receiver and MeshCore sessions
+running; waterfall signal colors and remote KiwiSDR receiver interfaces retain
+their own palettes.
+
+For source changes to `app.css` or `meshcore.css`, run `pnpm build:themes` to
+regenerate the light color overrides. Windows builds run this step automatically.
 
 ## MeshCore companion client
 
