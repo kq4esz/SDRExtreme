@@ -5,7 +5,7 @@ import { fileURLToPath } from 'node:url';
 // Build metadata only. Never downloads/flashes firmware or executes upstream code.
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const repository = 'https://api.github.com/repos/meshcore-dev/MeshCore';
-const headers = { 'User-Agent': 'SDRExtreme-device-catalog', Accept: 'application/vnd.github+json' };
+const headers = { 'User-Agent': 'SignalOutpost-device-catalog', Accept: 'application/vnd.github+json' };
 async function get(url, json = false) {
   const response = await fetch(url, { headers, signal: AbortSignal.timeout(30000) });
   if (!response.ok) throw new Error(`Catalog source returned ${response.status}: ${url}`);

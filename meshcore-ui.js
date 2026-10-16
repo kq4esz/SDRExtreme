@@ -204,7 +204,7 @@ export class MeshCoreUi {
     const current = () => { if (attempt !== this.attempt) throw new Error('Connection cancelled.'); };
     try {
       if (this.transport === 'bluetooth') {
-        if (!navigator.bluetooth?.requestDevice) throw new Error('Bluetooth is unavailable. Open the SDR Extreme desktop app on a PC with Bluetooth enabled.');
+        if (!navigator.bluetooth?.requestDevice) throw new Error('Bluetooth is unavailable. Open the Signal Outpost desktop app on a PC with Bluetooth enabled.');
         if (!this.socketReady()) throw new Error('The local app connection is reconnecting. Try again in a moment.');
         // Keep requestDevice inside the original click gesture; no await before it.
         window.sdrDesktop?.armMeshBluetooth();

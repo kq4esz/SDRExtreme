@@ -13,6 +13,10 @@ module.exports = async function checkPackage(context) {
     if (!fs.existsSync(filename) || !fs.statSync(filename).isFile()) throw new Error(`Package dependency is missing: ${relative}`);
     return filename;
   }
+  // A display-name change must still upgrade the existing Windows application.
+  const metadata = JSON.parse(fs.readFileSync(requireFile('package.json'), 'utf8'));
+  if (context.packager.appInfo.id !== 'com.sdrextreme.desktop' || metadata.name !== 'sdr-extreme') throw new Error('Signal Outpost must retain the SDR Extreme installation and updater identity.');
+  if (metadata.productName !== 'Signal Outpost') throw new Error('The packaged application has the wrong product name.');
   for (const relative of [
     'node_modules/koffi/index.cjs',
     'node_modules/@koromix/koffi-win32-x64/win32_x64/koffi.node',

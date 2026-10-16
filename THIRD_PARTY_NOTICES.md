@@ -1,6 +1,6 @@
-# SDR Extreme third-party components
+# Signal Outpost third-party components
 
-SDR Extreme application source is distributed under GPL-3.0-only; see `LICENSE`.
+Signal Outpost application source is distributed under GPL-3.0-only; see `LICENSE`.
 Third-party components retain their own licenses and copyright notices.
 
 | Component | Version | License and source |
@@ -39,6 +39,6 @@ The KiwiSDR directory is supplied by Linkfanel. Map tiles are supplied by
 OpenStreetMap, with attribution displayed in the receiver map. Station
 metadata and images displayed while listening are received from broadcasts.
 
-HD Radio is a trademark of its owner. SDR Extreme is an independent project
+HD Radio is a trademark of its owner. Signal Outpost is an independent project
 and is not endorsed by the trademark owner, RTL-SDR Blog, RadioReference,
 KiwiSDR or the upstream decoder projects.

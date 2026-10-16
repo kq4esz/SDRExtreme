@@ -64,7 +64,7 @@ function createUpdates({ getWindow, dataDir, beforeInstall, onStatus = () => {} 
     try {
       await beforeInstall();
       if (disposed) return false;
-      writeLog('info', `Installing ${status.availableVersion} and reopening SDR Extreme`);
+      writeLog('info', `Installing ${status.availableVersion} and reopening Signal Outpost`);
       // Silent NSIS installation with --force-run reopens the updated application.
       updater.quitAndInstall(true, true);
       if (status.phase === 'error') { installing = false; return false; }
@@ -77,7 +77,7 @@ function createUpdates({ getWindow, dataDir, beforeInstall, onStatus = () => {} 
   }
   async function check(manual = false) {
     if (!app.isPackaged) {
-      if (manual) await message({ type: 'info', title: 'SDR Extreme updates', message: 'Automatic updates run in the installed Windows application.', detail: 'Install the Windows setup executable from GitHub Releases.' });
+      if (manual) await message({ type: 'info', title: 'Signal Outpost updates', message: 'Automatic updates run in the installed Windows application.', detail: 'Install the Windows setup executable from GitHub Releases.' });
       return;
     }
     if (disposed || installing) return;
@@ -87,13 +87,13 @@ function createUpdates({ getWindow, dataDir, beforeInstall, onStatus = () => {} 
     }
     if (ready) {
       if (manual) {
-        const result = await message({ type: 'info', title: 'Update ready', message: `SDR Extreme ${status.availableVersion} is ready to install.`, detail: 'The receiver will stop before restarting. Memories and settings are preserved. You can also close the app normally to install the update.', buttons: ['Restart and install', 'Later'], defaultId: 1, cancelId: 1 });
+        const result = await message({ type: 'info', title: 'Update ready', message: `Signal Outpost ${status.availableVersion} is ready to install.`, detail: 'The receiver will stop before restarting. Memories and settings are preserved. You can also close the app normally to install the update.', buttons: ['Restart and install', 'Later'], defaultId: 1, cancelId: 1 });
         if (result.response === 0) await install();
       }
       return;
     }
     if (busy) {
-      if (manual) await message({ type: 'info', title: 'SDR Extreme updates', message: status.phase === 'downloading' ? `Downloading SDR Extreme ${status.availableVersion}` : 'An update check is already running.', detail: status.phase === 'downloading' ? `${Math.floor(status.percent || 0)}% complete. You can keep listening while the update downloads.` : 'Update progress is displayed in the application.' });
+      if (manual) await message({ type: 'info', title: 'Signal Outpost updates', message: status.phase === 'downloading' ? `Downloading Signal Outpost ${status.availableVersion}` : 'An update check is already running.', detail: status.phase === 'downloading' ? `${Math.floor(status.percent || 0)}% complete. You can keep listening while the update downloads.` : 'Update progress is displayed in the application.' });
       return busy;
     }
     clearTimeout(timer);
@@ -103,8 +103,8 @@ function createUpdates({ getWindow, dataDir, beforeInstall, onStatus = () => {} 
         if (!result) throw new Error('The installed application updater did not return an update result.');
         // Attach rejection handling immediately: metadata checks finish before downloads.
         const downloaded = result.downloadPromise?.then(() => null, error => error);
-        if (manual && status.phase === 'current') await message({ type: 'info', title: 'SDR Extreme updates', message: `SDR Extreme ${app.getVersion()} is up to date.` });
-        else if (manual && status.phase === 'downloading') await message({ type: 'info', title: 'Update available', message: `Downloading SDR Extreme ${status.availableVersion}`, detail: 'The application will show a Restart and install button when the download is ready. It also installs after normal app exit.' });
+        if (manual && status.phase === 'current') await message({ type: 'info', title: 'Signal Outpost updates', message: `Signal Outpost ${app.getVersion()} is up to date.` });
+        else if (manual && status.phase === 'downloading') await message({ type: 'info', title: 'Update available', message: `Downloading Signal Outpost ${status.availableVersion}`, detail: 'The application will show a Restart and install button when the download is ready. It also installs after normal app exit.' });
         const error = await downloaded;
         if (error) throw error;
         failures = 0;
@@ -120,16 +120,16 @@ function createUpdates({ getWindow, dataDir, beforeInstall, onStatus = () => {} 
     return event.senderFrame === event.sender.mainFrame && [getWindow(), startupWindow].some(target => target && !target.isDestroyed() && event.sender === target.webContents);
   }
   ipcMain.handle('sdr:update-status', event => {
-    if (!validSender(event)) throw new Error('Unavailable outside SDR Extreme.');
+    if (!validSender(event)) throw new Error('Unavailable outside Signal Outpost.');
     return snapshot();
   });
   ipcMain.handle('sdr:update-check', async event => {
-    if (!validSender(event)) throw new Error('Unavailable outside SDR Extreme.');
+    if (!validSender(event)) throw new Error('Unavailable outside Signal Outpost.');
     await check();
     return snapshot();
   });
   ipcMain.handle('sdr:update-install', async event => {
-    if (!validSender(event)) throw new Error('Unavailable outside SDR Extreme.');
+    if (!validSender(event)) throw new Error('Unavailable outside Signal Outpost.');
     return install();
   });
   ipcMain.on('sdr:update-continue', event => {
@@ -174,7 +174,7 @@ function createUpdates({ getWindow, dataDir, beforeInstall, onStatus = () => {} 
       startupActive = true;
       const startup = new Promise(resolve => { startupResolve = resolve; });
       startupWindow = new BrowserWindow({ width: 560, height: 380, useContentSize: true, resizable: false, maximizable: false, fullscreenable: false, show: false,
-        title: 'SDR Extreme updates', backgroundColor: '#0a1018', autoHideMenuBar: true, icon: path.join(__dirname, '..', 'assets', 'app-icon.png'),
+        title: 'Signal Outpost updates', backgroundColor: '#0a1018', autoHideMenuBar: true, icon: path.join(__dirname, '..', 'assets', 'app-icon.png'),
         webPreferences: { preload: path.join(__dirname, 'preload.cjs'), nodeIntegration: false, contextIsolation: true, sandbox: true, webSecurity: true } });
       startupWindow.setMenu(null);
       startupWindow.webContents.setWindowOpenHandler(() => ({ action: 'deny' }));
@@ -186,7 +186,7 @@ function createUpdates({ getWindow, dataDir, beforeInstall, onStatus = () => {} 
       });
       void startupWindow.loadFile(path.join(__dirname, 'startup.html')).catch(error => { writeLog('warn', error); finishStartup(true); });
       startupDeadline = setTimeout(() => { writeLog('info', 'Startup check taking longer than 12 seconds; continuing in the background'); finishStartup(true); }, STARTUP_CHECK_LIMIT);
-      writeLog('info', `Startup update check for SDR Extreme ${app.getVersion()}`);
+      writeLog('info', `Startup update check for Signal Outpost ${app.getVersion()}`);
       void check();
       return startup;
     } catch (error) { failed(error); return true; }

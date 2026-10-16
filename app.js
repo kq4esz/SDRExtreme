@@ -125,7 +125,7 @@ function renderDigital() {
   let label = 'Decoder idle · Choose a protocol or a saved trunked system.';
   if (digital?.phase === 'failed') label = digital.lastError || 'Decoder stopped after an error.';
   else if (state.digitalBusy || digital?.phase === 'starting') label = 'Opening the USB receiver and decoder…';
-  else if (active) label = external ? 'External DSD-FME running · Audio is managed by that engine.' : `${digital.protocol || 'Digital voice'} · ${digital.decoderStatus?.protocol && digital.decoderStatus.protocol !== 'None' ? 'Receiving ' + digital.decoderStatus.protocol : 'Listening for valid frames'} · Audio in SDR Extreme`;
+  else if (active) label = external ? 'External DSD-FME running · Audio is managed by that engine.' : `${digital.protocol || 'Digital voice'} · ${digital.decoderStatus?.protocol && digital.decoderStatus.protocol !== 'None' ? 'Receiving ' + digital.decoderStatus.protocol : 'Listening for valid frames'} · Audio in Signal Outpost`;
   output.querySelector('span').textContent = label;
   $('#digital-runtime-label').textContent = runtime ? `Bundled ${runtime.name} ${runtime.version} · ${runtime.codec}` : 'Bundled DSD-neo · IMBE / AMBE codec included';
   $('#digital-runtime-status').textContent = runtime?.available ? `${runtime.name} ${runtime.version} · Preview build · Ready` : 'Native digital decoder is unavailable.';
@@ -350,7 +350,7 @@ async function importChannelsFile(file) {
   }catch(error){toast(`Could not import file: ${error.message}`,'error');}
 }
 function exportChannels() {
-  const blob=new Blob([JSON.stringify({channels:state.channels},null,2)],{type:'application/json'}); const link=document.createElement('a');link.href=URL.createObjectURL(blob);link.download='sdr-extreme-memories.json';link.click();URL.revokeObjectURL(link.href);toast('Memory channels exported.','success');
+  const blob=new Blob([JSON.stringify({channels:state.channels},null,2)],{type:'application/json'}); const link=document.createElement('a');link.href=URL.createObjectURL(blob);link.download='signal-outpost-memories.json';link.click();URL.revokeObjectURL(link.href);toast('Memory channels exported.','success');
 }
 async function startListening() {
   const mode=$('#mode-select').value, freq=Math.round(Number($('#frequency-input').value)*1e6);
@@ -731,18 +731,18 @@ function renderDesktopUpdate(status) {
   action.title = '';
   if (status.phase === 'checking') {
     heading.textContent = 'Checking for updates…';
-    detail.textContent = `Installed version ${status.version}. You can keep using SDR Extreme.`;
+    detail.textContent = `Installed version ${status.version}. You can keep using Signal Outpost.`;
   } else if (status.phase === 'downloading') {
-    heading.textContent = `Downloading SDR Extreme ${status.availableVersion} · ${Math.floor(status.percent || 0)}%`;
+    heading.textContent = `Downloading Signal Outpost ${status.availableVersion} · ${Math.floor(status.percent || 0)}%`;
     detail.textContent = 'A restart button will appear when the download is ready.';
   } else if (status.phase === 'ready') {
-    heading.textContent = `SDR Extreme ${status.availableVersion} is ready to install`;
+    heading.textContent = `Signal Outpost ${status.availableVersion} is ready to install`;
     detail.textContent = `You’re running ${status.version}. Restart now or close normally to install. Memories and settings are preserved.`;
   } else if (status.phase === 'installing') {
     heading.textContent = 'Installing update…';
-    detail.textContent = 'The receiver is stopping. SDR Extreme will reopen after installation.';
+    detail.textContent = 'The receiver is stopping. Signal Outpost will reopen after installation.';
   } else if (status.phase === 'error') {
-    heading.textContent = 'SDR Extreme could not update';
+    heading.textContent = 'Signal Outpost could not update';
     const retry = status.nextCheckAt ? ` Retrying at ${new Date(status.nextCheckAt).toLocaleTimeString()}.` : ' The app will retry automatically.';
     detail.textContent = status.canInstall ? `Version ${status.availableVersion} could not install. Retry installation or run the latest setup from GitHub Releases. Memories and settings are preserved.` : `Installed version ${status.version}.${retry} Use Help → Check for updates for error details.`;
     action.textContent = status.canInstall ? 'Retry installation' : 'Check again';

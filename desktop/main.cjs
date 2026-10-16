@@ -8,7 +8,8 @@ const setupBluetooth = require('./meshcore-bluetooth.cjs');
 
 const ROOT = path.resolve(__dirname, '..');
 const APP_VERSION = require('../package.json').version;
-app.setName('SDR Extreme');
+app.setName('Signal Outpost');
+// Reuse SDR Extreme's complete profile, including MeshCore history and Bluetooth data.
 if (app.isPackaged) app.setPath('userData', path.join(app.getPath('appData'), 'SDR Extreme'));
 if (process.env.SDREXTREME_PROFILE) { const profile = path.resolve(process.env.SDREXTREME_PROFILE); fs.mkdirSync(profile, { recursive: true }); app.setPath('userData', profile); }
 const DATA_DIR = path.resolve(process.env.SDREXTREME_DATA_DIR || (app.isPackaged ? path.join(app.getPath('userData'), 'data') : path.join(ROOT, 'local-data')));
@@ -55,7 +56,7 @@ async function startBackend() {
 }
 
 function openReceiver(url) {
-  const receiver = new BrowserWindow({ width: 1360, height: 900, minWidth: 900, minHeight: 600, title: 'KiwiSDR · SDR Extreme', backgroundColor: '#0a1018', autoHideMenuBar: true,
+  const receiver = new BrowserWindow({ width: 1360, height: 900, minWidth: 900, minHeight: 600, title: 'KiwiSDR · Signal Outpost', backgroundColor: '#0a1018', autoHideMenuBar: true,
     webPreferences: { nodeIntegration: false, contextIsolation: true, sandbox: true, webSecurity: true, partition: 'persist:kiwi-receivers' } });
   receiver.webContents.session.setPermissionRequestHandler((_contents, _permission, callback) => callback(false));
   receiver.webContents.setWindowOpenHandler(({ url: target }) => { external(target); return { action: 'deny' }; });
@@ -67,7 +68,7 @@ function createWindow() {
   let bounds = {};
   try { bounds = JSON.parse(fs.readFileSync(path.join(DATA_DIR, 'window.json'), 'utf8')); } catch {}
   window = new BrowserWindow({ width: bounds.width || 1520, height: bounds.height || 980, minWidth: 1000, minHeight: 700,
-    title: 'SDR Extreme', backgroundColor: '#0a1018', show: false, icon: path.join(ROOT, 'assets', 'app-icon.png'),
+    title: 'Signal Outpost', backgroundColor: '#0a1018', show: false, icon: path.join(ROOT, 'assets', 'app-icon.png'),
     webPreferences: { preload: path.join(__dirname, 'preload.cjs'), nodeIntegration: false, contextIsolation: true, sandbox: true, webSecurity: true, spellcheck: false } });
   window.webContents.setWindowOpenHandler(({ url }) => { external(url); return { action: 'deny' }; });
   window.webContents.on('will-navigate', (event, url) => { if (!url.startsWith(LOCAL + '/')) { event.preventDefault(); external(url); } });
@@ -79,7 +80,7 @@ function createWindow() {
   window.loadURL(LOCAL);
   const navigate = page => { if (window) { window.show(); window.webContents.send('sdr:navigate', page); } };
   Menu.setApplicationMenu(Menu.buildFromTemplate([
-    { label: 'SDR Extreme', submenu: [{ label: 'Live radio', accelerator: 'Ctrl+1', click: () => navigate('radio') }, { label: 'Memory channels', accelerator: 'Ctrl+2', click: () => navigate('channels') }, { label: 'KiwiSDR map', accelerator: 'Ctrl+3', click: () => navigate('remote') }, { label: 'Decoders', accelerator: 'Ctrl+4', click: () => navigate('decoders') }, { type: 'separator' }, { label: 'Hardware settings', accelerator: 'Ctrl+,', click: () => navigate('settings') }, { type: 'separator' }, { role: 'quit' }] },
+    { label: 'Signal Outpost', submenu: [{ label: 'Live radio', accelerator: 'Ctrl+1', click: () => navigate('radio') }, { label: 'Memory channels', accelerator: 'Ctrl+2', click: () => navigate('channels') }, { label: 'KiwiSDR map', accelerator: 'Ctrl+3', click: () => navigate('remote') }, { label: 'Decoders', accelerator: 'Ctrl+4', click: () => navigate('decoders') }, { type: 'separator' }, { label: 'Hardware settings', accelerator: 'Ctrl+,', click: () => navigate('settings') }, { type: 'separator' }, { role: 'quit' }] },
     { label: 'MeshCore', submenu: [{ label: 'Open MeshCore client', accelerator: 'Ctrl+5', click: () => navigate('meshcore') }] },
     { label: 'Edit', submenu: [{ role: 'undo' }, { role: 'redo' }, { type: 'separator' }, { role: 'cut' }, { role: 'copy' }, { role: 'paste' }, { role: 'selectAll' }] },
     { label: 'View', submenu: [{ role: 'reload' }, { role: 'togglefullscreen' }, { type: 'separator' }, { role: 'resetZoom' }, { role: 'zoomIn' }, { role: 'zoomOut' }, { type: 'separator' }, { role: 'toggleDevTools' }] },
@@ -90,13 +91,13 @@ function createWindow() {
       { label: 'Releases on GitHub', click: () => external('https://github.com/kq4esz/SDRExtreme/releases') },
       { label: 'Open saved data folder', click: () => shell.openPath(DATA_DIR) },
       { label: 'Setup guide', click: () => shell.openPath(path.join(ROOT, 'README.md')) },
-      { label: 'About SDR Extreme', click: () => dialog.showMessageBox(window, { title: 'SDR Extreme', message: `SDR Extreme ${APP_VERSION}`, detail: 'Windows receiver suite · RTL-SDR direct USB · HD Radio · KiwiSDR network atlas\nUpdates: github.com/kq4esz/SDRExtreme', type: 'info' }) }
+      { label: 'About Signal Outpost', click: () => dialog.showMessageBox(window, { title: 'Signal Outpost', message: `Signal Outpost ${APP_VERSION}`, detail: 'Windows receiver suite · RTL-SDR direct USB · HD Radio · KiwiSDR network atlas\nUpdates: github.com/kq4esz/SDRExtreme', type: 'info' }) }
     ] }
   ]));
 }
 
 ipcMain.handle('sdr:choose-library', async event => {
-  if (!trusted(event)) throw new Error('Unavailable outside the SDR Extreme window.');
+  if (!trusted(event)) throw new Error('Unavailable outside the Signal Outpost window.');
   const result = await dialog.showOpenDialog(window, { title: 'Select RTL-SDR native driver library', properties: ['openFile'], filters: [{ name: 'RTL-SDR library', extensions: ['dll'] }] });
   return result.canceled ? null : result.filePaths[0];
 });
@@ -128,7 +129,7 @@ if (!app.requestSingleInstanceLock()) app.quit();
 else {
   app.on('second-instance', () => { if (window) { if (window.isMinimized()) window.restore(); window.focus(); } else updates?.focusStartup(); });
   app.whenReady().then(async () => {
-    session.defaultSession.setUserAgent(`${session.defaultSession.getUserAgent()} SDRExtreme/${APP_VERSION}`);
+    session.defaultSession.setUserAgent(`${session.defaultSession.getUserAgent()} SignalOutpost/${APP_VERSION}`);
     session.defaultSession.setPermissionRequestHandler((contents, permission, callback, details) => {
       const local = contents === window?.webContents && details.requestingUrl?.startsWith(LOCAL + '/');
       callback(Boolean(local && ['speaker-selection', 'audio-output', 'bluetooth'].includes(permission)));
@@ -146,7 +147,7 @@ else {
       if (quitting) return;
       createWindow(); starting = false;
     }
-    catch (error) { dialog.showErrorBox('SDR Extreme could not start', error.message); app.quit(); }
+    catch (error) { dialog.showErrorBox('Signal Outpost could not start', error.message); app.quit(); }
   });
   app.on('window-all-closed', () => { if (!starting) app.quit(); });
   app.on('before-quit', event => {

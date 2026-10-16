@@ -133,7 +133,7 @@ async function tune(freq) {
   if (digitalSession?.active) {
     if (digitalScan) throw new Error('Stop the digital memory scan before tuning manually.');
     await digitalSession.request('rtl_set_freq', { value: next });
-  } else if (digitalProcess) throw new Error('Stop the external decoder before tuning from SDR Extreme.');
+  } else if (digitalProcess) throw new Error('Stop the external decoder before tuning from Signal Outpost.');
   if (receiver?.connected) await receiver.command('frequency', next);
   activeFrequency = next;
   resetDsp();
@@ -791,7 +791,7 @@ const server = http.createServer(async (req, res) => {
   const url = new URL(req.url, `http://127.0.0.1:${PORT}`);
   if (!['127.0.0.1', '::1', '::ffff:127.0.0.1'].includes(req.socket.remoteAddress)) { res.writeHead(403); res.end(); return; }
   if (req.method === 'OPTIONS') { res.writeHead(204, { 'access-control-allow-origin': `http://127.0.0.1:${PORT}`, 'access-control-allow-methods': 'GET,POST,PUT,DELETE,OPTIONS', 'access-control-allow-headers': 'content-type' }); res.end(); return; }
-  if (req.headers.origin && req.headers.origin !== `http://127.0.0.1:${PORT}`) return sendJson(res, 403, { error: 'Open SDR Extreme from its local desktop window.' });
+  if (req.headers.origin && req.headers.origin !== `http://127.0.0.1:${PORT}`) return sendJson(res, 403, { error: 'Open Signal Outpost from its local desktop window.' });
   try {
     if (url.pathname === '/api/state' && req.method === 'GET') return sendJson(res, 200, { status: status(), channels, settings, digitalRuntime: digitalRuntime(), digitalHistory, hdRuntime: hdRuntime() });
     if (url.pathname === '/api/meshcore/state' && req.method === 'GET') return sendJson(res, 200, meshcore.snapshot());
@@ -940,7 +940,7 @@ server.on('upgrade', (req, socket) => {
   socket.on('close', () => clients.delete(socket)); socket.on('error', () => clients.delete(socket));
 });
 
-server.listen(PORT, '127.0.0.1', () => console.log(`SDR Extreme is ready at http://127.0.0.1:${PORT}`));
+server.listen(PORT, '127.0.0.1', () => console.log(`Signal Outpost is ready at http://127.0.0.1:${PORT}`));
 async function shutdown() { meshcore.disconnect(); stopScan(); await stopHd(); await stopReceiver(); await stopDigital(); stopWsjtBridge(); for (const client of clients) client.destroy(); server.close(() => process.exit(0)); }
 process.on('SIGINT', shutdown);
 process.on('SIGTERM', shutdown);

@@ -1,17 +1,34 @@
-# SDR Extreme
+# Signal Outpost
 
-SDR Extreme is a Windows desktop receiver suite with native RTL-SDR USB access, a worldwide KiwiSDR receiver map, scanner memories, digital decoding integrations, and a MeshCore companion client. The desktop application uses Electron, with a local receiver service and an isolated native USB acquisition process.
+*Tune. Decode. Connect.*
+
+Signal Outpost is a Windows desktop receiver suite with native RTL-SDR USB access, a worldwide KiwiSDR receiver map, scanner memories, digital decoding integrations, and a MeshCore companion client. The desktop application uses Electron, with a local receiver service and an isolated native USB acquisition process.
+
+## Upgrading from SDR Extreme
+
+**Signal Outpost 0.11.0** continues the SDR Extreme project under its new name.
+Existing installations can upgrade through **Help → Check for updates** or by
+running the Signal Outpost installer over the current installation. Windows
+shortcuts, executable and installer display the new name.
+
+The existing `%APPDATA%\SDR Extreme` profile is reused, including memories,
+hardware settings, MeshCore contacts, conversation history and layouts, and
+Bluetooth/browser data. The internal package name (`sdr-extreme`), Windows app
+ID (`com.sdrextreme.desktop`) and GitHub update repository
+(`kq4esz/SDRExtreme`) retain their original identifiers for upgrade compatibility.
+These identifiers and the existing installation folder can still contain the
+old name. No profile move or uninstall is required.
 
 ## Start the app
 
-1. Download **SDR-Extreme-Setup-0.10.1-x64.exe** from [GitHub Releases](https://github.com/kq4esz/SDRExtreme/releases/latest), run the installer, then launch **SDR Extreme** from the desktop or Start menu. The installer includes Electron, the local service, USB libraries and decoders; Node.js is not required. For a source checkout, use **`launch-sdr-extreme.cmd`** after the setup below.
+1. Download **Signal-Outpost-Setup-0.11.0-x64.exe** from [GitHub Releases](https://github.com/kq4esz/SDRExtreme/releases/latest), run the installer, then launch **Signal Outpost** from the desktop or Start menu. The installer includes Electron, the local service, USB libraries and decoders; Node.js is not required. For a source checkout, use **`launch-signal-outpost.cmd`** after the setup below.
 2. Open **Settings → RTL-SDR device manager**. Click **Refresh**, select your attached receiver, and save the hardware settings.
 3. Go to **Live radio** and click **Start listening**. Select a memory or tune to a frequency.
 4. Go to **KiwiSDR network** to choose a receiver on the world map or in the station list. Select a station, then click **Check & listen**. Its listening interface opens inside the app; **Open receiver in a new window** offers a dedicated desktop window if a receiver blocks embedding.
 
-For a fresh source checkout, install Node.js **22.12 or newer**, then run `setup-sdr-extreme.cmd`. It installs the JavaScript dependencies and desktop runtime. The driver DLLs under `native/win32-x64` must accompany the app. The setup script can also use the bundled Codex Node runtime on this PC.
+For a fresh source checkout, install Node.js **22.12 or newer**, then run `setup-signal-outpost.cmd`. It installs the JavaScript dependencies and desktop runtime. The driver DLLs under `native/win32-x64` must accompany the app. The setup script can also use the bundled Codex Node runtime on this PC.
 
-Installed builds save memory channels, preferences, the receiver directory and window size in **`%APPDATA%\SDR Extreme\data`**, outside the installation directory. Updates preserve this data. **Help → Open saved data folder** opens it. Source checkouts continue to use the ignored `local-data` folder. To migrate from a source checkout, close both versions and copy `channels.json` and `settings.json` from `local-data` into the installed build's data folder; keep a backup before replacing an existing profile. Closing the desktop app releases its receiver. In a source checkout, `stop-sdr-extreme.cmd` also stops the local service.
+Installed builds save memory channels, preferences, the receiver directory and window size in **`%APPDATA%\SDR Extreme\data`**, outside the installation directory. Updates preserve this data. **Help → Open saved data folder** opens it. Source checkouts continue to use the ignored `local-data` folder. To migrate from a source checkout, close both versions and copy `channels.json` and `settings.json` from `local-data` into the installed build's data folder; keep a backup before replacing an existing profile. Closing the desktop app releases its receiver. In a source checkout, `stop-signal-outpost.cmd` also stops the local service.
 
 The local UI service uses `127.0.0.1:17890` for the desktop interface and audio/waterfall display. **RTL-SDR hardware access is direct USB through `rtlsdr.dll` and WinUSB, with no RTL-TCP process or port 1234 requirement.** MeshCore separately supports USB serial, Bluetooth LE and its companion TCP connection over Wi-Fi. `launch-browser-console.cmd` is an optional browser interface to the same native USB backend.
 
@@ -187,11 +204,11 @@ signing certificate is configured; Windows SmartScreen can display an
 unknown-publisher warning. Download from this project's releases and compare
 `SHA256SUMS.txt` when checking a downloaded installer.
 
-Starting with **0.10.2**, installed builds immediately check
+The startup updater, introduced in **SDR Extreme 0.10.2**, immediately checks
 **kq4esz/SDRExtreme** releases before opening the receiver. A startup screen
 shows download progress; available stable updates install automatically and
 reopen the updated app. Downloads use HTTPS and SHA-512 verification.
-**Open SDR Extreme now** continues the check/download in the background.
+**Open Signal Outpost now** continues the check/download in the background.
 Checks taking over 12 seconds and downloads taking over two minutes also
 continue in the background so a slow or offline connection does not block use.
 
@@ -293,7 +310,7 @@ Receiver metadata comes from [Pierre Ynard / Linkfanel's public KiwiSDR director
 - Conventional memory channels with local add/edit/delete, groups, search, CSV/JSON import, JSON export, selected rapid scanning, signal hold, automatic resume after silence, and Skip/Stop controls.
 - KiwiSDR world map and station browser, availability checks, local favorites, embedded listening and dedicated receiver windows.
 - FT8/FT4 decode display through WSJT-X UDP decode messages. For audio, choose a virtual cable playback output in Settings, select its paired recording input in WSJT-X, and configure WSJT-X to send UDP decodes to `127.0.0.1:2237`. For example, VB-CABLE playback **CABLE Input** is paired with recording **CABLE Output**. Keep WSJT-X in receive-only use with this app.
-- Integrated native digital voice decoder: **P25 Phase 1/2, NXDN48/96, DMR, D-STAR, YSF and M17**, using a bundled DSD-neo core and its included IMBE/AMBE codec. It opens the RTL-SDR directly over USB, follows saved trunked sites or selected conventional memories, and plays decoded voice through SDR Extreme's volume, mute and audio output controls. The workstation displays call slots, talkgroups, source radio IDs, system/control information, RF metrics, P25 FEC quality, call events and diagnostics. A separately configured DSD-FME engine remains available in Settings.
+- Integrated native digital voice decoder: **P25 Phase 1/2, NXDN48/96, DMR, D-STAR, YSF and M17**, using a bundled DSD-neo core and its included IMBE/AMBE codec. It opens the RTL-SDR directly over USB, follows saved trunked sites or selected conventional memories, and plays decoded voice through Signal Outpost's volume, mute and audio output controls. The workstation displays call slots, talkgroups, source radio IDs, system/control information, RF metrics, P25 FEC quality, call events and diagnostics. A separately configured DSD-FME engine remains available in Settings.
 
 ## HD Radio
 
@@ -314,7 +331,7 @@ The app bundles **nrsc5 v3.2.0**, including its HDC audio decoder, for Windows x
 
 Open **Decoders**, choose a protocol and click **Start decoder**. For a saved trunked system, select its memory and site first. Tune a conventional digital memory from Memory channels to retain its phase, modulation and identity settings. Stop the current decoder before changing protocol. **Audio slot** sets the native TDMA slot preference; **Return to control** returns a trunked session to its control channel. The application's audio output and volume controls also apply to the integrated decoder.
 
-The app bundles an unmodified native DSD-neo worker with its own DSP, protocol/FEC, trunking and voice codec implementations. SDR Extreme manages that worker as part of the app. **Java and JMBE are not required** for this engine. JMBE provides the speech codec stage; it does not replace RF demodulation and P25/NXDN frame decoding.
+The app bundles an unmodified native DSD-neo worker with its own DSP, protocol/FEC, trunking and voice codec implementations. Signal Outpost manages that worker as part of the app. **Java and JMBE are not required** for this engine. JMBE provides the speech codec stage; it does not replace RF demodulation and P25/NXDN frame decoding.
 
 The bundled build is a **preview**, pinned to upstream commit `32ae7c8afba7bb8acbc95d1c6b4099db48d899a0`. Its structured control API is not yet in upstream's stable 2.10.0 release. The app checks the executable's SHA-256 before launch. Source, dependency information and preserved license notices are in [native/digital](native/digital/README.md). It does not download or update the decoder at runtime.
 
@@ -382,4 +399,5 @@ The RTL-SDR is receive-only here. The repository bundles native RTL-SDR librarie
 - `server.mjs` — local application service, DSP, memory store, RadioReference importer and decoder launchers.
 - `index.html`, `app.css`, `app.js` — receiver workstation interface.
 - `native/` — bundled Windows x64 RTL-SDR and digital decoder libraries, pinned decoder source and license information.
-- `launch-sdr-extreme.cmd`, `setup-sdr-extreme.cmd`, `stop-sdr-extreme.cmd` — Windows desktop launch, setup and shutdown helpers.
+- `launch-signal-outpost.cmd`, `setup-signal-outpost.cmd`, `stop-signal-outpost.cmd` — Windows desktop launch, setup and shutdown helpers.
+- The original `launch-sdr-extreme.cmd`, `setup-sdr-extreme.cmd` and `stop-sdr-extreme.cmd` names are compatibility aliases for the renamed helpers.

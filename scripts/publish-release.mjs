@@ -20,7 +20,7 @@ if (!token) {
   token = result.stdout?.split('\n').find(row => row.startsWith('password='))?.slice(9).trim();
 }
 if (!token) throw new Error('Provide GH_TOKEN/GITHUB_TOKEN, or sign Git Credential Manager into the repository owner account.');
-const headers = { Authorization: `Bearer ${token}`, Accept: 'application/vnd.github+json', 'User-Agent': 'SDRExtreme-release', 'X-GitHub-Api-Version': '2022-11-28' };
+const headers = { Authorization: `Bearer ${token}`, Accept: 'application/vnd.github+json', 'User-Agent': 'SignalOutpost-release', 'X-GitHub-Api-Version': '2022-11-28' };
 async function api(route, options = {}) {
   const response = await fetch(`https://api.github.com/repos/${repo}${route}`, { ...options, headers: { ...headers, 'Content-Type': 'application/json' }, signal: AbortSignal.timeout(30000) });
   const value = await response.json();
@@ -34,7 +34,7 @@ let remoteCommit = remoteTag.object;
 while (remoteCommit.type === 'tag') remoteCommit = (await api(`/git/tags/${remoteCommit.sha}`)).object;
 if (remoteCommit.sha !== commit) throw new Error('The pushed release tag does not match this checkout.');
 const out = path.join(root, 'dist');
-const installer = `SDR-Extreme-Setup-${pkg.version}-x64.exe`;
+const installer = `Signal-Outpost-Setup-${pkg.version}-x64.exe`;
 const names = [installer, `${installer}.blockmap`, 'latest.yml', 'SHA256SUMS.txt'];
 for (const name of names) if (!fs.statSync(path.join(out, name)).isFile()) throw new Error(`Missing release file: ${name}`);
 const manifest = fs.readFileSync(path.join(out, 'latest.yml'), 'utf8');
@@ -42,10 +42,10 @@ if (!manifest.includes(`version: ${pkg.version}`) || !manifest.includes(installe
 const localSha512 = createHash('sha512').update(fs.readFileSync(path.join(out, installer))).digest('base64');
 if (!manifest.includes(localSha512)) throw new Error('The installer SHA-512 does not match latest.yml. Rebuild before publishing.');
 const notesFile = path.join(root, 'docs', 'releases', `${pkg.version}.md`);
-const notes = fs.existsSync(notesFile) ? fs.readFileSync(notesFile, 'utf8') : `Windows x64 release of SDR Extreme ${pkg.version}. Download and run ${installer}. Installed applications receive this version automatically.`;
+const notes = fs.existsSync(notesFile) ? fs.readFileSync(notesFile, 'utf8') : `Windows x64 release of Signal Outpost ${pkg.version}. Download and run ${installer}. Installed applications receive this version automatically.`;
 const existing = (await api('/releases?per_page=100')).find(release => release.tag_name === tag);
 if (existing && !existing.draft) throw new Error(`${tag} is already published. Increase the version; published releases are never overwritten.`);
-const release = existing || await api('/releases', { method: 'POST', body: JSON.stringify({ tag_name: tag, target_commitish: commit, name: `SDR Extreme ${pkg.version}`, body: notes, draft: true, prerelease: false }) });
+const release = existing || await api('/releases', { method: 'POST', body: JSON.stringify({ tag_name: tag, target_commitish: commit, name: `Signal Outpost ${pkg.version}`, body: notes, draft: true, prerelease: false }) });
 for (const name of names) {
   const filename = path.join(out, name);
   const hash = createHash('sha256').update(fs.readFileSync(filename)).digest('hex');

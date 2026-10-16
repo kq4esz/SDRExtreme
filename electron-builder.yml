@@ -1,6 +1,7 @@
+# Preserve the installed-app identity across the Signal Outpost rename.
 appId: com.sdrextreme.desktop
-productName: SDR Extreme
-artifactName: SDR-Extreme-Setup-${version}-${arch}.${ext}
+productName: Signal Outpost
+artifactName: Signal-Outpost-Setup-${version}-${arch}.${ext}
 directories:
   output: dist
   buildResources: assets
@@ -41,7 +42,7 @@ win:
     - target: nsis
       arch: [x64]
   icon: assets/app-icon.png
-  executableName: SDR Extreme
+  executableName: Signal Outpost
   # No signing certificate is supplied. HTTPS + SHA-512 still verify downloads.
   verifyUpdateCodeSignature: false
 nsis:
@@ -51,7 +52,7 @@ nsis:
   allowElevation: false
   createDesktopShortcut: true
   createStartMenuShortcut: true
-  shortcutName: SDR Extreme
+  shortcutName: Signal Outpost
   runAfterFinish: true
   deleteAppDataOnUninstall: false
   license: LICENSE
