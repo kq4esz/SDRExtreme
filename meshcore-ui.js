@@ -46,7 +46,8 @@ export class MeshCoreUi {
       <form id="mesh-repeater-login-form" class="mesh-repeater-login"><div><label class="field-label" for="mesh-repeater-password">REPEATER PASSWORD</label><input type="password" id="mesh-repeater-password" maxlength="15" autocomplete="off" placeholder="Password or blank for ACL login" aria-describedby="mesh-repeater-password-help"></div><button type="submit" class="primary-button" id="mesh-repeater-login">Connect & log in</button><button type="button" class="outline-button" id="mesh-repeater-logout">End session</button></form>
       <p id="mesh-repeater-password-help" class="mesh-repeater-help">Up to 15 UTF-8 bytes. Login uses your companion’s LoRa radio. Passwords and console output are not saved.</p>
       <p id="mesh-repeater-state" class="mesh-repeater-state" role="status" aria-live="polite"></p>
-      <div class="mesh-repeater-status-line"><button type="button" class="outline-button" id="mesh-repeater-status">Refresh status</button><span id="mesh-repeater-status-time"></span></div>
+      <div class="mesh-repeater-status-line"><button type="button" class="outline-button" id="mesh-repeater-status">Refresh status</button><button type="button" class="outline-button hidden" id="mesh-repeater-advert-flood" aria-describedby="mesh-repeater-advert-help" disabled>Advert Flood from Repeater</button><span id="mesh-repeater-status-time"></span></div>
+      <p id="mesh-repeater-advert-help" class="mesh-repeater-help hidden">Request a flood advert from this repeater using administrator access.</p>
       <dl id="mesh-repeater-stats" class="mesh-repeater-stats hidden"></dl>`;
     $('.mesh-chat-heading').after(repeaterPanel);
     const repeaterComposer = element('form', 'mesh-composer mesh-repeater-composer hidden'); repeaterComposer.id = 'mesh-repeater-command-form';
@@ -60,6 +61,7 @@ export class MeshCoreUi {
     $('#mesh-repeater-login-form').addEventListener('submit', event => { event.preventDefault(); void this.repeaterAction('login'); });
     $('#mesh-repeater-logout').addEventListener('click', () => void this.repeaterAction('logout'));
     $('#mesh-repeater-status').addEventListener('click', () => void this.repeaterAction('status'));
+    $('#mesh-repeater-advert-flood').addEventListener('click', () => { if (!$('#mesh-repeater-advert-flood').disabled) void this.repeaterAction('advert-flood'); });
     $('#mesh-repeater-command-form').addEventListener('submit', event => { event.preventDefault(); if (!$('#mesh-repeater-send').disabled) void this.repeaterAction('command'); });
     $('#mesh-repeater-command').addEventListener('input', () => this.renderRepeater());
     for (const button of document.querySelectorAll('[data-mesh-command]')) button.addEventListener('click', () => { $('#mesh-repeater-command').value = button.dataset.meshCommand; this.renderRepeater(); $('#mesh-repeater-command').focus(); });
@@ -779,6 +781,11 @@ export class MeshCoreUi {
     $('#mesh-repeater-login').textContent = state.phase === 'logging-in' ? 'Logging in…' : authenticated ? 'Log in again' : 'Connect & log in';
     $('#mesh-repeater-logout').disabled = !this.data.connected || busy || !authenticated;
     $('#mesh-repeater-status').disabled = !this.data.connected || busy || !authenticated;
+    const advert = $('#mesh-repeater-advert-flood'); advert.classList.toggle('hidden', !authenticated); advert.disabled = !canCommand;
+    advert.title = state.admin === false ? 'Log in with administrator access to request a repeater advert.' : 'Request one flood advert from this repeater.';
+    advert.textContent = this.data.repeaterBusy?.publicKey === target.publicKey && this.data.repeaterBusy.action === 'advert-flood' ? 'Requesting repeater advert…' : 'Advert Flood from Repeater';
+    $('#mesh-repeater-advert-help').classList.toggle('hidden', !authenticated);
+    $('#mesh-repeater-advert-help').textContent = state.admin === false ? 'Administrator access is required to send a repeater advert.' : 'Request a flood advert from this repeater. Its reply appears in the console; no automatic retries.';
     $('#mesh-repeater-state').textContent = !this.data.connected ? 'Connect your companion node to log in to this repeater.' : state.error || state.notice || 'Ready to log in. Leave the password blank if this companion already has repeater ACL access.';
     $('#mesh-repeater-state').classList.toggle('error', Boolean(state.error));
     $('#mesh-repeater-command').disabled = !canCommand;
@@ -800,7 +807,7 @@ export class MeshCoreUi {
   async repeaterAction(action) {
     const target = this.targets().find(row => row.id === this.selected);
     if (!target?.repeater || !this.data.connected || this.repeaterPending || this.data.repeaterBusy) return;
-    const node = this.data.node.publicKey, connectionId = this.data.connectionId, input = { node, publicKey: target.publicKey, action };
+    const node = this.data.node.publicKey, connectionId = this.data.connectionId, input = { node, connectionId, publicKey: target.publicKey, action };
     if (action === 'login') { input.password = $('#mesh-repeater-password').value; $('#mesh-repeater-password').value = ''; }
     if (action === 'command') { input.command = $('#mesh-repeater-command').value; $('#mesh-repeater-command').value = ''; }
     this.repeaterPending = true; this.renderRepeater();

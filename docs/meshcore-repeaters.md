@@ -11,6 +11,18 @@
    session can send CLI commands. Older login replies may omit the access level.
 5. Click **Refresh status**, or prepare a command using **Version**, **Clock** or
    **Radio settings**, then click **Send command**. Replies appear in the console.
+6. After logging in with administrator access, click **Advert Flood from
+   Repeater** beside **Refresh status** to request one flood advert from the
+   selected repeater. This sends the fixed `advert` CLI command over LoRa and
+   leaves any command draft intact. The control is disabled for guest sessions
+   and while another repeater request is pending. For legacy logins without a
+   reported access level, the repeater enforces administrator permission.
+
+The flood advert uses the repeater's configured identity, location and flood
+scope. The console shows its reply; `OK - Advert sent` confirms the repeater
+accepted the request, not reception elsewhere on the mesh. An error or missing
+reply leaves transmission unconfirmed. There are no automatic retries or
+automatic adverts on login, reconnect or startup.
 
 The repeater must already exist in the companion's contact table. Routing uses
 the companion's current route. A flood login can discover a return route; direct
@@ -54,6 +66,7 @@ the companion-v1.17.1 wire format, with optional newer status fields checked by
 length. Repeater firmware controls available CLI commands and permissions.
 
 - [MeshCore CLI command reference](https://docs.meshcore.io/cli_commands/)
+- [Flood advert CLI implementation](https://github.com/meshcore-dev/MeshCore/blob/companion-v1.17.1/src/helpers/CommonCLI.cpp)
 - [Companion remote login, status and logout handlers](https://github.com/meshcore-dev/MeshCore/blob/companion-v1.17.1/examples/companion_radio/MyMesh.cpp)
 - [Repeater login, permissions, status and CLI replies](https://github.com/meshcore-dev/MeshCore/blob/companion-v1.17.1/examples/simple_repeater/MyMesh.cpp)
 - [Official JavaScript library](https://github.com/meshcore-dev/meshcore.js)

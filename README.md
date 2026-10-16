@@ -21,7 +21,7 @@ old name. No profile move or uninstall is required.
 
 ## Start the app
 
-1. Download **Signal-Outpost-Setup-0.13.0-x64.exe** from [GitHub Releases](https://github.com/kq4esz/SDRExtreme/releases/latest), run the installer, then launch **Signal Outpost** from the desktop or Start menu. The installer includes Electron, the local service, USB libraries and decoders; Node.js is not required. For a source checkout, use **`launch-signal-outpost.cmd`** after the setup below.
+1. Download **Signal-Outpost-Setup-0.13.1-x64.exe** from [GitHub Releases](https://github.com/kq4esz/SDRExtreme/releases/latest), run the installer, then launch **Signal Outpost** from the desktop or Start menu. The installer includes Electron, the local service, USB libraries and decoders; Node.js is not required. For a source checkout, use **`launch-signal-outpost.cmd`** after the setup below.
 2. Open **Settings → RTL-SDR device manager**. Click **Refresh**, select your attached receiver, and save the hardware settings.
 3. Go to **Live radio** and click **Start listening**. Select a memory or tune to a frequency.
 4. Go to **KiwiSDR network** to choose a receiver on the world map or in the station list. Select a station, then click **Check & listen**. Its listening interface opens inside the app; **Open receiver in a new window** offers a dedicated desktop window if a receiver blocks embedding.
@@ -155,6 +155,10 @@ packet counts and error flags. Use the command field or the **Version**, **Clock
 and **Radio settings** shortcuts to prepare a command, then click **Send command**.
 Commands are sent as CLI data; the app waits for a reply rather than a chat ACK.
 No reply does not prove a command failed, and commands are never retried automatically.
+
+After login, **Advert Flood from Repeater** requests a flood advert from the
+selected repeater using the `advert` command. Administrator access is required.
+Its reply appears in the console, and any unsent command draft is preserved.
 
 Login credentials are not saved or put into chat history. New repeater command
 and response logs stay in RAM (up to 100 entries per repeater) and clear when
