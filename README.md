@@ -21,7 +21,7 @@ old name. No profile move or uninstall is required.
 
 ## Start the app
 
-1. Download **Signal-Outpost-Setup-0.12.0-x64.exe** from [GitHub Releases](https://github.com/kq4esz/SDRExtreme/releases/latest), run the installer, then launch **Signal Outpost** from the desktop or Start menu. The installer includes Electron, the local service, USB libraries and decoders; Node.js is not required. For a source checkout, use **`launch-signal-outpost.cmd`** after the setup below.
+1. Download **Signal-Outpost-Setup-0.13.0-x64.exe** from [GitHub Releases](https://github.com/kq4esz/SDRExtreme/releases/latest), run the installer, then launch **Signal Outpost** from the desktop or Start menu. The installer includes Electron, the local service, USB libraries and decoders; Node.js is not required. For a source checkout, use **`launch-signal-outpost.cmd`** after the setup below.
 2. Open **Settings → RTL-SDR device manager**. Click **Refresh**, select your attached receiver, and save the hardware settings.
 3. Go to **Live radio** and click **Start listening**. Select a memory or tune to a frequency.
 4. Go to **KiwiSDR network** to choose a receiver on the world map or in the station list. Select a station, then click **Check & listen**. Its listening interface opens inside the app; **Open receiver in a new window** offers a dedicated desktop window if a receiver blocks embedding.
@@ -40,6 +40,23 @@ across manufacturers. Choose **Auto / other compatible node**, or select a
 specific model to see its USB, Bluetooth and Wi-Fi connection choices.
 There is no Heltec-only connection restriction. Model and firmware information
 reported by the connected node appear below the connection controls.
+
+### Node advertisements
+
+Below **Local node**, use **Advertise your node** to announce the connected
+companion's configured identity and location, if its location policy permits it:
+
+- **Advert Zero Hop** reaches nearby nodes without repeater forwarding.
+- **Advert Flood Routed** allows repeaters to relay the advert using the node's
+  existing default flood scope.
+
+These controls use the same companion command over USB, Bluetooth LE or Wi-Fi.
+Each click requests one advert; the app does not advertise automatically on
+connection, startup, refresh or reconnect, and does not automatically retry a
+rejected or ambiguous request. Buttons show pending state, and node acceptance
+or errors appear below them. Acceptance confirms the node queued the request;
+it is not a receipt from remote nodes. Requests are bound to the selected node
+and connection so an old queued request cannot advertise a newly connected node.
 
 The bundled catalog covers **94 official companion board profiles** from
 MeshCore's **companion-v1.18.0** release, checked October 15, 2026. This includes

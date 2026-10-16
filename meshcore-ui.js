@@ -37,6 +37,9 @@ export class MeshCoreUi {
       </div><p class="mesh-footer-note">MeshCore companion firmware is required. USB, BLE and Wi-Fi availability depends on your firmware build. Mesh messaging uses the node’s LoRa radio.</p>
       <dialog class="app-dialog mesh-dialog" id="mesh-device-dialog"><div class="dialog-head"><div><div class="section-kicker">BLUETOOTH LOW ENERGY</div><h2>Choose a MeshCore node</h2></div><button type="button" class="icon-button" id="mesh-device-close" aria-label="Cancel device selection">×</button></div><p>Keep your node nearby with Bluetooth companion firmware running. Close its connection in other apps.</p><div id="mesh-device-list" class="mesh-device-list"></div><p id="mesh-device-searching">Searching for MeshCore devices…</p><div class="dialog-actions"><button type="button" class="outline-button" id="mesh-device-cancel">Cancel</button></div></dialog>
       <dialog class="app-dialog mesh-dialog" id="mesh-pair-dialog"><form id="mesh-pair-form"><div class="dialog-head"><div><div class="section-kicker">BLUETOOTH PAIRING</div><h2>Pair with your node</h2></div></div><p id="mesh-pair-prompt"></p><label class="field-label" for="mesh-pin" id="mesh-pin-label">NODE PAIRING PIN</label><input id="mesh-pin" autocomplete="off" inputmode="numeric" maxlength="16"><div class="dialog-actions"><button type="button" id="mesh-pair-cancel" class="outline-button">Cancel</button><button type="submit" class="primary-button">Pair node</button></div></form></dialog>`;
+    const advertPanel = element('section', 'mesh-advert panel'); advertPanel.setAttribute('aria-label', 'Advertise the connected MeshCore node');
+    advertPanel.innerHTML = `<div class="mesh-advert-heading"><div><div class="section-kicker">NODE DISCOVERY</div><h2>Advertise your node</h2><p>Announce this node’s configured identity and location, when enabled. Zero-hop stays local; flood routed can be relayed by repeaters.</p></div><div class="mesh-advert-actions"><button type="button" id="mesh-advert-zero" class="outline-button" disabled>Advert Zero Hop</button><button type="button" id="mesh-advert-flood" class="outline-button" disabled>Advert Flood Routed</button></div></div><p id="mesh-advert-status" class="mesh-advert-status" role="status" aria-live="polite">Connect a node to send an advertisement.</p>`;
+    $('#mesh-refresh').closest('.mesh-node').after(advertPanel);
     const repeaterPanel = element('section', 'mesh-repeater-panel hidden'); repeaterPanel.id = 'mesh-repeater-panel'; repeaterPanel.setAttribute('aria-label', 'Repeater connection and login');
     repeaterPanel.innerHTML = `<div class="mesh-repeater-topline"><span class="section-kicker">REPEATER LINK · LoRa</span><span id="mesh-repeater-route"></span></div>
       <p id="mesh-repeater-identity" class="mesh-repeater-identity"></p><p id="mesh-repeater-access" class="mesh-repeater-access"></p>
@@ -66,6 +69,8 @@ export class MeshCoreUi {
     $('#mesh-disconnect').addEventListener('click', () => void this.disconnect());
     $('#mesh-ports-refresh').addEventListener('click', () => void this.refreshPorts());
     $('#mesh-refresh').addEventListener('click', async () => { try { this.update(await api('/api/meshcore/refresh', {})); } catch (error) { this.showError(error.message); } });
+    $('#mesh-advert-zero').addEventListener('click', () => { void this.sendAdvertisement('zero-hop'); });
+    $('#mesh-advert-flood').addEventListener('click', () => { void this.sendAdvertisement('flood'); });
     $('#mesh-search').addEventListener('input', () => this.renderConversations());
     const favorites = element('button', 'mesh-favorites-filter', '☆ Favorites'); favorites.type = 'button'; favorites.id = 'mesh-favorites-filter'; favorites.setAttribute('aria-pressed', 'false');
     $('#mesh-search').after(favorites);
@@ -273,6 +278,7 @@ export class MeshCoreUi {
     if (data.node?.publicKey === this.data.node?.publicKey && this.data.layout?.revision > (data.layout?.revision || 0)) data = { ...data, layout: this.data.layout };
     if (data.connectionId !== this.data.connectionId) { $('#mesh-repeater-password').value = ''; $('#mesh-repeater-command').value = ''; }
     if (data.connectionId && data.connectionId === this.data.connectionId) {
+      if ((this.data.advertisement?.revision || 0) > (data.advertisement?.revision || 0)) data = { ...data, advertisement: this.data.advertisement };
       const existing = new Map(this.data.messages.map(row => [row.id, row]));
       data = { ...data, messages: data.messages.map(row => {
         const previous = existing.get(row.id);
@@ -455,7 +461,42 @@ export class MeshCoreUi {
     $('#mesh-node-radio').textContent = node ? `SF${node.spreadingFactor} · ${node.bandwidth} kHz · CR${node.codingRate}` : '—';
     $('#mesh-node-battery').textContent = node?.batteryMillivolts ? `${(node.batteryMillivolts / 1000).toFixed(2)} V` : '—';
     $('#mesh-contact-count').textContent = node ? String(data.contacts.length) : '—';
+    this.renderAdvertisements();
     this.renderConversations(); this.renderMessages(); this.renderComposer(); this.scheduleRead();
+  }
+  renderAdvertisements() {
+    const current = this.data.advertisement, operation = current?.node === this.data.node?.publicKey ? current : null;
+    const pending = Boolean((this.advertRequest && this.advertRequest.session === this.data.connectionId) || ['queued', 'sending'].includes(operation?.status));
+    $('#mesh-advert-zero').disabled = !this.data.connected || pending;
+    $('#mesh-advert-flood').disabled = !this.data.connected || pending;
+    const status = $('#mesh-advert-status'), localError = this.advertError && this.advertError.session === this.data.connectionId ? this.advertError.text : '';
+    status.classList.toggle('error', Boolean(localError || ['rejected', 'unconfirmed', 'cancelled'].includes(operation?.status)));
+    if (localError) status.textContent = localError;
+    else if (pending && !['queued', 'sending'].includes(operation?.status)) status.textContent = 'Submitting advertisement request…';
+    else if (operation) {
+      const label = operation.mode === 'flood' ? 'Flood-routed advert' : 'Zero-hop advert';
+      const states = { queued: `${label} queued…`, sending: `Requesting ${label.toLowerCase()}…`,
+        accepted: `${label} accepted by your node at ${new Date(operation.acceptedAt).toLocaleTimeString()}. Reception by other nodes is not confirmed.`,
+        rejected: `${label} rejected: ${operation.error}`, unconfirmed: `${label}: node acceptance unconfirmed. ${operation.error} No automatic retry.`,
+        cancelled: `${label} cancelled before sending.` };
+      status.textContent = states[operation.status] || '';
+    } else status.textContent = pending ? 'Submitting advertisement request…' : this.data.connected ? 'Choose how to advertise this node.' : 'Connect a node to send an advertisement.';
+  }
+  async sendAdvertisement(mode) {
+    if (!this.data.connected || (this.advertRequest && this.advertRequest.session === this.data.connectionId)) return;
+    const request = { node: this.data.node.publicKey, session: this.data.connectionId, mode };
+    this.advertRequest = request; this.advertError = null; this.renderAdvertisements();
+    try {
+      const result = await this.api('/api/meshcore/advertise', request);
+      if (request.session !== this.data.connectionId || request.node !== this.data.node?.publicKey) return;
+      if ((result.advertisement?.revision || 0) >= (this.data.advertisement?.revision || 0)) this.data = { ...this.data, advertisement: result.advertisement };
+      this.toast(`${mode === 'flood' ? 'Flood-routed' : 'Zero-hop'} advert accepted by your node.`, 'success');
+    } catch (error) {
+      if (request.session === this.data.connectionId && request.node === this.data.node?.publicKey) this.advertError = { session: request.session, text: error.message };
+    } finally {
+      if (this.advertRequest === request) this.advertRequest = null;
+      this.renderAdvertisements();
+    }
   }
   renderConversations() {
     const container = $('#mesh-conversation-list'), query = $('#mesh-search').value.trim().toLowerCase();

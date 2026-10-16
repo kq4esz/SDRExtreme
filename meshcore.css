@@ -67,6 +67,17 @@
 .mesh-path-chain small{font:10px/1.6 var(--sans);color:var(--muted)}
 @media(max-width:600px){.mesh-delivery-dialog{padding:15px}.mesh-delivery-receipt{grid-template-columns:1fr}}
 
+/* Advertisements from the local companion node. */
+.mesh-advert{padding:17px 21px;margin-bottom:16px}
+.mesh-advert-heading{display:flex;align-items:center;justify-content:space-between;gap:18px}
+.mesh-advert-heading h2{margin:6px 0;font:500 15px var(--display)}
+.mesh-advert-heading p{margin:0;max-width:640px;font:11px/1.7 var(--sans);color:var(--muted)}
+.mesh-advert-actions{display:flex;gap:9px;flex-shrink:0;flex-wrap:wrap}
+.mesh-advert-actions button{font-size:11px;min-height:35px}
+.mesh-advert-actions button:disabled{opacity:.45;cursor:default}
+.mesh-advert-status{font:10px/1.7 var(--mono);color:var(--cyan);margin:11px 0 0;overflow-wrap:anywhere}
+.mesh-advert-status.error{color:var(--orange)}
+@media(max-width:1100px){.mesh-advert-heading{align-items:flex-start;flex-direction:column}.mesh-advert-actions{width:100%}}
 /* Repeater administration through the connected companion radio. */
 .mesh-repeater-panel{padding:17px 23px;background:#101d24;border-bottom:1px solid var(--line)}
 .mesh-repeater-topline{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap}

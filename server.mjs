@@ -804,6 +804,7 @@ const server = http.createServer(async (req, res) => {
       return sendJson(res, 200, meshcore.disconnect());
     }
     if (url.pathname === '/api/meshcore/refresh' && req.method === 'POST') return sendJson(res, 200, await meshcore.refresh());
+    if (url.pathname === '/api/meshcore/advertise' && req.method === 'POST') return sendJson(res, 200, await meshcore.advertise(await parseBody(req, 4096)));
     if (url.pathname === '/api/meshcore/send' && req.method === 'POST') return sendJson(res, 200, await meshcore.send(await parseBody(req, 4096)));
     if (url.pathname === '/api/meshcore/read' && req.method === 'POST') return sendJson(res, 200, meshcore.markRead(await parseBody(req, 128000)));
     if (url.pathname === '/api/meshcore/organize' && req.method === 'POST') return sendJson(res, 200, meshcore.organize(await parseBody(req, 4096)));
