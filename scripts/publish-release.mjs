@@ -35,14 +35,21 @@ while (remoteCommit.type === 'tag') remoteCommit = (await api(`/git/tags/${remot
 if (remoteCommit.sha !== commit) throw new Error('The pushed release tag does not match this checkout.');
 const out = path.join(root, 'dist');
 const installer = `Signal-Outpost-Setup-${pkg.version}-x64.exe`;
-const names = [installer, `${installer}.blockmap`, 'latest.yml', 'SHA256SUMS.txt'];
+const linuxPackages = fs.readdirSync(out).filter(name => /\.(AppImage|tar\.gz)$/i.test(name)).sort();
+if (linuxPackages.length && (!linuxPackages.some(name => name.toLowerCase().endsWith('.appimage')) || !linuxPackages.some(name => name.endsWith('.tar.gz')) || !fs.existsSync(path.join(out, 'SHA256SUMS-linux.txt')))) {
+  throw new Error('A Linux release must include both the AppImage and tar.gz packages with SHA256SUMS-linux.txt.');
+}
+const names = [installer, `${installer}.blockmap`, 'latest.yml', 'SHA256SUMS.txt', ...linuxPackages, ...(linuxPackages.length ? ['SHA256SUMS-linux.txt'] : [])];
 for (const name of names) if (!fs.statSync(path.join(out, name)).isFile()) throw new Error(`Missing release file: ${name}`);
 const manifest = fs.readFileSync(path.join(out, 'latest.yml'), 'utf8');
 if (!manifest.includes(`version: ${pkg.version}`) || !manifest.includes(installer)) throw new Error('The update manifest does not match the Windows installer.');
 const localSha512 = createHash('sha512').update(fs.readFileSync(path.join(out, installer))).digest('base64');
 if (!manifest.includes(localSha512)) throw new Error('The installer SHA-512 does not match latest.yml. Rebuild before publishing.');
 const notesFile = path.join(root, 'docs', 'releases', `${pkg.version}.md`);
-const notes = fs.existsSync(notesFile) ? fs.readFileSync(notesFile, 'utf8') : `Windows x64 release of Signal Outpost ${pkg.version}. Download and run ${installer}. Installed applications receive this version automatically.`;
+const defaultNotes = linuxPackages.length
+  ? `Signal Outpost ${pkg.version} for Windows x64 and Linux x64. Download the Windows installer or the Linux AppImage / tar.gz package. Windows installations receive updates automatically.`
+  : `Windows x64 release of Signal Outpost ${pkg.version}. Download and run ${installer}. Installed applications receive this version automatically.`;
+const notes = fs.existsSync(notesFile) ? fs.readFileSync(notesFile, 'utf8') : defaultNotes;
 const existing = (await api('/releases?per_page=100')).find(release => release.tag_name === tag);
 if (existing && !existing.draft) throw new Error(`${tag} is already published. Increase the version; published releases are never overwritten.`);
 const release = existing || await api('/releases', { method: 'POST', body: JSON.stringify({ tag_name: tag, target_commitish: commit, name: `Signal Outpost ${pkg.version}`, body: notes, draft: true, prerelease: false }) });

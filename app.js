@@ -11,7 +11,7 @@ const $$ = (selector, root = document) => [...root.querySelectorAll(selector)];
 const DIGITAL = new Set(['P25', 'DMR', 'NXDN', 'D-STAR', 'YSF', 'M17']);
 const MODE_HINTS = { AM:'Amplitude modulation · airband & broadcast', NFM:'Narrow FM · voice', WFM:'Wide FM · broadcast', USB:'Upper sideband · HF voice', LSB:'Lower sideband · HF voice', CW:'Morse code · built-in decoder', RAW:'Raw IQ audio · monitor only', P25:'P25 voice · integrated decoder', DMR:'DMR voice · integrated decoder', NXDN:'NXDN voice · integrated decoder', 'D-STAR':'D-STAR voice · integrated decoder', YSF:'System Fusion · integrated decoder', M17:'M17 voice · integrated decoder' };
 const MODE_LABELS = { NFM:'Narrow FM', WFM:'Wide FM', AM:'AM', USB:'Upper sideband', LSB:'Lower sideband', CW:'CW', RAW:'RAW IQ', P25:'P25', DMR:'DMR', NXDN:'NXDN', 'D-STAR':'D-STAR', YSF:'YSF', M17:'M17' };
-const state = { status:null, channels:[], settings:{}, usbDevices:[], network:null, page:'radio', spectrum:null, sampleRate:48000, currentStep:25000, audio:null, socket:null, volume:.72, muted:false, scanning:false, ft8:false, cwText:'', activity:[], spectrumRaf:0, waterfallRows:0, selectedTrunkId:'', lastError:'' };
+const state = { status:null, channels:[], settings:{}, usbDevices:[], platform:'unknown', network:null, page:'radio', spectrum:null, sampleRate:48000, currentStep:25000, audio:null, socket:null, volume:.72, muted:false, scanning:false, ft8:false, cwText:'', activity:[], spectrumRaf:0, waterfallRows:0, selectedTrunkId:'', lastError:'' };
 MODE_HINTS.HD = 'HD Radio · digital FM / AM broadcast'; MODE_LABELS.HD = 'HD Radio';
 state.scanSelection = new Set(); state.scan = null; state.editingChannel = null; state.decoderMemoryId = '';
 state.digitalEvents = []; state.digitalLogs = []; state.digitalBusy = false;
@@ -115,7 +115,7 @@ function renderDigital() {
   if(!active&&state.selectedTrunkId){const channel=state.channels.find(item=>item.id===state.selectedTrunkId);const site=channel?.sites?.find(item=>String(item.id)===$('#digital-site').value)||channel?.sites?.[0];const frequency=site?.frequencies?.find(item=>item.use==='d')?.frequency||site?.frequencies?.[0]?.frequency||channel?.frequency;if(frequency)$('#digital-frequency-input').value=formatMHz(frequency);}
   $('#digital-engine-badge').textContent = external ? 'EXTERNAL ENGINE' : 'INTEGRATED · PREVIEW';
   $('#digital-toggle').textContent = state.digitalBusy ? 'Please wait…' : active ? 'Stop decoder' : 'Start decoder';
-  $('#digital-toggle').disabled = state.digitalBusy;
+  $('#digital-toggle').disabled = state.digitalBusy || !active && !external && runtime?.available === false;
   $('#digital-add-memory').disabled=Boolean(state.digitalBusy||state.status?.digitalStarting);
   $('#save-current-memory').disabled=Boolean(state.digitalBusy||state.status?.digitalStarting);
   for (const id of ['digital-protocol', 'digital-system', 'digital-site', 'digital-scan']) $('#'+id).disabled = active || state.digitalBusy;
@@ -132,7 +132,7 @@ function renderDigital() {
   else if (active) label = external ? 'External DSD-FME running · Audio is managed by that engine.' : `${digital.protocol || 'Digital voice'} · ${digital.decoderStatus?.protocol && digital.decoderStatus.protocol !== 'None' ? 'Receiving ' + digital.decoderStatus.protocol : 'Listening for valid frames'} · Audio in Signal Outpost`;
   output.querySelector('span').textContent = label;
   $('#digital-runtime-label').textContent = runtime ? `Bundled ${runtime.name} ${runtime.version} · ${runtime.codec}` : 'Bundled DSD-neo · IMBE / AMBE codec included';
-  $('#digital-runtime-status').textContent = runtime?.available ? `${runtime.name} ${runtime.version} · Preview build · Ready` : 'Native digital decoder is unavailable.';
+  $('#digital-runtime-status').textContent = runtime?.available ? `${runtime.name} ${runtime.version} · Preview build · Ready` : 'Bundled digital decoder is unavailable in this package.';
   $('#digital-runtime-status').classList.toggle('unavailable', !runtime?.available);
   const metrics = active && integrated ? digital.metrics : null;
   const system = active && integrated ? digital.system : null;
@@ -626,7 +626,7 @@ async function refreshUsbDevices() {
     const saved=state.usbDevices.find(device=>device.serial&&device.serial===state.settings.deviceSerial)||state.usbDevices.find(device=>device.index===Number(state.settings.deviceIndex));
     if(saved)select.value=String(saved.index);
     message.classList.toggle('ready',data.available&&state.usbDevices.length>0);message.classList.toggle('error',!data.available);
-    message.textContent=!data.available?data.error:state.usbDevices.length?`${state.usbDevices.length} RTL-SDR USB receiver${state.usbDevices.length===1?'':'s'} detected · native library ready`:'Native library ready. Plug in your RTL-SDR and use Refresh. If needed, install WinUSB for Interface 0.';
+    message.textContent=!data.available?data.error:state.usbDevices.length?`${state.usbDevices.length} RTL-SDR USB receiver${state.usbDevices.length===1?'':'s'} detected · native library ready`:state.platform==='linux'?'Native library ready. Plug in your RTL-SDR and use Refresh. If no device appears, check USB permissions.':'Native library ready. Plug in your RTL-SDR and use Refresh. If needed, install WinUSB for Interface 0.';
     $('#usb-library-info').textContent=data.libraryPath?`Loaded library: ${data.libraryPath}`:'No native RTL-SDR library loaded.';
     renderUsbDevice();
   }catch(error){message.classList.add('error');message.textContent=error.message;}
@@ -646,7 +646,7 @@ async function refreshAudioOutputs() {
   }catch{}
 }
 async function chooseAudioOutput() {
-  if(!navigator.mediaDevices?.selectAudioOutput){toast('This browser cannot select a separate audio output. Choose the Windows default output device instead.');return;}
+  if(!navigator.mediaDevices?.selectAudioOutput){toast('This desktop runtime cannot select a separate audio output. Choose the system default output device instead.');return;}
   try{const device=await navigator.mediaDevices.selectAudioOutput();if(device?.deviceId){await refreshAudioOutputs();$('#audio-output').value=device.deviceId;await applyAudioOutput(device.deviceId);await saveSettings();}}
   catch(error){if(error.name!=='NotAllowedError')toast(error.message||'Could not select an audio output.','error');}
 }
@@ -664,11 +664,18 @@ function createStarterChannels() {
   ];
 }
 async function refreshState() {
-  const data=await api('/api/state');state.status=data.status;state.channels=data.channels||[];state.settings=data.settings||{};state.digitalRuntime=data.digitalRuntime;state.digitalEvents=data.digitalHistory||[];state.hdRuntime=data.hdRuntime;
+  const data=await api('/api/state');state.platform=data.platform||window.sdrDesktop?.platform||'unknown';state.status=data.status;state.channels=data.channels||[];state.settings=data.settings||{};state.digitalRuntime=data.digitalRuntime;state.digitalEvents=data.digitalHistory||[];state.hdRuntime=data.hdRuntime;
   if(data.status.digitalActive&&data.status.selectedChannelId){const current=state.channels.find(channel=>channel.id===data.status.selectedChannelId);state.selectedTrunkId=current?.kind==='trunked'?current.id:'';state.decoderMemoryId=current?.kind!=='trunked'?current?.id||'':'';}
   if(!state.scanSelectionLoaded){state.scanSelection=new Set(state.settings.scanChannelIds||[]);state.scanSelectionLoaded=true;}
   state.scanSelection=new Set([...state.scanSelection].filter(id=>state.channels.some(channel=>channel.id===id&&channel.kind!=='trunked'&&channel.mode!=='HD'&&channel.enabled!==false)));
   $('#rtl-library-path').value=state.settings.rtlLibraryPath||'';$('#dsd-path').value=state.settings.dsdPath||'';$('#sample-rate').value=String(state.settings.sampleRate||2400000);
+  const linux=state.platform==='linux';
+  $('#rtl-hardware-help').textContent=linux?'Uses the system librtlsdr library for direct USB access. Install your distribution’s RTL-SDR runtime and allow your user account to access the dongle.':'Connect directly to your dongle through the native RTL-SDR library. Choose a device below and start listening.';
+  $('#rtl-library-label').textContent='CUSTOM RTL-SDR LIBRARY (OPTIONAL)';
+  $('#rtl-library-path').placeholder=linux?'System librtlsdr.so.0 or a compatible .so library':'Bundled Blog V4 compatible x64 rtlsdr.dll';
+  $('#rtl-permissions-help').textContent=linux?'Linux setup: install librtlsdr and configure USB device permissions as described in the README. Do not run the desktop app as root.':'Windows setup: install WinUSB for the dongle’s Bulk-In Interface 0.';
+  $('#rtl-setup-link').classList.toggle('hidden',linux);
+  if(linux){$('#digital-engine').options[0].textContent='Integrated DSD-neo';$('#dsd-path').placeholder='/usr/bin/dsd-fme';}
   $('#digital-engine').value=state.settings.digitalEngine||'integrated';$('#external-decoder-fields').classList.toggle('hidden',$('#digital-engine').value!=='external');
   $('#usb-ppm').value=state.settings.ppm||0;$('#usb-sampling').value=String(state.settings.directSampling||0);$('#usb-bandwidth').value=String(state.settings.tunerBandwidth||0);
   $('#usb-agc').checked=Boolean(state.settings.rtlAgc);$('#usb-bias').checked=Boolean(state.settings.biasTee);$('#usb-tuner-auto').checked=!state.settings.tunerGain;

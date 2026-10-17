@@ -5,6 +5,10 @@ const { createHash } = require('node:crypto');
 // Audit the files in the actual distribution, after dependencies are copied.
 // Missing sidecars and modified pinned decoders must fail before publication.
 module.exports = async function checkPackage(context) {
+  if (context.electronPlatformName === 'linux') {
+    checkLinuxPackage(context.appOutDir);
+    return;
+  }
   if (context.electronPlatformName !== 'win32') return;
   const install = context.appOutDir;
   const app = path.join(install, 'resources', 'app');
@@ -57,11 +61,15 @@ module.exports = async function checkPackage(context) {
     'native/win32-x64/rtlsdr.dll',
     'native/win32-x64/VCRUNTIME140.dll'
   ]) requireFile(relative);
-  for (const folder of ['native/hd-radio', 'native/digital']) {
+  for (const [folder, key, property] of [
+    ['native/hd-radio', 'win32-x64', 'library'],
+    ['native/digital', 'win32-x64', 'executable']
+  ]) {
     const manifest = JSON.parse(fs.readFileSync(requireFile(`${folder}/manifest.json`), 'utf8'));
-    const filename = requireFile(`${folder}/${manifest.library || manifest.executable}`);
+    const runtime = manifest.runtimes?.[key];
+    const filename = requireFile(`${folder}/${runtime?.[property] || ''}`);
     const hash = createHash('sha256').update(fs.readFileSync(filename)).digest('hex');
-    if (hash !== (manifest.librarySha256 || manifest.executableSha256)) throw new Error(`Pinned native runtime was modified during packaging: ${folder}`);
+    if (!runtime?.sha256 || hash !== runtime.sha256) throw new Error(`Pinned native runtime was modified during packaging: ${folder}`);
   }
   const files = [];
   function walk(folder) {
@@ -88,6 +96,47 @@ module.exports = async function checkPackage(context) {
   }
   console.log(`Package dependency audit passed (${files.length} Windows x64 native files).`);
 };
+
+function checkLinuxPackage(install) {
+  const app = path.join(install, 'resources', 'app');
+  function requireFile(relative) {
+    const filename = path.join(app, relative);
+    if (!fs.existsSync(filename) || !fs.statSync(filename).isFile()) throw new Error(`Package dependency is missing: ${relative}`);
+    return filename;
+  }
+  for (const [folder, property] of [
+    ['native/hd-radio', 'library'],
+    ['native/digital', 'executable']
+  ]) {
+    const manifest = JSON.parse(fs.readFileSync(requireFile(`${folder}/manifest.json`), 'utf8'));
+    const runtime = manifest.runtimes?.['linux-x64'];
+    if (!runtime?.sha256 || !runtime.libraryDirectory) throw new Error(`Linux native runtime was not built: ${folder}`);
+    const filename = requireFile(`${folder}/${runtime[property] || ''}`);
+    const hash = createHash('sha256').update(fs.readFileSync(filename)).digest('hex');
+    if (hash !== runtime.sha256) throw new Error(`Pinned Linux native runtime was modified during packaging: ${folder}`);
+    const header = Buffer.alloc(20);
+    const fd = fs.openSync(filename, 'r');
+    try { fs.readSync(fd, header, 0, header.length, 0); } finally { fs.closeSync(fd); }
+    if (header[0] !== 0x7f || header.toString('ascii', 1, 4) !== 'ELF' || header[4] !== 2 || header.readUInt16LE(18) !== 62) {
+      throw new Error(`Expected a Linux x86_64 ELF runtime: ${filename}`);
+    }
+    const libraryDirectory = path.join(app, folder, runtime.libraryDirectory);
+    if (!fs.existsSync(libraryDirectory) || !fs.readdirSync(libraryDirectory).some(name => name.includes('.so'))) {
+      throw new Error(`Bundled Linux runtime libraries are missing: ${folder}/${runtime.libraryDirectory}`);
+    }
+    if (property === 'executable' && (fs.statSync(filename).mode & 0o111) === 0) {
+      throw new Error(`Linux decoder is not executable: ${filename}`);
+    }
+  }
+  const koffi = requireFile('node_modules/@koromix/koffi-linux-x64/linux_x64/koffi.node');
+  const koffiHeader = Buffer.alloc(20);
+  const koffiFd = fs.openSync(koffi, 'r');
+  try { fs.readSync(koffiFd, koffiHeader, 0, koffiHeader.length, 0); } finally { fs.closeSync(koffiFd); }
+  if (koffiHeader[0] !== 0x7f || koffiHeader.toString('ascii', 1, 4) !== 'ELF' || koffiHeader[4] !== 2 || koffiHeader.readUInt16LE(18) !== 62) {
+    throw new Error(`Expected the Linux x86_64 Koffi native module: ${koffi}`);
+  }
+  console.log('Package dependency audit passed (Linux x64 native decoder runtimes).');
+}
 
 function peImports(filename) {
   const bytes = fs.readFileSync(filename);

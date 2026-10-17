@@ -1,4 +1,12 @@
-# RTL-SDR native USB library
+# RTL-SDR native USB libraries
+
+Linux x64 HD Radio and integrated DSD-neo builds include a private, pinned
+RTL-SDR 2.0.3 library with RTL-SDR Blog V4 / V4 Lite support. Its source commit
+is pinned in `native/digital/source/dsd-neo-32ae7c8.zip`; see the Linux runtime
+build notes in `native/digital/README.md`. The app's Linux analog and HD Radio
+USB acquisition continues to use the distribution's `librtlsdr`; integrated
+DSD-neo opens the dongle with its private pinned copy. All modes use the
+distribution's USB permission rules.
 
 The Windows x64 native receiver uses the unmodified `rtlsdr.dll`, `pthreadVC2.dll`, and `msvcr100.dll` from RTL-SDR Blog driver release **V1.4.0**. It supports the Blog V4 as well as compatible RTL2832U receivers. `VCRUNTIME140.dll` is also bundled beside the receiver library: this Blog DLL imports the Visual C++ runtime, so it must not depend on a development PC's installed runtime.
 

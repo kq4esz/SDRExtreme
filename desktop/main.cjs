@@ -9,11 +9,12 @@ const setupBluetooth = require('./meshcore-bluetooth.cjs');
 const ROOT = path.resolve(__dirname, '..');
 const APP_VERSION = require('../package.json').version;
 app.setName('Signal Outpost');
-// Reuse SDR Extreme's complete profile, including MeshCore history and Bluetooth data.
-if (app.isPackaged) app.setPath('userData', path.join(app.getPath('appData'), 'SDR Extreme'));
+// Reuse the established Windows profile. Linux follows Electron's platform-native
+// Signal Outpost/XDG profile location instead of creating an old Windows-named folder.
+if (app.isPackaged && process.platform === 'win32') app.setPath('userData', path.join(app.getPath('appData'), 'SDR Extreme'));
 if (process.env.SDREXTREME_PROFILE) { const profile = path.resolve(process.env.SDREXTREME_PROFILE); fs.mkdirSync(profile, { recursive: true }); app.setPath('userData', profile); }
 const DATA_DIR = path.resolve(process.env.SDREXTREME_DATA_DIR || (app.isPackaged ? path.join(app.getPath('userData'), 'data') : path.join(ROOT, 'local-data')));
-const DATA_PROFILE = createHash('sha256').update(DATA_DIR.toLowerCase()).digest('hex').slice(0, 16);
+const DATA_PROFILE = createHash('sha256').update(process.platform === 'win32' ? DATA_DIR.toLowerCase() : DATA_DIR).digest('hex').slice(0, 16);
 const PORT = Number(process.env.SDREXTREME_PORT || 17890);
 const LOCAL = `http://127.0.0.1:${PORT}`;
 let window, backend, updates, quitting = false, shutdownPromise, starting = true, backendActive = false;
@@ -86,20 +87,25 @@ function createWindow() {
     { label: 'Edit', submenu: [{ role: 'undo' }, { role: 'redo' }, { type: 'separator' }, { role: 'cut' }, { role: 'copy' }, { role: 'paste' }, { role: 'selectAll' }] },
     { label: 'View', submenu: [{ role: 'reload' }, { role: 'togglefullscreen' }, { type: 'separator' }, { role: 'resetZoom' }, { role: 'zoomIn' }, { role: 'zoomOut' }, { type: 'separator' }, { role: 'toggleDevTools' }] },
     { label: 'Help', submenu: [
-      { label: 'Check for updates…', click: () => { void updates?.check(true); } },
-      { id: 'install-update', label: 'Restart to install update', enabled: updates?.snapshot().phase === 'ready', click: () => { void updates?.check(true); } },
+      ...(process.platform === 'win32'
+        ? [
+          { label: 'Check for updates…', click: () => { void updates?.check(true); } },
+          { id: 'install-update', label: 'Restart to install update', enabled: updates?.snapshot().phase === 'ready', click: () => { void updates?.check(true); } }
+        ]
+        : [{ label: 'Download updates…', click: () => external('https://github.com/kq4esz/SDRExtreme/releases/latest') }]),
       { type: 'separator' },
       { label: 'Releases on GitHub', click: () => external('https://github.com/kq4esz/SDRExtreme/releases') },
       { label: 'Open saved data folder', click: () => shell.openPath(DATA_DIR) },
       { label: 'Setup guide', click: () => shell.openPath(path.join(ROOT, 'README.md')) },
-      { label: 'About Signal Outpost', click: () => dialog.showMessageBox(window, { title: 'Signal Outpost', message: `Signal Outpost ${APP_VERSION}`, detail: 'Windows receiver suite · RTL-SDR direct USB · HD Radio · KiwiSDR network atlas\nUpdates: github.com/kq4esz/SDRExtreme', type: 'info' }) }
+      { label: 'About Signal Outpost', click: () => dialog.showMessageBox(window, { title: 'Signal Outpost', message: `Signal Outpost ${APP_VERSION}`, detail: 'Desktop receiver suite · RTL-SDR direct USB · KiwiSDR network atlas\nUpdates: github.com/kq4esz/SDRExtreme', type: 'info' }) }
     ] }
   ]));
 }
 
 ipcMain.handle('sdr:choose-library', async event => {
   if (!trusted(event)) throw new Error('Unavailable outside the Signal Outpost window.');
-  const result = await dialog.showOpenDialog(window, { title: 'Select RTL-SDR native driver library', properties: ['openFile'], filters: [{ name: 'RTL-SDR library', extensions: ['dll'] }] });
+  const extensions = process.platform === 'win32' ? ['dll'] : process.platform === 'darwin' ? ['dylib'] : ['so', '0'];
+  const result = await dialog.showOpenDialog(window, { title: 'Select RTL-SDR native library', properties: ['openFile'], filters: [{ name: 'RTL-SDR library', extensions }] });
   return result.canceled ? null : result.filePaths[0];
 });
 

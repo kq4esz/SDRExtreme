@@ -9,11 +9,6 @@ directories:
 asar: false
 npmRebuild: false
 afterPack: scripts/check-package.cjs
-# Keep the C++ runtime beside the executable for Electron/native addon loads.
-extraFiles:
-  - from: native/digital/win32-x64/bin
-    to: .
-    filter: [VCRUNTIME140.dll, VCRUNTIME140_1.dll, MSVCP140.dll]
 files:
   - desktop/**
   - lib/**
@@ -47,10 +42,30 @@ win:
   target:
     - target: nsis
       arch: [x64]
-  icon: assets/app-icon.png
+  icon: assets/256x256.png
   executableName: Signal Outpost
   # No signing certificate is supplied. HTTPS + SHA-512 still verify downloads.
   verifyUpdateCodeSignature: false
+  # Keep the C++ runtime beside the Windows executable for native addon loads.
+  extraFiles:
+    - from: native/digital/win32-x64/bin
+      to: .
+      filter: [VCRUNTIME140.dll, VCRUNTIME140_1.dll, MSVCP140.dll]
+linux:
+  target:
+    - target: AppImage
+      arch: [x64]
+    - target: tar.gz
+      arch: [x64]
+  icon: assets/256x256.png
+  category: Utility
+  executableName: signal-outpost
+  artifactName: Signal-Outpost-${version}-${arch}.${ext}
+  maintainer: KQ4ESZ
+  desktop:
+    entry:
+      Comment: RTL-SDR receiver, scanner, and MeshCore companion client
+      Categories: AudioVideo;Network;Utility;
 nsis:
   oneClick: false
   perMachine: false

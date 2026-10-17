@@ -110,7 +110,7 @@ export class HdRadioUi {
     $('#hd-artist').textContent = fm ? `HD${this.program + 1} will resume once digital audio is stable.` : selected.artist || 'Artist and title appear when broadcast by the station.';
     $('#hd-album').textContent = fm ? 'HD track details and artwork are paused during FM playback.' : selected.album || '';
     $('#hd-audio-source').textContent = fm ? 'FM main program · mono' : playing ? `HD${this.program + 1} · stereo` : active ? 'Waiting for audio' : 'Standby';
-    $('#hd-signal').textContent = hd.decoderError && active ? 'HD decoder recovering' : lock ? fm ? 'HD acquired · buffering recovery' : 'HD signal locked' : active ? 'Searching for digital signal' : 'No HD receiver running';
+    $('#hd-signal').textContent = !active && state.hdRuntime?.available === false ? 'Bundled HD Radio decoder is unavailable in this build' : hd.decoderError && active ? 'HD decoder recovering' : lock ? fm ? 'HD acquired · buffering recovery' : 'HD signal locked' : active ? 'Searching for digital signal' : 'No HD receiver running';
     const db = value => Number.isFinite(value) ? value.toFixed(1) : '—';
     $('#hd-mer').textContent = `${db(active ? hd.mer?.lower : null)} / ${db(active ? hd.mer?.upper : null)} dB`;
     $('#hd-ber').textContent = active && Number.isFinite(hd.ber) ? `${(hd.ber * 100).toFixed(3)}%` : '—';

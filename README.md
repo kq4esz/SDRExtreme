@@ -2,7 +2,26 @@
 
 *Tune. Decode. Connect.*
 
-Signal Outpost is a Windows desktop receiver suite with native RTL-SDR USB access, a worldwide KiwiSDR receiver map, scanner memories, digital decoding integrations, and a MeshCore companion client. The desktop application uses Electron, with a local receiver service and an isolated native USB acquisition process.
+Signal Outpost is an Electron desktop receiver suite with native RTL-SDR USB access, a worldwide KiwiSDR receiver map, scanner memories, digital decoding integrations, and a MeshCore companion client. Windows and Linux x64 builds include the bundled HD Radio and DSD-neo decoders.
+
+## Linux desktop packages
+
+Linux x64 releases from this source produce an **AppImage** and a portable **tar.gz**. AppImage is the easiest option across common desktop distributions; the tarball is available for systems without AppImage/FUSE support. Builds are produced on Ubuntu 22.04 to provide a broad glibc baseline. Linux distributions vary in graphics stacks, system libraries, Bluetooth services and USB rules, so no single package can guarantee support for every distribution or desktop version. ARM Linux is not included. Existing Windows-only releases do not contain these packages; they will be published with the next cross-platform tagged release.
+
+Linux analog and HD Radio reception use the distribution’s `librtlsdr` and `libusb` shared libraries. For Debian or Ubuntu, install `librtlsdr0` and `libusb-1.0-0` with your package manager. Package names differ on Fedora, Arch and other distributions. Integrated DSD-neo includes its pinned RTL-SDR libraries. Electron also needs the normal GTK, graphics and audio runtime libraries for your desktop. Bluetooth Low Energy uses Electron’s device chooser and the desktop’s Bluetooth stack; install and enable BlueZ where your distribution requires it. MeshCore USB serial uses devices such as `/dev/ttyACM0` or `/dev/ttyUSB0`; your user account needs permission to access the serial device (often through the `dialout` group on Debian-based systems). Log out and back in after changing group membership. Do not run the desktop app as root.
+
+The RTL-SDR USB device also needs a distribution-provided udev rule that grants access to your user. Many `librtlsdr` or RTL-SDR packages install one; follow your distribution’s hardware setup guide if the dongle does not appear. Signal Outpost does not change USB rules or kernel drivers.
+
+The Linux build includes live analog reception, HD Radio, integrated DSD-neo digital voice, CW decoding, spectrum/waterfall, KiwiSDR, propagation tools, MeshCore USB serial, Wi-Fi/TCP, and Bluetooth LE where supported by the desktop stack. A compatible Linux DSD-FME executable can also be selected in **Settings → Digital Voice**. Linux builds use manual downloads from GitHub Releases; Windows automatic updates remain available only in the Windows installer.
+
+For broadly compatible Linux packages, build on Ubuntu 22.04 x64, matching the release workflow. Building on a newer distribution can require a newer glibc and reduce compatibility with older systems. Install Node.js 22.12 or newer and pnpm 11.25.0, then run:
+
+```sh
+pnpm install --frozen-lockfile
+pnpm build:linux
+```
+
+The build compiles the pinned Linux x64 HD Radio and DSD-neo runtimes before packaging. Install the native build tools listed in the Linux release workflow if they are not already present. The AppImage and tar.gz are written to `dist/`. The tagged GitHub release workflow builds and publishes Linux and Windows packages together.
 
 ## Upgrading from SDR Extreme
 
@@ -21,16 +40,16 @@ old name. No profile move or uninstall is required.
 
 ## Start the app
 
-1. Download **Signal-Outpost-Setup-0.15.0-x64.exe** from [GitHub Releases](https://github.com/kq4esz/SDRExtreme/releases/latest), run the installer, then launch **Signal Outpost** from the desktop or Start menu. The installer includes Electron, the local service, USB libraries and decoders; Node.js is not required. For a source checkout, use **`launch-signal-outpost.cmd`** after the setup below.
+1. On Windows, download the current **Signal-Outpost-Setup** installer from [GitHub Releases](https://github.com/kq4esz/SDRExtreme/releases/latest), run the installer, then launch **Signal Outpost** from the desktop or Start menu. The installer includes Electron, the local service, USB libraries and decoders; Node.js is not required. Linux users can choose the AppImage or tar.gz package from the same release; setup details are above.
 2. Open **Settings → RTL-SDR device manager**. Click **Refresh**, select your attached receiver, and save the hardware settings.
 3. Go to **Live radio** and click **Start listening**. Select a memory or tune to a frequency.
 4. Go to **KiwiSDR network** to choose a receiver on the world map or in the station list. Select a station, then click **Check & listen**. Its listening interface opens inside the app; **Open receiver in a new window** offers a dedicated desktop window if a receiver blocks embedding.
 
 For a fresh source checkout, install Node.js **22.12 or newer**, then run `setup-signal-outpost.cmd`. It installs the JavaScript dependencies and desktop runtime. The driver DLLs under `native/win32-x64` must accompany the app. The setup script can also use the bundled Codex Node runtime on this PC.
 
-Installed builds save memory channels, preferences, the receiver directory and window size in **`%APPDATA%\SDR Extreme\data`**, outside the installation directory. Updates preserve this data. **Help → Open saved data folder** opens it. Source checkouts continue to use the ignored `local-data` folder. To migrate from a source checkout, close both versions and copy `channels.json` and `settings.json` from `local-data` into the installed build's data folder; keep a backup before replacing an existing profile. Closing the desktop app releases its receiver. In a source checkout, `stop-signal-outpost.cmd` also stops the local service.
+Windows installs save memory channels, preferences, the receiver directory and window size in **`%APPDATA%\SDR Extreme\data`**. Linux installs use Electron’s platform-native **`~/.config/Signal Outpost/data`** profile. Updates preserve this data. **Help → Open saved data folder** opens it. Source checkouts continue to use the ignored `local-data` folder. To migrate from a source checkout, close both versions and copy `channels.json` and `settings.json` from `local-data` into the installed build's data folder; keep a backup before replacing an existing profile. Closing the desktop app releases its receiver. In a source checkout, `stop-signal-outpost.cmd` also stops the local service.
 
-The local UI service uses `127.0.0.1:17890` for the desktop interface and audio/waterfall display. **RTL-SDR hardware access is direct USB through `rtlsdr.dll` and WinUSB, with no RTL-TCP process or port 1234 requirement.** MeshCore separately supports USB serial, Bluetooth LE and its companion TCP connection over Wi-Fi. `launch-browser-console.cmd` is an optional browser interface to the same native USB backend.
+The local UI service uses `127.0.0.1:17890` for the desktop interface and audio/waterfall display. **RTL-SDR hardware access is direct USB through the platform’s native RTL-SDR library, with no RTL-TCP process or port 1234 requirement.** Windows uses the bundled `rtlsdr.dll` and WinUSB; Linux uses the system `librtlsdr` library and udev permissions. MeshCore separately supports USB serial, Bluetooth LE and its companion TCP connection over Wi-Fi. `launch-browser-console.cmd` is an optional Windows browser interface to the same native USB backend.
 
 ## Appearance
 
@@ -96,14 +115,16 @@ USB-only; a desktop client cannot add a Bluetooth or Wi-Fi radio. Interfaces
 defined only in source are marked as requiring a custom firmware build in the
 connection instructions. Selecting a model does not flash or configure its firmware.
 
-- **USB:** plug in a USB data cable, refresh the COM port list, select the
+- **USB:** plug in a USB data cable, refresh the serial port list, select the
   node's port, then connect. The serial connection uses **115200 baud**.
   Install the USB serial driver appropriate to the board if Windows does not
-  expose a COM port. Close other applications using that port. Do not replace
-  the node's serial driver with the RTL-SDR WinUSB driver. nRF52 and RP2040
+  expose a serial port. On Linux, your user needs permission to open its
+  `/dev/tty*` device. Close other applications using that port. On Windows, do
+  not replace the node's serial driver with the RTL-SDR WinUSB driver. nRF52
+  and RP2040
   boards must be in normal USB serial mode, not their UF2 bootloader. Boards
   exposing a UART may require a supported USB-to-UART adapter.
-- **Bluetooth:** enable Bluetooth in Windows, run BLE companion firmware,
+- **Bluetooth:** enable Bluetooth on your computer, run BLE companion firmware,
   click **Choose Bluetooth node**, select the node, and enter/confirm its PIN.
   Device selection and PIN prompts are provided inside the desktop app.
   Close other MeshCore apps connected to the node. A browser console requires
@@ -117,11 +138,12 @@ connection instructions. Selecting a model does not flash or configure its firmw
   companion service, not a node's HTTP page. Wi-Fi support is not added to a
   USB/BLE-only firmware build by selecting this option.
 
-USB serial uses the bundled native SerialPort binding. Bluetooth LE uses the
-Windows Bluetooth stack through Electron's GATT support, with an in-app device
-chooser and PIN pairing. No external MeshCore application or Python client is
-required. The standard protocol connection works with older compatible firmware,
-including the previously used 1.17.1; the catalog does not force a firmware update.
+USB serial uses the bundled native SerialPort binding. Bluetooth LE uses Electron's
+Web Bluetooth support through the operating-system Bluetooth stack, with an in-app
+device chooser and PIN pairing. Linux BLE requires a working BlueZ desktop setup.
+No external MeshCore application or Python client is required. The standard
+protocol connection works with older compatible firmware, including the previously
+used 1.17.1; the catalog does not force a firmware update.
 
 Repeaters, room servers, bootloaders and standalone chat firmware do not
 automatically expose the companion chat protocol. To use such a board as the
@@ -291,14 +313,16 @@ pnpm release:checksums
 ```
 
 The installer, `.blockmap`, `latest.yml` update manifest and `SHA256SUMS.txt`
-are written to `dist/`. `pnpm build:dir` produces an unpacked executable for
+are written to `dist/`. On Linux, `pnpm build:linux` writes the AppImage,
+tar.gz and `SHA256SUMS-linux.txt`. `pnpm build:dir` produces an unpacked executable for
 local development. Native workers and DLLs are shipped as regular files so
 their OS paths and library hashes remain valid. Build output and personal
 `local-data` are excluded from Git.
 
-The package includes the Windows x64 Koffi addon and the required Visual C++
-runtime sidecars. An after-pack dependency audit checks native imports and
-the bundled decoder hashes before an installer is produced. USB sample
+The Windows package includes its x64 Koffi addon and required Visual C++ runtime
+sidecars; the Linux package resolves Koffi and SerialPort for Linux on its build
+runner. The Windows after-pack dependency audit checks native imports and bundled
+decoder hashes before an installer is produced. USB sample
 callbacks copy native memory with `koffi.decode`; external ArrayBuffer views
 are incompatible with Electron's V8 memory cage, including its Node helper
 processes. Version 0.6.2 includes the first-sample crash fix and corrects the
@@ -306,9 +330,9 @@ HD startup response so the controls leave their waiting state after startup.
 
 For future releases, update `package.json`'s version and the sidebar version
 in `index.html`; add notes in `docs/releases/<version>.md`, commit and push
-the source, then push a matching `v<version>` tag. The Windows release Actions
-workflow builds the installer and publishes all four assets together from a
-draft release. Its scoped `GITHUB_TOKEN` supplies publishing access; no
+the source, then push a matching `v<version>` tag. The release Actions workflow
+builds Windows and Linux packages in parallel, then publishes them together
+from a draft release. Its scoped `GITHUB_TOKEN` supplies publishing access; no
 personal access token needs to be committed or configured for this workflow.
 Published versions are never overwritten. The release script rejects a tag,
 installer or manifest that does not match the version being published.
@@ -369,7 +393,7 @@ On **Live radio**, tune an FM broadcast frequency from **87.5–108 MHz** or an 
 - Live radio and Decoders both display the HD receiver's actual IQ spectrum and waterfall. HD reception uses the selected RTL-SDR USB device/serial, PPM and bias tee. It fixes the IQ rate at **1.488375 MSPS**, uses full automatic tuner bandwidth, and turns **RTL digital AGC off** for this session. Hardware settings' automatic gain selects an ADC-headroom controller, beginning at manual 0 dB and choosing a supported gain near -7 dBFS peak span. Once calibrated it holds gain through normal variations and responds to overload or large RF level changes. A manually selected gain is respected. The normal analog sample rate and RTL AGC preference are retained.
 - USB acquisition uses **32 queued asynchronous transfers**, with nonblocking gain and frequency controls. The browser keeps a **250 ms playback reserve** and rebuffers on a real underrun instead of repeatedly emitting short gaps. **Playback diagnostics** shows actual sample rate, gain/RTL AGC, clipping, HD and browser buffers, underruns, and native silent-block counts. If browser autoplay leaves the output suspended, use **Resume audio** there.
 
-The app bundles **nrsc5 v3.2.0**, including its HDC audio decoder, for Windows x64. Its source, pinned hashes, API header, build recipe and preserved license notices are in [native/hd-radio](native/hd-radio/README.md). The library runs inside an app-managed worker and receives samples over an anonymous pipe from the existing direct-USB receiver; it does not need a second dongle, an RTL-TCP server, or a separately installed HD Radio player. Version 0.5.2 was live checked on **101.5 MHz WQUT HD1** using this PC's Blog V4. Signal conditions and appropriate manual gain vary by station and antenna.
+The app bundles **nrsc5 v3.2.0**, including its HDC audio decoder, for Windows and Linux x64. The Linux shared library is built from the pinned upstream source at package time. Source, pinned hashes, API headers, build recipes and preserved license notices are in [native/hd-radio](native/hd-radio/README.md). The decoder runs inside an app-managed worker and receives samples over an anonymous pipe from the existing direct-USB receiver; it does not need a second dongle, an RTL-TCP server, or a separately installed HD Radio player. Version 0.5.2 was live checked on **101.5 MHz WQUT HD1** using this PC's Blog V4. Signal conditions and appropriate manual gain vary by station and antenna.
 
 ## Integrated digital voice
 
@@ -377,13 +401,13 @@ Open **Decoders**, choose a protocol and click **Start decoder**. For a saved tr
 
 The app bundles an unmodified native DSD-neo worker with its own DSP, protocol/FEC, trunking and voice codec implementations. Signal Outpost manages that worker as part of the app. **Java and JMBE are not required** for this engine. JMBE provides the speech codec stage; it does not replace RF demodulation and P25/NXDN frame decoding.
 
-The bundled build is a **preview**, pinned to upstream commit `32ae7c8afba7bb8acbc95d1c6b4099db48d899a0`. Its structured control API is not yet in upstream's stable 2.10.0 release. The app checks the executable's SHA-256 before launch. Source, dependency information and preserved license notices are in [native/digital](native/digital/README.md). It does not download or update the decoder at runtime.
+The bundled build is a **preview**, pinned to upstream commit `32ae7c8afba7bb8acbc95d1c6b4099db48d899a0`. Its structured control API is not yet in upstream's stable 2.10.0 release. Windows uses the pinned native archive; Linux x64 builds the same source and API as part of Linux packaging. The app checks the decoder executable's SHA-256 before launch. Source, dependency information and preserved license notices are in [native/digital](native/digital/README.md). It does not download or update the decoder at runtime.
 
 The native decoder receives RF over USB; decoded PCM returns over an OS pipe. An authenticated connection on an ephemeral loopback port carries commands and telemetry. **No RTL-TCP receiver is used.** The native decoder's 48 kHz DSP stream is separate from the analog receiver's configurable IQ sample rate. The selected USB device/serial, gain, PPM and bias-tee setting are applied; digital reception requires quadrature sampling. The decoder owns the dongle during reception.
 
 **Decoders includes an RF spectrum and waterfall.** The integrated engine's raw receiver IQ feeds a 2048-bin, Hann-windowed FFT, averaged over four windows, at up to ten updates per second. The frequency axis follows the hardware capture center and sample rate; a green marker identifies the tuned frequency, including the native receiver's offset tuning. The same RF feed is available on Live radio. With the analog USB receiver running (including CW), Decoders displays that receiver's existing RF feed. An external DSD-FME process does not expose this integrated RF feed.
 
-Use **Freeze / Resume** to pause the decoder RF display while reception continues. **Clear waterfall** clears its history. Changing frequency clears the history to keep every row on the same frequency axis. A paused view is labelled PAUSED; stopped or stalled reception shows a waiting/idle state. The native RF bridge uses a temporary sparse IQ buffer in the session folder, reclaims old data in 64 KiB units, keeps approximately 4 MiB of recent allocated sample data, and removes its files on normal shutdown. It requires a local filesystem supporting Windows sparse files. Its logical file size grows during a session; it is not a saved recording. A Windows job object terminates the native decoder if its owning service exits, preventing an orphaned writer.
+Use **Freeze / Resume** to pause the decoder RF display while reception continues. **Clear waterfall** clears its history. Changing frequency clears the history to keep every row on the same frequency axis. A paused view is labelled PAUSED; stopped or stalled reception shows a waiting/idle state. The native RF bridge uses a temporary sparse IQ buffer in the session folder, reclaims old data in 64 KiB units, keeps approximately 4 MiB of recent allocated sample data, and removes its files on normal shutdown. It requires local sparse-file support. Its logical file size grows during a session; it is not a saved recording. Windows job objects and Linux process groups terminate the native decoder if its owning service exits, preventing an orphaned writer.
 
 **Add current to memory** is available on Live radio and the decoder RF toolbar. It takes a fresh snapshot of the receiver's tuned frequency and mode and opens a new conventional memory for review. It preserves P25 phase/modulation/identity settings and NXDN48/96, uses a detected protocol when available, and includes known source/talkgroup context in notes. During trunk following, it captures the currently tuned control or voice frequency. Enter or edit the name, then **Save channel**; Cancel, Close and Escape discard the draft. The button also works with the idle frequency/protocol selection. It never overwrites an existing memory.
 
@@ -420,7 +444,7 @@ Request API access through [RadioReference's application page](https://www.radio
 
 “All demodulation modes” is open-ended: protocols require different demodulators and decoders. This build covers common analog modes, Morse, FT8/FT4 through WSJT-X, and the listed digital voice families through the integrated DSD core. RTTY, PSK, SSTV, ADS-B, DRM, and other data modes are not implemented in this build. The Kiwi view embeds the remote receiver's own interface and extensions; it is not a separate local Kiwi protocol decoder.
 
-The RTL-SDR is receive-only here. The repository bundles native RTL-SDR libraries and the pinned DSD-neo decoder runtime; Windows must already have a suitable USB driver. WSJT-X and the optional DSD-FME selection are external programs.
+The RTL-SDR is receive-only here. The repository bundles Windows RTL-SDR and DSD-neo runtimes. Linux HD Radio and integrated DSD-neo use pinned private RTL-SDR libraries; analog reception uses the distribution's `librtlsdr`, and USB access still follows the distribution's permission rules. WSJT-X and the optional DSD-FME selection are external programs.
 
 ## Verification and diagnostics
 
@@ -431,10 +455,10 @@ The RTL-SDR is receive-only here. The repository bundles native RTL-SDR librarie
 
 ## Project files
 
-- `desktop/` — Windows desktop window, menus, hardware DLL picker and isolated remote receiver windows.
+- `desktop/` — Electron desktop window, menus, native library picker and isolated remote receiver windows.
 - `lib/rtl-usb.mjs`, `lib/rtl-usb-worker.mjs` — native librtlsdr bindings, USB enumeration and IQ acquisition over OS pipes.
 - `lib/digital-decoder.mjs`, `lib/digital-audio.mjs` — app-managed native DSD worker, authenticated telemetry/control, call events and PCM conversion.
-- `lib/decoder-spectrum.mjs`, `lib/rf-spectrum.mjs`, `lib/windows-native.mjs` — native decoder IQ monitor, complex FFT, sparse buffer management and child-process lifetime control.
+- `lib/decoder-spectrum.mjs`, `lib/rf-spectrum.mjs`, `lib/native-process.mjs` — native decoder IQ monitor, complex FFT, sparse buffer management and cross-platform child-process lifetime control.
 - `lib/current-memory.mjs` — current receiver snapshot to a new conventional memory draft.
 - `lib/hd-radio.mjs`, `lib/hd-radio-worker.mjs`, `lib/hd-options.mjs`, `hd-radio-ui.js` — HD Radio USB IQ feed, isolated nrsc5 bindings, stereo audio, broadcast metadata/artwork and station player.
 - `lib/broadcast-fm.mjs`, `lib/hd-fm-worker.mjs`, `lib/hd-audio-router.mjs` — parallel FM fallback DSP, paced stereo audio queues, signal-loss switching and HD recovery.
@@ -442,6 +466,6 @@ The RTL-SDR is receive-only here. The repository bundles native RTL-SDR librarie
 - `lib/kiwi-directory.mjs`, `kiwi-network.js` — public receiver feed, saved cache, map, search, station details and favorites.
 - `server.mjs` — local application service, DSP, memory store, RadioReference importer and decoder launchers.
 - `index.html`, `app.css`, `app.js` — receiver workstation interface.
-- `native/` — bundled Windows x64 RTL-SDR and digital decoder libraries, pinned decoder source and license information.
+- `native/` — bundled Windows x64 and Linux x64 RTL-SDR and digital decoder libraries, pinned decoder source and license information.
 - `launch-signal-outpost.cmd`, `setup-signal-outpost.cmd`, `stop-signal-outpost.cmd` — Windows desktop launch, setup and shutdown helpers.
 - The original `launch-sdr-extreme.cmd`, `setup-sdr-extreme.cmd` and `stop-sdr-extreme.cmd` names are compatibility aliases for the renamed helpers.

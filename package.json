@@ -1,6 +1,6 @@
 {
   "name": "sdr-extreme",
-  "version": "0.15.0",
+  "version": "0.16.0",
   "private": true,
   "type": "module",
   "description": "Amateur radio and scanner desktop suite with RTL-SDR USB, HD Radio, digital decoders, KiwiSDR and MeshCore.",
@@ -26,8 +26,12 @@
     "build:themes": "node scripts/build-light-theme.mjs",
     "build:win": "pnpm build:themes && electron-builder --win nsis --x64 --publish never",
     "build:dir": "pnpm build:themes && electron-builder --win --x64 --dir --publish never",
+    "build:native:linux": "bash scripts/build-linux-native-decoders.sh",
+    "build:linux": "pnpm build:themes && pnpm build:native:linux && electron-builder --linux AppImage tar.gz --x64 --publish never",
+    "build:linux:dir": "pnpm build:themes && pnpm build:native:linux && electron-builder --linux --x64 --dir --publish never",
     "release:win": "pnpm build:win && pnpm release:checksums && node scripts/publish-release.mjs",
-    "release:checksums": "node scripts/release-checksums.mjs"
+    "release:checksums": "node scripts/release-checksums.mjs",
+    "release:checksums:linux": "node scripts/release-checksums.mjs --linux"
   },
   "dependencies": {
     "@liamcottle/meshcore.js": "1.15.0",
@@ -38,6 +42,7 @@
     "serialport": "13.0.0"
   },
   "optionalDependencies": {
+    "@koromix/koffi-linux-x64": "3.3.3",
     "@koromix/koffi-win32-x64": "3.3.3"
   },
   "devDependencies": {

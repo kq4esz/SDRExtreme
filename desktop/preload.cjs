@@ -1,6 +1,7 @@
 const { contextBridge, ipcRenderer } = require('electron');
 if (process.isMainFrame) {
   contextBridge.exposeInMainWorld('sdrDesktop', {
+    platform: process.platform,
     getUpdateStatus: () => ipcRenderer.invoke('sdr:update-status'),
     checkForUpdates: () => ipcRenderer.invoke('sdr:update-check'),
     installUpdate: () => ipcRenderer.invoke('sdr:update-install'),

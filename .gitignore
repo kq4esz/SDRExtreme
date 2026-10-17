@@ -1,6 +1,8 @@
 node_modules/
 local-data/
 dist/
+native/digital/linux-x64/
+native/hd-radio/linux-x64/
 *.pem
 *.pfx
 *.p12

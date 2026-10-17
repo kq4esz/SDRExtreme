@@ -10,7 +10,8 @@ const STARTUP_DOWNLOAD_LIMIT = 120_000;
 function createUpdates({ getWindow, dataDir, beforeInstall, onStatus = () => {} }) {
   let updater, ready = false, busy, timer, disposed = false, started = false, installing = false, failures = 0;
   let startupWindow, startupActive = false, startupResolve, startupDeadline;
-  let status = { phase: app.isPackaged ? 'idle' : 'development', version: app.getVersion(), nextCheckAt: null };
+  const supportsAutomaticUpdates = process.platform === 'win32';
+  let status = { phase: app.isPackaged ? supportsAutomaticUpdates ? 'idle' : 'manual' : 'development', version: app.getVersion(), nextCheckAt: null };
   fs.mkdirSync(dataDir, { recursive: true });
   const logFile = path.join(dataDir, 'updates.log');
   const writeLog = (level, ...values) => {
@@ -57,6 +58,7 @@ function createUpdates({ getWindow, dataDir, beforeInstall, onStatus = () => {} 
     finishStartup(true);
   }
   async function install() {
+    if (!supportsAutomaticUpdates) return false;
     if (!ready || disposed || installing) return false;
     installing = true;
     stopTimers();
@@ -76,6 +78,10 @@ function createUpdates({ getWindow, dataDir, beforeInstall, onStatus = () => {} 
     }
   }
   async function check(manual = false) {
+    if (!supportsAutomaticUpdates) {
+      if (manual) await message({ type: 'info', title: 'Signal Outpost updates', message: 'Install Linux updates from GitHub Releases.', detail: 'Choose the package for your Linux desktop from https://github.com/kq4esz/SDRExtreme/releases/latest.' });
+      return;
+    }
     if (!app.isPackaged) {
       if (manual) await message({ type: 'info', title: 'Signal Outpost updates', message: 'Automatic updates run in the installed Windows application.', detail: 'Install the Windows setup executable from GitHub Releases.' });
       return;
@@ -141,7 +147,7 @@ function createUpdates({ getWindow, dataDir, beforeInstall, onStatus = () => {} 
   async function start() {
     if (started || disposed) return !installing;
     started = true;
-    if (!app.isPackaged) return true;
+    if (!supportsAutomaticUpdates || !app.isPackaged) return true;
     try {
       ({ autoUpdater: updater } = require('electron-updater'));
       updater.logger = { ...Object.fromEntries(['info', 'warn', 'error'].map(level => [level, (...values) => writeLog(level, ...values)])), debug: () => {} };

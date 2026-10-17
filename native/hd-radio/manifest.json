@@ -1,8 +1,17 @@
 {
   "name": "nrsc5",
   "version": "3.2.0",
-  "library": "libnrsc5.dll",
-  "librarySha256": "23e20f06fd439087eee2d3af637b1a938b5e8138857137815acdedc80070a7a6",
+  "runtimes": {
+    "win32-x64": {
+      "library": "libnrsc5.dll",
+      "sha256": "23e20f06fd439087eee2d3af637b1a938b5e8138857137815acdedc80070a7a6"
+    },
+    "linux-x64": {
+      "library": "linux-x64/lib/libnrsc5.so",
+      "sha256": "686a6415ff5249490ff9568193db2ca09b75eb480e725bd9f30178f083b6b6d8",
+      "libraryDirectory": "linux-x64/lib"
+    }
+  },
   "source": "https://github.com/theori-io/nrsc5/tree/v3.2.0",
   "binarySource": "https://github.com/LTCAshraven/nrsc5-studio/releases/tag/v0.6.5",
   "archiveSha256": "5cad345ffb28989f1612f3b98ffb60f585bb27b13c2aa52cdb074c4294de1b61",
