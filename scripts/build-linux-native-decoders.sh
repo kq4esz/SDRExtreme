@@ -63,7 +63,8 @@ cmake -S "$BUILD_ROOT/rtl-sdr" -B "$BUILD_ROOT/rtl-sdr-build" -G Ninja \
   -DCMAKE_INSTALL_PREFIX="$DSD_RUNTIME" \
   -DCMAKE_INSTALL_LIBDIR=lib \
   -DCMAKE_INSTALL_RPATH='$ORIGIN' \
-  -DINSTALL_UDEV_RULES=OFF
+  -DINSTALL_UDEV_RULES=OFF \
+  -DDETACH_KERNEL_DRIVER=ON
 cmake --build "$BUILD_ROOT/rtl-sdr-build" --parallel "$JOBS"
 cmake --install "$BUILD_ROOT/rtl-sdr-build"
 

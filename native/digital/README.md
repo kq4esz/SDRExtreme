@@ -12,6 +12,7 @@ SDR Extreme bundles a native Windows x64 **DSD-neo** worker and builds a Linux x
 - The pinned upstream source archive is included in `source/dsd-neo-32ae7c8.zip`; its source hash is recorded in `manifest.json`. It includes CMake build files and dependency pins. `pnpm build:native:linux` builds the Linux runtime and its pinned RTL-SDR 2.0.3 and mbelib-neo dependencies, then packages their non-glibc shared libraries with the decoder.
 - Windows runtime files and upstream notices are preserved under `win32-x64/`; dependency provenance and license identifiers are recorded in `win32-x64/sbom.spdx.json`. The generated Linux runtime and its dependency notices are under `linux-x64/`.
 - The bundled RTL-SDR library uses upstream osmocom v2.0.3 with Blog V4 / V4 Lite support, as pinned in the source's `vcpkg-ports/rtlsdr/portfile.cmake`.
+- The Linux build enables `DETACH_KERNEL_DRIVER`, so the decoder's bundled librtlsdr can detach Debian's `dvb_usb_rtl28xxu` driver when it opens a dongle already claimed by the DVB kernel module.
 
 The preview build supplies the structured control/telemetry API absent from the current stable 2.10.0 release. This copy is pinned to its commit and hash and does not update automatically. Protocol reliability on the user's local systems still requires reception checks.
 
