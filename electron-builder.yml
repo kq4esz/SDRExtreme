@@ -30,11 +30,14 @@ files:
   - kiwi-network.js
   - meshcore-ui.js
   - meshcore.css
+  - propagation-ui.js
+  - propagation.css
   - package.json
   - README.md
   - docs/meshcore-devices.md
   - docs/meshcore-repeaters.md
   - docs/meshcore-delivery.md
+  - docs/propagation.md
   - LICENSE
   - THIRD_PARTY_NOTICES.md
   - '!**/local-data/**'

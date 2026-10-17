@@ -44,6 +44,16 @@ module.exports = async function checkPackage(context) {
     'theme.js',
     'theme.css',
     'theme-light.css',
+    'propagation-ui.js',
+    'propagation.css',
+    'lib/propagation.mjs',
+    'lib/propagation-bands.mjs',
+    'lib/iss-orbit.mjs',
+    'lib/iss-worker.mjs',
+    'lib/wsjt-decodes.mjs',
+    'node_modules/satellite.js/dist/index.js',
+    'node_modules/satellite.js/dist/propagation/sgp4.js',
+    'node_modules/satellite.js/LICENSE.md',
     'native/win32-x64/rtlsdr.dll',
     'native/win32-x64/VCRUNTIME140.dll'
   ]) requireFile(relative);

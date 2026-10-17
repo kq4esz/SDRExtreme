@@ -8,6 +8,7 @@ Third-party components retain their own licenses and copyright notices.
 | Electron / Chromium / Node.js | 44.7.1 | Electron MIT and included Chromium notices: `LICENSE.electron.txt`, `LICENSES.chromium.html` beside the executable; https://github.com/electron/electron/tree/v44.7.1 |
 | Koffi | 3.3.3 | MIT; installed package `LICENSE.txt`; https://github.com/Koromix/koffi |
 | Leaflet | 1.9.4 | BSD-2-Clause; installed package `LICENSE`; https://github.com/Leaflet/Leaflet/tree/v1.9.4 |
+| satellite.js | 7.1.0 | MIT; installed package `LICENSE.md`; https://github.com/shashwatak/satellite-js |
 | electron-updater | 6.8.9 | MIT; installed package `LICENSE`; https://github.com/electron-userland/electron-builder |
 | MeshCore JavaScript SDK (@liamcottle/meshcore.js) | 1.15.0 | MIT; installed package `LICENSE`; https://github.com/meshcore-dev/meshcore.js |
 | MeshCore device catalog metadata | companion-v1.18.0 | Derived from official release assets, board definitions and flasher names; upstream MIT notice in `lib/MESHCORE_CATALOG_LICENSE.txt`; https://github.com/meshcore-dev/MeshCore/tree/companion-v1.18.0/variants |
@@ -38,6 +39,15 @@ listed in their respective native notices.
 The KiwiSDR directory is supplied by Linkfanel. Map tiles are supplied by
 OpenStreetMap, with attribution displayed in the receiver map. Station
 metadata and images displayed while listening are received from broadcasts.
+
+Propagation displays NOAA SWPC observations and scales, HAMQSL / N0NBH band
+outlooks, PSK Reporter reception reports and CelesTrak ISS orbital elements.
+Address lookup uses OpenStreetMap / Nominatim; OpenStreetMap attribution is
+displayed on the maps. These remote data sources retain their own terms and
+attribution. WSJT-X is an external application; its UDP interface supplies
+local decodes. Signal Outpost does not upload local decodes to PSK Reporter.
+Activity queries send the chosen callsign or four-character receiver grid to
+PSK Reporter. Address searches send the entered query to the configured geocoder.
 
 HD Radio is a trademark of its owner. Signal Outpost is an independent project
 and is not endorsed by the trademark owner, RTL-SDR Blog, RadioReference,

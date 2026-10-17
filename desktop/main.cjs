@@ -82,6 +82,7 @@ function createWindow() {
   Menu.setApplicationMenu(Menu.buildFromTemplate([
     { label: 'Signal Outpost', submenu: [{ label: 'Live radio', accelerator: 'Ctrl+1', click: () => navigate('radio') }, { label: 'Memory channels', accelerator: 'Ctrl+2', click: () => navigate('channels') }, { label: 'KiwiSDR map', accelerator: 'Ctrl+3', click: () => navigate('remote') }, { label: 'Decoders', accelerator: 'Ctrl+4', click: () => navigate('decoders') }, { type: 'separator' }, { label: 'Hardware settings', accelerator: 'Ctrl+,', click: () => navigate('settings') }, { type: 'separator' }, { role: 'quit' }] },
     { label: 'MeshCore', submenu: [{ label: 'Open MeshCore client', accelerator: 'Ctrl+5', click: () => navigate('meshcore') }] },
+    { label: 'Propagation', submenu: [{ label: 'Open Propagation workspace', accelerator: 'Ctrl+6', click: () => navigate('propagation') }] },
     { label: 'Edit', submenu: [{ role: 'undo' }, { role: 'redo' }, { type: 'separator' }, { role: 'cut' }, { role: 'copy' }, { role: 'paste' }, { role: 'selectAll' }] },
     { label: 'View', submenu: [{ role: 'reload' }, { role: 'togglefullscreen' }, { type: 'separator' }, { role: 'resetZoom' }, { role: 'zoomIn' }, { role: 'zoomOut' }, { type: 'separator' }, { role: 'toggleDevTools' }] },
     { label: 'Help', submenu: [

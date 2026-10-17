@@ -5,6 +5,7 @@ import { HdRadioUi } from './hd-radio-ui.js';
 import { hdMemoryOptions } from './lib/hd-options.mjs';
 import { PlaybackBuffer } from './lib/playback-buffer.mjs';
 import { MeshCoreUi } from './meshcore-ui.js';
+import { PropagationUi } from './propagation-ui.js';
 const $ = (selector, root = document) => root.querySelector(selector);
 const $$ = (selector, root = document) => [...root.querySelectorAll(selector)];
 const DIGITAL = new Set(['P25', 'DMR', 'NXDN', 'D-STAR', 'YSF', 'M17']);
@@ -54,9 +55,10 @@ function setPage(name) {
   window.scrollTo({ top: 0, behavior: 'instant' });
   $$('.page').forEach(page => page.classList.toggle('active', page.id === `page-${name}`));
   $$('.nav-item[data-page]').forEach(button => button.classList.toggle('active', button.dataset.page === name));
-  const labels = { radio:'Live radio', channels:'Memory channels', remote:'KiwiSDR network', decoders:'Decoders', meshcore:'MeshCore', settings:'Settings' };
+  const labels = { radio:'Live radio', channels:'Memory channels', remote:'KiwiSDR network', decoders:'Decoders', propagation:'Propagation', meshcore:'MeshCore', settings:'Settings' };
   $('#page-title').textContent = labels[name] || 'Live radio';
   if (name === 'meshcore') void state.meshcore?.show();
+  if (name === 'propagation') void state.propagation?.show();
   if (name === 'radio' || name === 'decoders') {drawSpectrum();drawWaterfall(true);renderSpectrumStatus();}
   if (name === 'remote') state.network?.show();
   if (name === 'settings' && !state.usbDevices.length) refreshUsbDevices();
@@ -65,6 +67,8 @@ function setFrequencyDisplay(freq) { $('#frequency-input').value = formatMHz(fre
 function modeHint(mode) { $('#mode-hint').textContent = MODE_HINTS[mode] || 'Analog demodulation'; }
 function renderStatus() {
   const status = state.status || {};
+  state.propagation?.updateStatus(status);
+  state.ft8=Boolean(status.wsjtActive);$('#ft8-dot').classList.toggle('active',state.ft8);$('#ft8-state').textContent=state.ft8?'Listening for WSJT-X':'Bridge not started';$('#ft8-toggle').textContent=state.ft8?'Stop bridge':'Start bridge';$('#ft8-port').textContent=`UDP 127.0.0.1:${status.wsjtPort||state.settings.wsjtPort||2237}`;
   const receiverState = $('#receiver-state');
   const connected = Boolean(status.connected), digital = Boolean(status.digitalActive), hd = Boolean(status.hdActive);
   const integrated = digital && status.digital?.engine === 'integrated';
@@ -586,6 +590,7 @@ function drawWaterfall(rebuild=false) {
   view.epoch=state.spectrumEpoch;view.lastFrame=state.spectrum?.timestamp||0;
 }
 function addFt8Decode(decode) {
+  state.propagation?.decode(decode);
   const body=$('#ft8-decodes');if(body.querySelector('.decode-empty'))body.replaceChildren();
   const tr=document.createElement('tr');
   tr.innerHTML=`<td>${escapeHtml(decode.time||'--:--:--')}</td><td>${escapeHtml(decode.snr)}</td><td>${escapeHtml(decode.hz)}</td><td>${escapeHtml(decode.mode)}</td><td>${escapeHtml(decode.message)}${decode.lowConfidence?' · low confidence':''}</td>`;body.prepend(tr);while(body.children.length>35)body.lastElementChild.remove();
@@ -755,6 +760,7 @@ function renderDesktopUpdate(status) {
 }
 async function init() {
   state.meshcore = new MeshCoreUi({api,toast,socketReady:()=>state.socket?.readyState === WebSocket.OPEN});
+  state.propagation = new PropagationUi({api,toast,getState:()=>state,refreshState});
   state.hdUi=new HdRadioUi({api,getState:()=>state,updateStatus:next=>{state.status=next;renderStatus();},audio:async()=>{connectSocket();await setupAudio();},saveSettings,memory:draft=>openChannelDialog(draft,{draft:true}),toast});
   bindEvents();updateClock();setInterval(updateClock,1000);setInterval(renderSpectrumStatus,500);window.addEventListener('resize',()=>{drawSpectrum();drawWaterfall(true);});
   setInterval(renderPlaybackDiagnostics,1000);

@@ -21,7 +21,7 @@ old name. No profile move or uninstall is required.
 
 ## Start the app
 
-1. Download **Signal-Outpost-Setup-0.14.0-x64.exe** from [GitHub Releases](https://github.com/kq4esz/SDRExtreme/releases/latest), run the installer, then launch **Signal Outpost** from the desktop or Start menu. The installer includes Electron, the local service, USB libraries and decoders; Node.js is not required. For a source checkout, use **`launch-signal-outpost.cmd`** after the setup below.
+1. Download **Signal-Outpost-Setup-0.15.0-x64.exe** from [GitHub Releases](https://github.com/kq4esz/SDRExtreme/releases/latest), run the installer, then launch **Signal Outpost** from the desktop or Start menu. The installer includes Electron, the local service, USB libraries and decoders; Node.js is not required. For a source checkout, use **`launch-signal-outpost.cmd`** after the setup below.
 2. Open **Settings → RTL-SDR device manager**. Click **Refresh**, select your attached receiver, and save the hardware settings.
 3. Go to **Live radio** and click **Start listening**. Select a memory or tune to a frequency.
 4. Go to **KiwiSDR network** to choose a receiver on the world map or in the station list. Select a station, then click **Check & listen**. Its listening interface opens inside the app; **Open receiver in a new window** offers a dedicated desktop window if a receiver blocks embedding.
@@ -43,6 +43,17 @@ their own palettes.
 
 For source changes to `app.css` or `meshcore.css`, run `pnpm build:themes` to
 regenerate the light color overrides. Windows builds run this step automatically.
+
+## Propagation
+
+Open **Propagation** in the sidebar or press **Ctrl+6** for HF band conditions,
+NOAA space weather, ISS tracking and radio-pass predictions, and FT8/FT4
+reception activity. Expand **Station & location**, search an address or enter
+coordinates, choose a minimum pass elevation, and save your station. Add a
+callsign for PSK Reporter queries, or use reception reports from your saved
+four-character grid. FT8/FT4 also displays decodes from the shared WSJT-X bridge.
+The workspace uses both Light and Dark appearances. See
+[Propagation setup, data sources and prediction limits](docs/propagation.md).
 
 ## MeshCore companion client
 

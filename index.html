@@ -10,6 +10,7 @@
   <link rel="stylesheet" href="/vendor/leaflet/leaflet.css">
   <link rel="stylesheet" href="/app.css">
   <link rel="stylesheet" href="/meshcore.css">
+  <link rel="stylesheet" href="/propagation.css">
   <link rel="stylesheet" href="/theme.css">
   <link rel="stylesheet" href="/theme-light.css">
 </head>
@@ -27,6 +28,7 @@
         <button class="nav-item" data-page="channels"><span class="nav-icon">▤</span><span>Memory channels</span><span class="nav-shortcut" id="channel-count">00</span></button>
         <button class="nav-item" data-page="remote"><span class="nav-icon">◌</span><span>KiwiSDR network</span><span class="nav-dot"></span></button>
         <button class="nav-item" data-page="decoders"><span class="nav-icon">⌁</span><span>Decoders</span></button>
+        <button class="nav-item" data-page="propagation"><span class="nav-icon">☀</span><span>Propagation</span></button>
         <button class="nav-item" data-page="meshcore" aria-label="MeshCore"><span class="nav-icon">⌘</span><span>MeshCore</span><span class="mesh-unread-badge mesh-nav-unread hidden" id="mesh-nav-unread" aria-hidden="true">0</span></button>
       </nav>
 
@@ -44,7 +46,7 @@
         <button class="nav-item settings-link" data-page="settings" aria-label="Settings"><span class="nav-icon">⚙</span><span>Settings</span></button>
         <button type="button" id="theme-toggle" class="theme-switch" role="switch" aria-checked="false" aria-label="Light mode" title="Switch to light mode"><span class="theme-switch-track" aria-hidden="true"><span class="theme-switch-thumb"></span></span><span class="theme-switch-label" aria-hidden="true">Dark</span></button>
       </div>
-      <div class="sidebar-footer"><span>SIGNAL OUTPOST</span><span>DESKTOP 0.14.0</span></div>
+      <div class="sidebar-footer"><span>SIGNAL OUTPOST</span><span>DESKTOP 0.15.0</span></div>
     </aside>
 
     <main class="main-area">
@@ -190,6 +192,7 @@
       </section>
 
       <section class="page" id="page-meshcore"></section>
+      <section class="page" id="page-propagation"></section>
       <section class="page" id="page-settings">
         <div class="page-heading"><div><div class="eyebrow"><span class="eyebrow-line"></span>MAKE IT YOURS</div><h1>Settings<span class="heading-period">.</span></h1><p>Connect your receiver and set up external decoding tools.</p></div></div>
         <div class="settings-layout">

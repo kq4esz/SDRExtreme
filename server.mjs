@@ -15,6 +15,8 @@ import { DigitalDecoder, digitalRuntime } from './lib/digital-decoder.mjs';
 import { HdRadio, hdRuntime } from './lib/hd-radio.mjs';
 import { hdBandForFrequency, hdProgram } from './lib/hd-options.mjs';
 import { MeshCoreClient, meshcoreCatalog } from './lib/meshcore.mjs';
+import { Propagation } from './lib/propagation.mjs';
+import { parseWsjtPacket } from './lib/wsjt-decodes.mjs';
 
 const ROOT = path.dirname(fileURLToPath(import.meta.url));
 const APP_VERSION = JSON.parse(fs.readFileSync(path.join(ROOT, 'package.json'), 'utf8')).version;
@@ -38,6 +40,8 @@ channels = channels.map(channel => { try { return { ...channel, ...normalizeMemo
 let settings = { ...defaults.settings, ...readJson(SETTINGS_FILE, defaults.settings) };
 delete settings.rtlTcpPath;
 const kiwiDirectory = new KiwiDirectory(DATA_DIR);
+const propagation = new Propagation(DATA_DIR);
+const wsjtSessions = new Map();
 let receiver = null;
 let hdSession = null, hdStarting = false, hdGeneration = 0, lastHdState = null;
 let digitalProcess = null;
@@ -51,6 +55,7 @@ let lastDigitalBroadcast = 0;
 let digitalScan = null;
 let wsjtSocket = null;
 let wsjtPort = null;
+let wsjtReady = false, wsjtStarting = false, wsjtGeneration = 0;
 let scanner = null;
 let selectedChannelId = null;
 let appMode = 'NFM';
@@ -117,7 +122,7 @@ function status() {
     hdActive: Boolean(hdSession?.active), hdStarting, hd: hdSession?.snapshot() || lastHdState, hdFmFallback: settings.hdFmFallback !== false,
     digitalActive: Boolean(digitalProcess || digitalSession?.active), digitalStarting,
     digital: digitalSession?.snapshot() || (digitalProcess ? { engine: 'external', phase: 'listening', config: activeDigitalConfig } : lastDigitalState), mode: appMode, frequency: activeFrequency, gain: activeGain,
-    sampleRate, rtlInfo: hdSession?.active ? hdSession.usb?.info || null : rtlInfo, selectedChannelId, scannerActive: Boolean(scanner?.active || digitalScan), scan: scanner?.active ? scanner.snapshot() : digitalScan, wsjtActive: Boolean(wsjtSocket),
+    sampleRate, rtlInfo: hdSession?.active ? hdSession.usb?.info || null : rtlInfo, selectedChannelId, scannerActive: Boolean(scanner?.active || digitalScan), scan: scanner?.active ? scanner.snapshot() : digitalScan, wsjtActive: wsjtReady,
     wsjtPort, recentDecodes: recentDecodes.slice(-50), host: os.hostname(),
     usb: receiver?.connected ? { bytes: receiver.bytes, streamingSince: receiver.startedAt, deviceIndex: rtlInfo?.index, serial: rtlInfo?.serial } : null
   };
@@ -369,47 +374,34 @@ async function startScan(body = {}) {
 }
 function stopScan() { const current = scanner; scanner = null; current?.stop(); broadcast({ type: 'status', status: status() }); }
 
-function parseQtString(data, offset) {
-  if (offset + 4 > data.length) return null;
-  const length = data.readUInt32BE(offset); offset += 4;
-  if (length === 0xffffffff) return { value: '', offset };
-  if (length > data.length - offset) return null;
-  return { value: data.subarray(offset, offset + length).toString('utf8'), offset: offset + length };
-}
-function startWsjtBridge(port) {
-  const nextPort = Math.max(1024, Math.min(65535, Number(port || settings.wsjtPort || 2237)));
-  if (wsjtSocket && wsjtPort === nextPort) return { active: true, port: wsjtPort };
+async function startWsjtBridge(port) {
+  const nextPort = Number(port ?? settings.wsjtPort ?? 2237);
+  if (!Number.isInteger(nextPort) || nextPort < 1024 || nextPort > 65535) throw new Error('Choose a WSJT-X UDP port from 1024 to 65535.');
+  if (wsjtStarting) throw new Error('Wait for the WSJT-X bridge to finish starting.');
+  if (wsjtReady && wsjtPort === nextPort) return { active: true, port: wsjtPort };
   stopWsjtBridge();
-  const socket = dgram.createSocket('udp4'); wsjtSocket = socket; wsjtPort = nextPort;
+  const generation = wsjtGeneration, socket = dgram.createSocket('udp4'); wsjtSocket = socket; wsjtPort = nextPort; wsjtStarting = true;
   socket.on('message', data => {
-    if (data.length < 12 || data.readUInt32BE(0) !== 0xadbccbda) return;
-    const schema = data.readUInt32BE(4), type = data.readUInt32BE(8);
-    if (type !== 2) return; // WSJT-X Decode message
-    let off = 12;
-    const id = parseQtString(data, off); if (!id) return; off = id.offset;
-    if (off + 5 > data.length) return;
-    const isNew = data.readUInt8(off++) !== 0;
-    const timeMs = data.readUInt32BE(off); off += 4;
-    if (off + 16 > data.length) return;
-    const snr = data.readInt32BE(off); off += 4;
-    const dt = data.readDoubleBE(off); off += 8;
-    const df = data.readUInt32BE(off); off += 4;
-    const mode = parseQtString(data, off); if (!mode) return; off = mode.offset;
-    const message = parseQtString(data, off); if (!message) return;
-    off = message.offset;
-    const lowConfidence = off < data.length ? data.readUInt8(off++) !== 0 : false;
-    const offAir = off < data.length ? data.readUInt8(off) !== 0 : false;
-    const time = timeMs === 0xffffffff ? '--:--:--' : new Date(timeMs).toISOString().slice(11, 19);
-    const decode = { id: id.value, isNew, time, snr, dt: Number(dt.toFixed(2)), hz: df, mode: mode.value, message: message.value, lowConfidence, offAir, schema };
+    if (wsjtSocket !== socket || !wsjtReady) return;
+    const decode = parseWsjtPacket(data, wsjtSessions); if (!decode) return;
     recentDecodes.push(decode); recentDecodes = recentDecodes.slice(-100);
     broadcast({ type: 'ft8', decode });
   });
-  socket.on('error', err => { broadcast({ type: 'log', source: 'WSJT-X', message: err.message }); stopWsjtBridge(); });
-  socket.bind(nextPort, '127.0.0.1', () => broadcast({ type: 'status', status: status() }));
-  setSettings({ wsjtPort: nextPort });
-  return { active: true, port: nextPort };
+  socket.on('error', err => { if (wsjtSocket === socket) { broadcast({ type: 'log', source: 'WSJT-X', message: err.message }); stopWsjtBridge(); } });
+  try {
+    await new Promise((resolve, reject) => {
+      const finish = error => { clearTimeout(timer); socket.off('listening', ready); socket.off('error', failed); socket.off('close', closed); error ? reject(error) : resolve(); };
+      const ready = () => finish(), failed = error => finish(error), closed = () => finish(new Error('WSJT-X bridge start was cancelled.'));
+      const timer = setTimeout(() => finish(new Error('WSJT-X bridge could not bind its UDP port.')), 5000);
+      socket.once('listening', ready); socket.once('error', failed); socket.once('close', closed);
+      try { socket.bind(nextPort, '127.0.0.1'); } catch (error) { finish(error); }
+    });
+    if (generation !== wsjtGeneration || wsjtSocket !== socket) throw new Error('WSJT-X bridge start was cancelled.');
+    setSettings({ wsjtPort: nextPort }); wsjtReady = true; wsjtStarting = false;
+    broadcast({ type: 'status', status: status() }); return { active: true, port: nextPort };
+  } catch (error) { if (wsjtSocket === socket) stopWsjtBridge(); throw error; }
 }
-function stopWsjtBridge() { try { wsjtSocket?.close(); } catch {} wsjtSocket = null; wsjtPort = null; }
+function stopWsjtBridge() { ++wsjtGeneration; const socket = wsjtSocket; wsjtSocket = null; wsjtPort = null; wsjtReady = false; wsjtStarting = false; try { socket?.close(); } catch {} wsjtSessions.clear(); broadcast({ type: 'status', status: status() }); }
 
 async function soapCall(method, args) {
   const esc = xmlEscape;
@@ -794,6 +786,12 @@ const server = http.createServer(async (req, res) => {
   if (req.headers.origin && req.headers.origin !== `http://127.0.0.1:${PORT}`) return sendJson(res, 403, { error: 'Open Signal Outpost from its local desktop window.' });
   try {
     if (url.pathname === '/api/state' && req.method === 'GET') return sendJson(res, 200, { status: status(), channels, settings, digitalRuntime: digitalRuntime(), digitalHistory, hdRuntime: hdRuntime() });
+    if (url.pathname === '/api/propagation/preferences' && req.method === 'GET') return sendJson(res, 200, propagation.preferences());
+    if (url.pathname === '/api/propagation/preferences' && req.method === 'POST') return sendJson(res, 200, propagation.savePreferences(await parseBody(req, 4096)));
+    if (url.pathname === '/api/propagation/weather' && req.method === 'GET') return sendJson(res, 200, await propagation.weather());
+    if (url.pathname === '/api/propagation/iss' && req.method === 'GET') return sendJson(res, 200, await propagation.iss(url.searchParams.get('passes') === '1'));
+    if (url.pathname === '/api/propagation/geocode' && req.method === 'POST') return sendJson(res, 200, await propagation.geocode(await parseBody(req, 4096)));
+    if (url.pathname === '/api/propagation/activity' && req.method === 'GET') return sendJson(res, 200, await propagation.activity());
     if (url.pathname === '/api/meshcore/state' && req.method === 'GET') return sendJson(res, 200, meshcore.snapshot());
     if (url.pathname === '/api/meshcore/devices' && req.method === 'GET') return sendJson(res, 200, meshcoreCatalog);
     if (url.pathname === '/api/meshcore/ports' && req.method === 'GET') return sendJson(res, 200, { ports: await meshcore.ports() });
@@ -895,7 +893,7 @@ const server = http.createServer(async (req, res) => {
         audioOutputId: String(b.audioOutputId ?? settings.audioOutputId ?? '').slice(0, 512) });
       return sendJson(res, 200, settings);
     }
-    if (url.pathname === '/api/wsjt/start' && req.method === 'POST') { const b = await parseBody(req); return sendJson(res, 200, startWsjtBridge(b.port)); }
+    if (url.pathname === '/api/wsjt/start' && req.method === 'POST') { const b = await parseBody(req); return sendJson(res, 200, await startWsjtBridge(b.port)); }
     if (url.pathname === '/api/wsjt/stop' && req.method === 'POST') { stopWsjtBridge(); return sendJson(res, 200, { active: false }); }
     if (url.pathname === '/api/radioreference/import' && req.method === 'POST') return sendJson(res, 201, await importRadioReference(await parseBody(req)));
     if (url.pathname === '/api/digital/start' && req.method === 'POST') return sendJson(res, 200, await startDigital(await parseBody(req)));
@@ -914,7 +912,7 @@ const server = http.createServer(async (req, res) => {
     }
     if (url.pathname === '/api/shutdown' && req.method === 'POST') { meshcore.disconnect(); stopScan(); await stopHd(); await stopReceiver(); await stopDigital(); stopWsjtBridge(); sendJson(res, 200, { stopped: true }); setTimeout(() => { for (const client of clients) client.destroy(); server.close(); }, 100); return; }
     const relative = url.pathname === '/' ? 'index.html' : decodeURIComponent(url.pathname.slice(1));
-    const publicFiles = new Set(['index.html', 'app.js', 'app.css', 'theme.js', 'theme.css', 'theme-light.css', 'meshcore-ui.js', 'meshcore.css', 'kiwi-network.js', 'hd-radio-ui.js', 'lib/meshcore-devices.mjs', 'lib/meshcore-conversations.mjs', 'lib/meshcore-paths.mjs', 'lib/channel-protocols.mjs', 'lib/current-memory.mjs', 'lib/hd-options.mjs', 'lib/playback-buffer.mjs', 'assets/app-icon.svg', 'assets/app-icon.png']);
+    const publicFiles = new Set(['index.html', 'app.js', 'app.css', 'theme.js', 'theme.css', 'theme-light.css', 'meshcore-ui.js', 'meshcore.css', 'kiwi-network.js', 'hd-radio-ui.js', 'propagation-ui.js', 'propagation.css', 'lib/propagation-bands.mjs', 'lib/meshcore-devices.mjs', 'lib/meshcore-conversations.mjs', 'lib/meshcore-paths.mjs', 'lib/channel-protocols.mjs', 'lib/current-memory.mjs', 'lib/hd-options.mjs', 'lib/playback-buffer.mjs', 'assets/app-icon.svg', 'assets/app-icon.png']);
     const leafletFiles = new Set(['leaflet.js', 'leaflet.css', 'images/layers.png', 'images/layers-2x.png', 'images/marker-icon.png', 'images/marker-icon-2x.png', 'images/marker-shadow.png']);
     const vendorName = relative.startsWith('vendor/leaflet/') ? relative.slice('vendor/leaflet/'.length) : '';
     if (!publicFiles.has(relative) && !leafletFiles.has(vendorName)) { res.writeHead(404); res.end('Not found'); return; }
