@@ -66,6 +66,31 @@ linux:
     entry:
       Comment: RTL-SDR receiver, scanner, and MeshCore companion client
       Categories: AudioVideo;Network;Utility;
+pacman:
+  packageName: signal-outpost
+  compression: zstd
+  artifactName: Signal-Outpost-${version}-x86_64.pkg.tar.zst
+  depends:
+    - alsa-lib
+    - at-spi2-core
+    - c-ares
+    - ffmpeg
+    - gtk3
+    - libevent
+    - libnotify
+    - libpulse
+    - libsecret
+    - libusb
+    - libvpx
+    - libxss
+    - libxtst
+    - libxslt
+    - minizip
+    - nss
+    - re2
+    - rtl-sdr
+    - snappy
+    - xdg-utils
 nsis:
   oneClick: false
   perMachine: false

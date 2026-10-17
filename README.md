@@ -6,9 +6,9 @@ Signal Outpost is an Electron desktop receiver suite with native RTL-SDR USB acc
 
 ## Linux desktop packages
 
-Linux x64 releases from this source produce an **AppImage** and a portable **tar.gz**. AppImage is the easiest option across common desktop distributions; the tarball is available for systems without AppImage/FUSE support. Builds are produced on Ubuntu 22.04 to provide a broad glibc baseline. Linux distributions vary in graphics stacks, system libraries, Bluetooth services and USB rules, so no single package can guarantee support for every distribution or desktop version. ARM Linux is not included. Existing Windows-only releases do not contain these packages; they will be published with the next cross-platform tagged release.
+Linux x64 releases produce an **AppImage**, a portable **tar.gz**, and an Arch **`.pkg.tar.zst`** package. AppImage is the easiest option across common desktop distributions; the tarball is available for systems without AppImage/FUSE support. The Arch package is built on Arch Linux for Arch and Arch-based distributions such as Manjaro and EndeavourOS. Builds are produced on Ubuntu 22.04 for the generic Linux packages to provide a broad glibc baseline. Linux distributions vary in graphics stacks, system libraries, Bluetooth services and USB rules, so no single package can guarantee support for every distribution or desktop version. ARM Linux is not included.
 
-Linux analog and HD Radio reception use the distribution’s `librtlsdr` and `libusb` shared libraries. For Debian or Ubuntu, install `librtlsdr0` and `libusb-1.0-0` with your package manager. Package names differ on Fedora, Arch and other distributions. Integrated DSD-neo includes its pinned RTL-SDR libraries. Electron also needs the normal GTK, graphics and audio runtime libraries for your desktop. Bluetooth Low Energy uses Electron’s device chooser and the desktop’s Bluetooth stack; install and enable BlueZ where your distribution requires it. MeshCore USB serial uses devices such as `/dev/ttyACM0` or `/dev/ttyUSB0`; your user account needs permission to access the serial device (often through the `dialout` group on Debian-based systems). Log out and back in after changing group membership. Do not run the desktop app as root.
+Linux analog and HD Radio reception use the distribution’s `librtlsdr` and `libusb` shared libraries. For Debian or Ubuntu, install `librtlsdr0` and `libusb-1.0-0` with your package manager. The Arch package depends on Arch’s `rtl-sdr` package, which supplies `librtlsdr` and the distribution’s RTL-SDR device setup. Integrated DSD-neo includes its pinned RTL-SDR libraries. Electron also needs the normal GTK, graphics and audio runtime libraries for your desktop. Bluetooth Low Energy uses Electron’s device chooser and the desktop’s Bluetooth stack; install and enable BlueZ where your distribution requires it. MeshCore USB serial uses devices such as `/dev/ttyACM0` or `/dev/ttyUSB0`; your user account needs permission to access the serial device (often through the `dialout` group on Debian-based systems). Log out and back in after changing group membership. Do not run the desktop app as root.
 
 The RTL-SDR USB device also needs a distribution-provided udev rule that grants access to your user. Many `librtlsdr` or RTL-SDR packages install one; follow your distribution’s hardware setup guide if the dongle does not appear. Signal Outpost does not change USB rules or kernel drivers.
 
@@ -21,7 +21,15 @@ pnpm install --frozen-lockfile
 pnpm build:linux
 ```
 
-The build compiles the pinned Linux x64 HD Radio and DSD-neo runtimes before packaging. Install the native build tools listed in the Linux release workflow if they are not already present. The AppImage and tar.gz are written to `dist/`. The tagged GitHub release workflow builds and publishes Linux and Windows packages together.
+The generic Linux build compiles the pinned Linux x64 HD Radio and DSD-neo runtimes before packaging. Install the native build tools listed in the Linux release workflow if they are not already present. The AppImage and tar.gz are written to `dist/`.
+
+To build the Arch package, use an Arch Linux x86_64 system with Node.js 22.12 or newer, pnpm 11.25.0 and the native build tools in the Arch release workflow, then run `pnpm build:arch`. This writes the `.pkg.tar.zst` package to `dist/`. Arch users can install a downloaded release package with:
+
+```sh
+sudo pacman -U ./Signal-Outpost-*.pkg.tar.zst
+```
+
+The tagged GitHub release workflow builds the generic Linux packages on Ubuntu and the Arch package on Arch Linux, then publishes them with the Windows installer.
 
 ## Upgrading from SDR Extreme
 
@@ -40,7 +48,7 @@ old name. No profile move or uninstall is required.
 
 ## Start the app
 
-1. On Windows, download the current **Signal-Outpost-Setup** installer from [GitHub Releases](https://github.com/kq4esz/SDRExtreme/releases/latest), run the installer, then launch **Signal Outpost** from the desktop or Start menu. The installer includes Electron, the local service, USB libraries and decoders; Node.js is not required. Linux users can choose the AppImage or tar.gz package from the same release; setup details are above.
+1. On Windows, download the current **Signal-Outpost-Setup** installer from [GitHub Releases](https://github.com/kq4esz/SDRExtreme/releases/latest), run the installer, then launch **Signal Outpost** from the desktop or Start menu. The installer includes Electron, the local service, USB libraries and decoders; Node.js is not required. Linux users can choose the AppImage or tar.gz package; Arch users can install the `.pkg.tar.zst` release package with `pacman -U`.
 2. Open **Settings → RTL-SDR device manager**. Click **Refresh**, select your attached receiver, and save the hardware settings.
 3. Go to **Live radio** and click **Start listening**. Select a memory or tune to a frequency.
 4. Go to **KiwiSDR network** to choose a receiver on the world map or in the station list. Select a station, then click **Check & listen**. Its listening interface opens inside the app; **Open receiver in a new window** offers a dedicated desktop window if a receiver blocks embedding.
@@ -313,8 +321,9 @@ pnpm release:checksums
 ```
 
 The installer, `.blockmap`, `latest.yml` update manifest and `SHA256SUMS.txt`
-are written to `dist/`. On Linux, `pnpm build:linux` writes the AppImage,
-tar.gz and `SHA256SUMS-linux.txt`. `pnpm build:dir` produces an unpacked executable for
+are written to `dist/`. On Linux, `pnpm build:linux` writes the AppImage and
+tar.gz; `pnpm build:arch` writes the Arch `.pkg.tar.zst` package. Release checksums
+cover all Linux packages. `pnpm build:dir` produces an unpacked executable for
 local development. Native workers and DLLs are shipped as regular files so
 their OS paths and library hashes remain valid. Build output and personal
 `local-data` are excluded from Git.
@@ -331,7 +340,7 @@ HD startup response so the controls leave their waiting state after startup.
 For future releases, update `package.json`'s version and the sidebar version
 in `index.html`; add notes in `docs/releases/<version>.md`, commit and push
 the source, then push a matching `v<version>` tag. The release Actions workflow
-builds Windows and Linux packages in parallel, then publishes them together
+builds Windows, generic Linux and Arch packages in parallel, then publishes them together
 from a draft release. Its scoped `GITHUB_TOKEN` supplies publishing access; no
 personal access token needs to be committed or configured for this workflow.
 Published versions are never overwritten. The release script rejects a tag,

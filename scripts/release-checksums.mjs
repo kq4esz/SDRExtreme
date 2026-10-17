@@ -7,11 +7,11 @@ const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const out = path.join(root, 'dist');
 const linux = process.argv.includes('--linux');
 const files = fs.readdirSync(out).filter(name => linux
-  ? /\.(appimage|tar\.gz)$/i.test(name)
+  ? /\.(appimage|tar\.gz|pkg\.tar\.zst)$/i.test(name)
   : /\.(exe|blockmap|yml)$/.test(name) && !name.startsWith('builder-')).sort();
-if (linux ? !files.some(name => name.toLowerCase().endsWith('.appimage')) || !files.some(name => name.endsWith('.tar.gz'))
+if (linux ? !files.some(name => name.toLowerCase().endsWith('.appimage')) || !files.some(name => name.endsWith('.tar.gz')) || !files.some(name => name.endsWith('.pkg.tar.zst'))
   : !files.some(name => name.endsWith('.exe')) || !files.includes('latest.yml')) {
-  throw new Error(linux ? 'Build the Linux AppImage and tar.gz packages first.' : 'Build the Windows installer and update manifest first.');
+  throw new Error(linux ? 'Build the Linux AppImage, tar.gz, and Arch pacman packages first.' : 'Build the Windows installer and update manifest first.');
 }
 const rows = [];
 for (const name of files) {

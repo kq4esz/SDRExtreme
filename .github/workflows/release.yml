@@ -61,17 +61,46 @@ jobs:
         run: pnpm install --frozen-lockfile
       - name: Build Linux desktop packages
         run: pnpm build:linux
-      - name: Generate Linux checksums
-        run: pnpm release:checksums:linux
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: linux-release-files
           path: dist/*
           if-no-files-found: error
 
+  arch:
+    runs-on: ubuntu-22.04
+    container:
+      image: archlinux:base-devel
+    steps:
+      - name: Install Arch Linux native build dependencies
+        run: |
+          pacman -Syu --noconfirm --needed \
+            alsa-lib autoconf automake at-spi2-core base-devel ca-certificates c-ares cmake fftw ffmpeg git gtk3 \
+            libao libevent libnotify libpulse libsecret libsndfile libtool libusb libvpx libxss libxtst libxslt \
+            minizip nodejs npm nss openssl patch pkgconf ninja re2 rtl-sdr snappy unzip xdg-utils
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          fetch-depth: 0
+      - uses: pnpm/action-setup@f40ffcd9367d9f12939873eb1018b921a783ffaa # v4
+        with:
+          version: 11.25.0
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: '24'
+          cache: pnpm
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+      - name: Build Arch Linux package
+        run: pnpm build:arch
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: arch-release-files
+          path: dist/*.pkg.tar.zst
+          if-no-files-found: error
+
   publish:
     runs-on: ubuntu-22.04
-    needs: [windows, linux]
+    needs: [windows, linux, arch]
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with:
@@ -87,6 +116,12 @@ jobs:
         with:
           name: linux-release-files
           path: dist
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+        with:
+          name: arch-release-files
+          path: dist
+      - name: Generate Linux checksums
+        run: node scripts/release-checksums.mjs --linux
       - name: Publish complete release
         run: node scripts/publish-release.mjs
         env:
