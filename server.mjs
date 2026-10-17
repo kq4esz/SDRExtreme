@@ -118,7 +118,7 @@ function broadcastSpectrum(value) {
 function status() {
   return {
     connected: Boolean(receiver?.connected), transport: 'USB', appVersion: APP_VERSION,
-    dataProfile: createHash('sha256').update(DATA_DIR.toLowerCase()).digest('hex').slice(0, 16),
+    dataProfile: createHash('sha256').update(process.platform === 'win32' ? DATA_DIR.toLowerCase() : DATA_DIR).digest('hex').slice(0, 16),
     hdActive: Boolean(hdSession?.active), hdStarting, hd: hdSession?.snapshot() || lastHdState, hdFmFallback: settings.hdFmFallback !== false,
     digitalActive: Boolean(digitalProcess || digitalSession?.active), digitalStarting,
     digital: digitalSession?.snapshot() || (digitalProcess ? { engine: 'external', phase: 'listening', config: activeDigitalConfig } : lastDigitalState), mode: appMode, frequency: activeFrequency, gain: activeGain,
