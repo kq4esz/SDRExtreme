@@ -77,7 +77,7 @@ jobs:
           pacman -Syu --noconfirm --needed \
             alsa-lib autoconf automake at-spi2-core base-devel ca-certificates c-ares cmake fftw ffmpeg git gtk3 \
             libao libevent libnotify libpulse libsecret libsndfile libtool libusb libvpx libxss libxtst libxslt \
-            minizip nodejs npm nss openssl patch pkgconf ninja re2 rtl-sdr snappy unzip xdg-utils
+            libxcrypt-compat minizip nodejs npm nss openssl patch pkgconf ninja re2 rtl-sdr snappy unzip xdg-utils
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with:
           fetch-depth: 0
