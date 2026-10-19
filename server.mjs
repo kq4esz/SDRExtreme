@@ -611,19 +611,22 @@ function radioReferenceModeNames(root) {
   }
   return modes;
 }
-function modeFromRadioReference(mode, description = '') {
+function protocolFromRadioReference(mode, description = '') {
   const text = `${mode} ${description}`.toUpperCase();
-  if (/\b(?:YSF|C4FM|FUSION)\b|SYSTEM\s+FUSION|YAESU(?:\s+SYSTEM)?\s+FUSION/.test(text)) return 'YSF';
-  if (/\bM17\b/.test(text)) return 'M17';
-  if (/\bP25\b|PROJECT\s*25/.test(text)) return 'P25';
-  if (/\bDMR\b|MOTOTRBO/.test(text)) return 'DMR';
-  if (/\bNXDN\b|NEXEDGE/.test(text)) return 'NXDN';
-  if (/D-?STAR|\bDV\b/.test(text)) return 'D-STAR';
-  if (/\bAM\b/.test(text)) return 'AM';
-  if (/\bUSB\b/.test(text)) return 'USB';
-  if (/\bLSB\b/.test(text)) return 'LSB';
-  if (/\bWFM\b/.test(text)) return 'WFM';
-  return 'NFM';
+  if (/\b(?:YSF|C4FM|FUSION)\b|SYSTEM\s+FUSION|YAESU(?:\s+SYSTEM)?\s+FUSION/.test(text)) return { mode: 'YSF' };
+  if (/\bM17\b/.test(text)) return { mode: 'M17' };
+  if (/\bP25\b|PROJECT\s*25/.test(text)) return { mode: 'P25' };
+  if (/\bDMR\b|MOTOTRBO/.test(text)) return { mode: 'DMR' };
+  // NXDN48/NXDN96 are contiguous word characters, so `\bNXDN\b` misses them.
+  if (/\bNXDN(?:\s*(?:48|96))?\b|\bNEXEDGE\b/.test(text)) {
+    return { mode: 'NXDN', nxdnMode: /\bNXDN\s*96\b|\b9600\s*(?:BPS|BAUD)\b/.test(text) ? 'NXDN96' : 'NXDN48' };
+  }
+  if (/D-?STAR|\bDV\b/.test(text)) return { mode: 'D-STAR' };
+  if (/\bAM\b/.test(text)) return { mode: 'AM' };
+  if (/\bUSB\b/.test(text)) return { mode: 'USB' };
+  if (/\bLSB\b/.test(text)) return { mode: 'LSB' };
+  if (/\bWFM\b/.test(text)) return { mode: 'WFM' };
+  return { mode: 'NFM' };
 }
 async function importRadioReference(body) {
   const auth = { appKey: String(body.appKey || '').trim(), username: String(body.username || '').trim(), password: String(body.password || '') };
@@ -735,10 +738,11 @@ async function importRadioReferenceCounty(body, auth) {
       const rawMode = childText(freq, 'mode').trim();
       const rrMode = modeNames.get(rawMode) || rawMode;
       const description = [childText(freq, 'alpha'), childText(freq, 'callsign'), childText(freq, 'descr')].filter(Boolean).join(' ');
-      const imported = normalizeChannel({ name, frequency, mode: modeFromRadioReference(rrMode, description), kind: 'conventional', group: result.item.group, notes, source: 'RadioReference' });
+      const imported = normalizeChannel({ name, frequency, ...protocolFromRadioReference(rrMode, description), kind: 'conventional', group: result.item.group, notes, source: 'RadioReference' });
       const existing = existingByKey.get(key);
       if (existing) {
-        if (existing.source === 'RadioReference' && DIGITAL_MODES.has(imported.mode) && !DIGITAL_MODES.has(existing.mode)) {
+        const protocolChanged = existing.mode !== imported.mode || (imported.mode === 'NXDN' && (existing.nxdnMode || 'NXDN48') !== imported.nxdnMode);
+        if (existing.source === 'RadioReference' && DIGITAL_MODES.has(imported.mode) && protocolChanged) {
           Object.assign(existing, normalizeChannel({ ...existing, mode: imported.mode, ...digitalOptions(imported) }, false));
           updated++;
         }
