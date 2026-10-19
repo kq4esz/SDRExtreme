@@ -353,7 +353,7 @@ async function importRR(event) {
     const response = await fetch('/api/radioreference/import',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({kind,systemId:$('#rr-system-id').value,zip:$('#rr-zip').value,appKey:$('#rr-app-key').value,username:$('#rr-username').value,password:$('#rr-password').value})});
     const result = await response.json(); if (!response.ok) throw new Error(result.error || 'RadioReference import failed.');
     $('#rr-password').value=''; $('#rr-username').value=''; await refreshState(); $('#rr-dialog').close();
-    if(result.kind==='conventional')toast(`Imported ${result.imported} frequencies for ${result.city ? `${result.city}, ` : ''}${result.county}.`,'success');
+    if(result.kind==='conventional')toast(`Imported ${result.imported} frequencies for ${result.city ? `${result.city}, ` : ''}${result.county}.${result.updated ? ` Corrected ${result.updated} existing RadioReference channel${result.updated===1?'':'s'} to digital mode.` : ''}`,'success');
     else toast(`Imported ${result.channel.name}: ${result.importedSites} sites, ${result.importedTalkgroups} talkgroups.`,'success');
   } catch (error) { $('#rr-error').textContent = error.message; $('#rr-error').classList.remove('hidden'); }
   finally { button.disabled=false; button.textContent='Import system'; }

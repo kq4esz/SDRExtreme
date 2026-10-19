@@ -603,11 +603,26 @@ function parseFrequency(raw) {
   if (!Number.isFinite(n) || n <= 0) return null;
   return Math.round(n * 1_000_000);
 }
-function modeFromRadioReference(mode) {
-  const val = String(mode).toUpperCase();
-  if (val.includes('AM')) return 'AM'; if (val.includes('USB')) return 'USB'; if (val.includes('LSB')) return 'LSB';
-  if (val.includes('P25')) return 'P25'; if (val.includes('DMR')) return 'DMR'; if (val.includes('NXDN')) return 'NXDN';
-  if (val.includes('D-STAR') || val.includes('DSTAR')) return 'D-STAR'; if (val.includes('WFM')) return 'WFM';
+function radioReferenceModeNames(root) {
+  const modes = new Map();
+  for (const item of returnItems(root)) {
+    const id = childText(item, 'mode').trim(), name = childText(item, 'modeName').trim();
+    if (/^\d+$/.test(id) && name) modes.set(id, name);
+  }
+  return modes;
+}
+function modeFromRadioReference(mode, description = '') {
+  const text = `${mode} ${description}`.toUpperCase();
+  if (/\b(?:YSF|C4FM|FUSION)\b|SYSTEM\s+FUSION|YAESU(?:\s+SYSTEM)?\s+FUSION/.test(text)) return 'YSF';
+  if (/\bM17\b/.test(text)) return 'M17';
+  if (/\bP25\b|PROJECT\s*25/.test(text)) return 'P25';
+  if (/\bDMR\b|MOTOTRBO/.test(text)) return 'DMR';
+  if (/\bNXDN\b|NEXEDGE/.test(text)) return 'NXDN';
+  if (/D-?STAR|\bDV\b/.test(text)) return 'D-STAR';
+  if (/\bAM\b/.test(text)) return 'AM';
+  if (/\bUSB\b/.test(text)) return 'USB';
+  if (/\bLSB\b/.test(text)) return 'LSB';
+  if (/\bWFM\b/.test(text)) return 'WFM';
   return 'NFM';
 }
 async function importRadioReference(body) {
@@ -665,7 +680,11 @@ async function importRadioReferenceCounty(body, auth) {
   const zip = String(body.zip || '').replace(/\D/g, '').slice(0, 5);
   if (zip.length !== 5) throw new Error('Enter a 5-digit US ZIP code to look up conventional frequencies.');
   const authArg = ['authInfo', auth];
-  const zipXml = await soapCall('getZipcodeInfo', [['zipcode', Number(zip), 'int'], authArg]);
+  const [zipXml, modesXml] = await Promise.all([
+    soapCall('getZipcodeInfo', [['zipcode', Number(zip), 'int'], authArg]),
+    soapCall('getMode', [['mode', 0, 'int'], authArg])
+  ]);
+  const modeNames = radioReferenceModeNames(modesXml);
   const zipInfo = firstDescendant(zipXml, 'return');
   const countyId = Number(childText(zipInfo, 'ctid'));
   if (!countyId) throw new Error('RadioReference did not return a county for that ZIP code.');
@@ -702,7 +721,8 @@ async function importRadioReferenceCounty(body, auth) {
     return { item, frequencies: returnItems(xml) };
   });
   const additions = [];
-  const seen = new Set(channels.filter(c => c.kind !== 'trunked').map(c => `${c.frequency}:${c.name.toLowerCase()}`));
+  let updated = 0;
+  const existingByKey = new Map(channels.filter(c => c.kind !== 'trunked').map(c => [`${c.frequency}:${c.name.toLowerCase()}`, c]));
   for (const result of frequencyLists) {
     for (const freq of result.frequencies) {
       const mhz = Number(childText(freq, 'out'));
@@ -710,16 +730,29 @@ async function importRadioReferenceCounty(body, auth) {
       const frequency = Math.round(mhz * 1e6);
       if (frequency < 10000 || frequency > 1_766_000_000) continue;
       const name = (childText(freq, 'alpha') || childText(freq, 'callsign') || childText(freq, 'descr') || result.item.subcategory || 'RadioReference frequency').slice(0, 80);
-      const key = `${frequency}:${name.toLowerCase()}`; if (seen.has(key)) continue; seen.add(key);
+      const key = `${frequency}:${name.toLowerCase()}`;
       const notes = [childText(freq, 'descr'), childText(freq, 'tone'), childText(freq, 'tg') ? `TG ${childText(freq, 'tg')}` : '', childText(freq, 'slot') ? `Slot ${childText(freq, 'slot')}` : ''].filter(Boolean).join(' · ').slice(0,300);
-      additions.push(normalizeChannel({ name, frequency, mode: modeFromRadioReference(childText(freq, 'mode')), kind: 'conventional', group: result.item.group, notes, source: 'RadioReference' }));
+      const rawMode = childText(freq, 'mode').trim();
+      const rrMode = modeNames.get(rawMode) || rawMode;
+      const description = [childText(freq, 'alpha'), childText(freq, 'callsign'), childText(freq, 'descr')].filter(Boolean).join(' ');
+      const imported = normalizeChannel({ name, frequency, mode: modeFromRadioReference(rrMode, description), kind: 'conventional', group: result.item.group, notes, source: 'RadioReference' });
+      const existing = existingByKey.get(key);
+      if (existing) {
+        if (existing.source === 'RadioReference' && DIGITAL_MODES.has(imported.mode) && !DIGITAL_MODES.has(existing.mode)) {
+          Object.assign(existing, normalizeChannel({ ...existing, mode: imported.mode, ...digitalOptions(imported) }, false));
+          updated++;
+        }
+        continue;
+      }
+      existingByKey.set(key, imported);
+      additions.push(imported);
       if (additions.length >= 500) break;
     }
     if (additions.length >= 500) break;
   }
-  if (!additions.length) throw new Error(`No conventional frequencies were available for ${city ? `${city}, ` : ''}${countyName}.`);
+  if (!additions.length && !updated) throw new Error(`No conventional frequencies were available for ${city ? `${city}, ` : ''}${countyName}.`);
   channels.push(...additions); writeJson(CHANNELS_FILE, channels);
-  return { kind: 'conventional', imported: additions.length, county: countyName, city };
+  return { kind: 'conventional', imported: additions.length, updated, county: countyName, city };
 }
 
 async function stopDigital({ keepTrunkedScan = false } = {}) {
