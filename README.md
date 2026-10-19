@@ -337,11 +337,11 @@ are incompatible with Electron's V8 memory cage, including its Node helper
 processes. Version 0.6.2 includes the first-sample crash fix and corrects the
 HD startup response so the controls leave their waiting state after startup.
 
-For future releases, update `package.json`'s version and the sidebar version
-in `index.html`; add notes in `docs/releases/<version>.md`, commit and push
-the source, then push a matching `v<version>` tag. The release Actions workflow
-builds Windows, generic Linux and Arch packages in parallel, then publishes them together
-from a draft release. Its scoped `GITHUB_TOKEN` supplies publishing access; no
+For future releases, update `package.json`'s version; the sidebar reads the
+running app version automatically. Add notes in `docs/releases/<version>.md`,
+commit and push the source, then push a matching `v<version>` tag. The release
+Actions workflow builds Windows, generic Linux and Arch packages in parallel,
+then publishes them together from a draft release. Its scoped `GITHUB_TOKEN` supplies publishing access; no
 personal access token needs to be committed or configured for this workflow.
 Published versions are never overwritten. The release script rejects a tag,
 installer or manifest that does not match the version being published.

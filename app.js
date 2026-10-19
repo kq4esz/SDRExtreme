@@ -67,6 +67,7 @@ function setFrequencyDisplay(freq) { $('#frequency-input').value = formatMHz(fre
 function modeHint(mode) { $('#mode-hint').textContent = MODE_HINTS[mode] || 'Analog demodulation'; }
 function renderStatus() {
   const status = state.status || {};
+  $('#desktop-version').textContent = status.appVersion ? `DESKTOP ${status.appVersion}` : 'DESKTOP';
   state.propagation?.updateStatus(status);
   state.ft8=Boolean(status.wsjtActive);$('#ft8-dot').classList.toggle('active',state.ft8);$('#ft8-state').textContent=state.ft8?'Listening for WSJT-X':'Bridge not started';$('#ft8-toggle').textContent=state.ft8?'Stop bridge':'Start bridge';$('#ft8-port').textContent=`UDP 127.0.0.1:${status.wsjtPort||state.settings.wsjtPort||2237}`;
   const receiverState = $('#receiver-state');
