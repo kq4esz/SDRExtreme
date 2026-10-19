@@ -369,7 +369,23 @@ function trunkedControlPlan(channelList, channelIds) {
     }
   }
   if (!entries.length) throw new Error('The selected trunked systems have no saved control frequencies.');
+  const decoderProfiles = new Set(entries.map(({ channel }) => JSON.stringify(decoderFlags(channel, { trunked: true }))));
+  if (decoderProfiles.size > 1) throw new Error('Keep one decoder profile per scan so the tuner can stay open between control frequencies. Scan systems with different protocol settings separately.');
   return { ids, systems, entries };
+}
+
+function writeTrunkedDecoderMaps(trunked, site, frequency, folder) {
+  fs.mkdirSync(folder, { recursive: true });
+  const safe = value => String(value ?? '').replace(/[^a-z0-9_-]+/gi, '-').slice(0, 48) || 'site';
+  const stem = `${safe(trunked.name)}-${safe(trunked.id)}-${safe(site.id)}-${frequency}`;
+  const channelMap = path.join(folder, `${stem}-channels.csv`);
+  const groupMap = path.join(folder, `${stem}-groups.csv`);
+  const mapRows = channelMapRows(site, frequency);
+  const groupRows = ['DEC,Mode(A- Allow; B - Block; DE - Digital Enc),Name of Group,Tag (do not delete this line or it will not import properly)'];
+  for (const group of trunked.talkgroups || []) if (!group.encrypted && group.id) groupRows.push([group.id,'A',group.alpha || group.description || `Talkgroup ${group.id}`,`RR ${trunked.systemId}`].map(csvCell).join(','));
+  fs.writeFileSync(channelMap, mapRows.join('\r\n') + '\r\n', 'utf8');
+  fs.writeFileSync(groupMap, groupRows.join('\r\n') + '\r\n', 'utf8');
+  return { channelMap, groupMap };
 }
 
 function trunkedScanSnapshot(scan = trunkedScanner) {
@@ -393,16 +409,26 @@ async function stopTrunkedScan({ error = '', stopDecoder = true } = {}) {
   scan.resumeTimer = null;
   try { if (stopDecoder) await stopDigital({ keepTrunkedScan: true }); }
   finally {
+    if (scan.mapDirectory && path.dirname(scan.mapDirectory) === DATA_DIR && path.basename(scan.mapDirectory).startsWith('trunked-scan-')) {
+      try { fs.rmSync(scan.mapDirectory, { recursive: true, force: true }); } catch {}
+    }
     if (error) broadcast({ type: 'scan-error', message: error });
     broadcast({ type: 'status', status: status() });
   }
+}
+
+async function retuneTrunkedScanEntry(scan, entry) {
+  if (!digitalSession?.active) throw new Error('The integrated decoder session is not available for in-place retuning.');
+  const maps = writeTrunkedDecoderMaps(entry.channel, entry.site, entry.frequency, scan.mapDirectory);
+  await digitalSession.request('import_channel_map', { value: maps.channelMap });
+  await digitalSession.request('import_group_list', { value: maps.groupMap });
+  await digitalSession.retune(entry.frequency);
 }
 
 async function startTrunkedScanEntry(scan, index) {
   if (!scan.active || trunkedScanner !== scan) return;
   scan.busy = true; scan.activity = 'Changing control channel';
   try {
-    if (digitalSession?.active || digitalProcess) await stopDigital({ keepTrunkedScan: true });
     if (!scan.active || trunkedScanner !== scan) return;
     if (scan.resumeTimer) clearTimeout(scan.resumeTimer);
     scan.resumeTimer = null;
@@ -410,7 +436,8 @@ async function startTrunkedScanEntry(scan, index) {
     scan.index = index; scan.current = entry; scan.activity = 'Starting decoder'; scan.holding = false;
     activeFrequency = entry.frequency; appMode = entry.channel.mode; selectedChannelId = entry.channel.id;
     broadcast({ type: 'status', status: status() });
-    await startDigital({ channelId: entry.channel.id, siteId: entry.site.id, controlFrequency: entry.frequency, trunkedScan: true });
+    if (digitalSession?.active) await retuneTrunkedScanEntry(scan, entry);
+    else await startDigital({ channelId: entry.channel.id, siteId: entry.site.id, controlFrequency: entry.frequency, trunkedScan: true });
     if (!scan.active || trunkedScanner !== scan) {
       await stopDigital({ keepTrunkedScan: true });
       return;
@@ -445,6 +472,7 @@ async function startTrunkedScan(body) {
   stopScan();
   const scan = { active: true, channelIds: plan.ids, systemCount: plan.systems.length, entries: plan.entries,
     dwellMs: requested, holdOnSignal: body.holdOnSignal !== false, holdMs: Math.max(250, Math.min(10000, Number(body.holdMs) || 1500)),
+    mapDirectory: fs.mkdtempSync(path.join(DATA_DIR, 'trunked-scan-')),
     index: -1, hops: 0, holding: false, activity: 'Starting decoder', current: null, busy: false, timer: null, resumeTimer: null };
   trunkedScanner = scan;
   try {
@@ -809,15 +837,9 @@ async function launchDigital(body, generation) {
   const args = ['-i', input + (integrated ? `:bias=${settings.biasTee ? 'on' : 'off'}` : ''), ...flags];
   let scanningCount = 0;
   if (trunked) {
-    const folder = path.join(DATA_DIR, integrated ? 'digital' : 'dsd-fme'); fs.mkdirSync(folder, { recursive: true });
-    const systemName = String(trunked.name).replace(/[^a-z0-9_-]+/gi, '-').slice(0,48);
-    const channelMap = path.join(folder, `${systemName}-${selectedSite.id}-channels.csv`);
-    const groupMap = path.join(folder, `${systemName}-${selectedSite.id}-groups.csv`);
-    const mapRows = channelMapRows(selectedSite, freq);
-    const groupRows = ['DEC,Mode(A- Allow; B - Block; DE - Digital Enc),Name of Group,Tag (do not delete this line or it will not import properly)'];
-    for (const group of trunked.talkgroups || []) if (!group.encrypted && group.id) groupRows.push([group.id,'A',group.alpha || group.description || `Talkgroup ${group.id}`,`RR ${trunked.systemId}`].map(csvCell).join(','));
-    fs.writeFileSync(channelMap, mapRows.join('\r\n') + '\r\n', 'utf8');
-    fs.writeFileSync(groupMap, groupRows.join('\r\n') + '\r\n', 'utf8');
+    const folder = integrated && body.trunkedScan && trunkedScanner?.mapDirectory
+      ? trunkedScanner.mapDirectory : path.join(DATA_DIR, integrated ? 'digital' : 'dsd-fme');
+    const { channelMap, groupMap } = writeTrunkedDecoderMaps(trunked, selectedSite, freq, folder);
     args.push('-T', '-C', channelMap, '-G', groupMap);
   } else if (plan) {
     const digitalMemories = plan.channels;

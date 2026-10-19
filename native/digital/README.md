@@ -28,7 +28,7 @@ The preview build supplies the structured control/telemetry API absent from the 
 
 The file controls follow Microsoft's [sparse file operations](https://learn.microsoft.com/en-us/windows/win32/fileio/sparse-file-operations) and [FSCTL_SET_ZERO_DATA](https://learn.microsoft.com/en-us/windows/win32/api/winioctl/ni-winioctl-fsctl_set_zero_data) contracts on Windows, and use Linux hole punching with `FALLOC_FL_KEEP_SIZE`. The source of this bridge is in `lib/decoder-spectrum.mjs`, `lib/rf-spectrum.mjs` and `lib/native-process.mjs`; the pinned native executable is unmodified.
 
-Only the specific app controls exposed in `server.mjs` are forwarded. Runtime mode switching is intentionally performed by stopping and starting a session: the audio layout must agree with the launch preset. Slot preference can change during a session.
+Only the specific app controls exposed in `server.mjs` are forwarded. Trunked site scanning uses the API's RTL frequency command and channel/group map imports to hop between saved control frequencies without closing the decoder process or USB tuner session. Those scans keep a single decoder profile active. Other runtime mode switching is intentionally performed by stopping and starting a session: the audio layout must agree with the launch preset. Slot preference can change during a session.
 
 ## Source and notices
 
