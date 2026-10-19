@@ -57,6 +57,7 @@ let wsjtSocket = null;
 let wsjtPort = null;
 let wsjtReady = false, wsjtStarting = false, wsjtGeneration = 0;
 let scanner = null;
+let trunkedScanner = null;
 let selectedChannelId = null;
 let appMode = 'NFM';
 let activeFrequency = 100000000;
@@ -116,13 +117,14 @@ function broadcastSpectrum(value) {
   for (const client of clients) if (!client.destroyed && client.writableLength < 524288) client.write(frame);
 }
 function status() {
+  const scan = scanner?.active ? scanner.snapshot() : trunkedScanner?.active ? trunkedScanSnapshot(trunkedScanner) : digitalScan;
   return {
     connected: Boolean(receiver?.connected), transport: 'USB', appVersion: APP_VERSION,
     dataProfile: createHash('sha256').update(process.platform === 'win32' ? DATA_DIR.toLowerCase() : DATA_DIR).digest('hex').slice(0, 16),
     hdActive: Boolean(hdSession?.active), hdStarting, hd: hdSession?.snapshot() || lastHdState, hdFmFallback: settings.hdFmFallback !== false,
     digitalActive: Boolean(digitalProcess || digitalSession?.active), digitalStarting,
     digital: digitalSession?.snapshot() || (digitalProcess ? { engine: 'external', phase: 'listening', config: activeDigitalConfig } : lastDigitalState), mode: appMode, frequency: activeFrequency, gain: activeGain,
-    sampleRate, rtlInfo: hdSession?.active ? hdSession.usb?.info || null : rtlInfo, selectedChannelId, scannerActive: Boolean(scanner?.active || digitalScan), scan: scanner?.active ? scanner.snapshot() : digitalScan, wsjtActive: wsjtReady,
+    sampleRate, rtlInfo: hdSession?.active ? hdSession.usb?.info || null : rtlInfo, selectedChannelId, scannerActive: Boolean(scan?.active), scan, wsjtActive: wsjtReady,
     wsjtPort, recentDecodes: recentDecodes.slice(-50), host: os.hostname(),
     usb: receiver?.connected ? { bytes: receiver.bytes, streamingSince: receiver.startedAt, deviceIndex: rtlInfo?.index, serial: rtlInfo?.serial } : null
   };
@@ -134,6 +136,7 @@ function setSettings(next) {
 async function tune(freq) {
   const next = validFrequency(freq);
   if (hdStarting) throw new Error('Wait for HD Radio to finish starting.');
+  if (trunkedScanner?.active) throw new Error('Stop the trunked site scan before tuning manually.');
   if (hdSession?.active) { await startHd({ frequency: next, program: hdSession.program }); return; }
   if (digitalSession?.active) {
     if (digitalScan) throw new Error('Stop the digital memory scan before tuning manually.');
@@ -341,10 +344,129 @@ async function stopReceiver() {
   broadcast({ type: 'status', status: status() });
 }
 
+function trunkedControlPlan(channelList, channelIds) {
+  if (!Array.isArray(channelIds) || !channelIds.length) throw new Error('Select at least one trunked system to scan.');
+  const ids = [...new Set(channelIds.map(String))];
+  const systems = ids.map(id => channelList.find(channel => channel.id === id));
+  if (systems.some(channel => !channel)) throw new Error('A selected trunked system no longer exists. Refresh the library and select again.');
+  if (systems.some(channel => channel.kind !== 'trunked')) throw new Error('Select trunked systems only. Trunked and conventional scans use separate receiver modes.');
+  const entries = [];
+  for (const channel of systems) {
+    const sites = Array.isArray(channel.sites) ? channel.sites : [];
+    if (!sites.length) throw new Error(`“${channel.name}” has no saved sites to scan.`);
+    for (const site of sites) {
+      const frequencies = Array.isArray(site.frequencies) ? site.frequencies : [];
+      const controls = frequencies.filter(item => ['d', 'a'].includes(item.use));
+      const candidates = controls.length ? controls : [frequencies[0] || { frequency: channel.frequency, use: 'd' }];
+      const seen = new Set();
+      for (const item of candidates) {
+        const frequency = validFrequency(item.frequency);
+        if (seen.has(frequency)) continue;
+        seen.add(frequency);
+        entries.push({ channel, site, frequency, role: item.use === 'a' ? 'alternate' : 'control' });
+        if (entries.length > 256) throw new Error('Scan up to 256 saved trunked control frequencies at a time.');
+      }
+    }
+  }
+  if (!entries.length) throw new Error('The selected trunked systems have no saved control frequencies.');
+  return { ids, systems, entries };
+}
+
+function trunkedScanSnapshot(scan = trunkedScanner) {
+  if (!scan) return null;
+  const entry = scan.current;
+  return { active: scan.active, engine: 'trunked', channelIds: scan.channelIds, channelCount: scan.systemCount,
+    controlCount: scan.entries.length, dwellMs: scan.dwellMs, holdOnSignal: scan.holdOnSignal, holdMs: scan.holdMs, index: scan.index, total: scan.entries.length,
+    hops: scan.hops, holding: scan.holding, activity: scan.activity,
+    current: entry ? { channelId: entry.channel.id, systemName: entry.channel.name, siteId: entry.site.id,
+      siteName: entry.site.name, frequency: entry.frequency, role: entry.role, mode: entry.channel.mode } : null,
+    channel: entry ? { id: entry.channel.id, name: entry.channel.name, frequency: entry.frequency, mode: entry.channel.mode } : null };
+}
+
+async function stopTrunkedScan({ error = '', stopDecoder = true } = {}) {
+  const scan = trunkedScanner;
+  if (!scan) return;
+  trunkedScanner = null; scan.active = false;
+  if (scan.timer) clearTimeout(scan.timer);
+  if (scan.resumeTimer) clearTimeout(scan.resumeTimer);
+  scan.timer = null;
+  scan.resumeTimer = null;
+  try { if (stopDecoder) await stopDigital({ keepTrunkedScan: true }); }
+  finally {
+    if (error) broadcast({ type: 'scan-error', message: error });
+    broadcast({ type: 'status', status: status() });
+  }
+}
+
+async function startTrunkedScanEntry(scan, index) {
+  if (!scan.active || trunkedScanner !== scan) return;
+  scan.busy = true; scan.activity = 'Changing control channel';
+  try {
+    if (digitalSession?.active || digitalProcess) await stopDigital({ keepTrunkedScan: true });
+    if (!scan.active || trunkedScanner !== scan) return;
+    if (scan.resumeTimer) clearTimeout(scan.resumeTimer);
+    scan.resumeTimer = null;
+    const entry = scan.entries[index];
+    scan.index = index; scan.current = entry; scan.activity = 'Starting decoder'; scan.holding = false;
+    activeFrequency = entry.frequency; appMode = entry.channel.mode; selectedChannelId = entry.channel.id;
+    broadcast({ type: 'status', status: status() });
+    await startDigital({ channelId: entry.channel.id, siteId: entry.site.id, controlFrequency: entry.frequency, trunkedScan: true });
+    if (!scan.active || trunkedScanner !== scan) {
+      await stopDigital({ keepTrunkedScan: true });
+      return;
+    }
+    scan.activity = scan.holding ? 'Voice call active' : 'Monitoring control channel'; scan.hops++;
+    if (!scan.holding) scan.timer = setTimeout(() => { void advanceTrunkedScan(scan).catch(() => {}); }, scan.dwellMs);
+    broadcast({ type: 'status', status: status() });
+  } catch (error) {
+    if (trunkedScanner === scan) await stopTrunkedScan({ error: scan.hops ? error.message : '', stopDecoder: true });
+    throw error;
+  } finally { scan.busy = false; }
+}
+
+async function advanceTrunkedScan(scan = trunkedScanner) {
+  if (!scan?.active || trunkedScanner !== scan || scan.busy) return;
+  if (scan.timer) clearTimeout(scan.timer);
+  if (scan.resumeTimer) clearTimeout(scan.resumeTimer);
+  scan.timer = null;
+  scan.resumeTimer = null;
+  try { await startTrunkedScanEntry(scan, (scan.index + 1) % scan.entries.length); } catch {}
+}
+
+async function startTrunkedScan(body) {
+  if (settings.digitalEngine === 'external') throw new Error('Trunked site scanning currently requires the integrated DSD-neo decoder. Choose Integrated DSD-neo in Settings.');
+  if (!digitalRuntime().available) throw new Error('The integrated DSD-neo decoder is unavailable.');
+  const plan = trunkedControlPlan(channels, body.channelIds);
+  const requested = Number(body.dwellMs ?? 10000);
+  if (!Number.isInteger(requested) || requested < 5000 || requested > 120000) throw new Error('Choose a trunked site dwell time from 5 to 120 seconds.');
+  if (trunkedScanner) await stopTrunkedScan();
+  await stopHd();
+  if (digitalProcess || digitalSession?.active) await stopDigital();
+  stopScan();
+  const scan = { active: true, channelIds: plan.ids, systemCount: plan.systems.length, entries: plan.entries,
+    dwellMs: requested, holdOnSignal: body.holdOnSignal !== false, holdMs: Math.max(250, Math.min(10000, Number(body.holdMs) || 1500)),
+    index: -1, hops: 0, holding: false, activity: 'Starting decoder', current: null, busy: false, timer: null, resumeTimer: null };
+  trunkedScanner = scan;
+  try {
+    await startTrunkedScanEntry(scan, 0);
+    if (body.channelIds !== undefined) setSettings({ scanChannelIds: plan.ids });
+    const snapshot = trunkedScanSnapshot(scan);
+    return { ...snapshot, scan: snapshot };
+  } catch (error) {
+    if (trunkedScanner === scan) await stopTrunkedScan({ stopDecoder: false });
+    throw error;
+  }
+}
+
 async function startScan(body = {}) {
   if (hdStarting) throw new Error('Wait for HD Radio to finish starting.');
   if (digitalStarting) throw new Error('Wait for the digital decoder to finish starting.');
+  if (body.channelIds !== undefined) {
+    const selected = Array.isArray(body.channelIds) ? body.channelIds.map(id => channels.find(channel => channel.id === String(id))).filter(Boolean) : [];
+    if (selected.some(channel => channel.kind === 'trunked')) return startTrunkedScan(body);
+  }
   const plan = scanPlan(channels, body);
+  if (trunkedScanner) await stopTrunkedScan();
   await stopHd();
   if (digitalProcess || digitalSession?.active) await stopDigital();
   stopScan();
@@ -572,7 +694,12 @@ async function importRadioReferenceCounty(body, auth) {
   return { kind: 'conventional', imported: additions.length, county: countyName, city };
 }
 
-async function stopDigital() {
+async function stopDigital({ keepTrunkedScan = false } = {}) {
+  if (!keepTrunkedScan && trunkedScanner) {
+    const scan = trunkedScanner; trunkedScanner = null; scan.active = false;
+    if (scan.timer) clearTimeout(scan.timer);
+    scan.timer = null;
+  }
   digitalGeneration++;
   const session = digitalSession;
   if (session) {
@@ -646,6 +773,7 @@ async function startHd(body = {}) {
 function csvCell(value) { return `"${String(value ?? '').replaceAll('"', '""')}"`; }
 async function startDigital(body) {
   if (hdStarting) throw new Error('Wait for HD Radio to finish starting.');
+  if (trunkedScanner?.active && !body.trunkedScan) throw new Error('Stop the trunked site scan before starting another decoder.');
   if (digitalStarting || digitalProcess || digitalSession?.active) throw new Error('Stop the current digital session before starting another decoder.');
   digitalStarting = true;
   const generation = ++digitalGeneration;
@@ -666,7 +794,7 @@ async function launchDigital(body, generation) {
   if (plan && plan.engine !== 'digital') throw new Error('Select digital conventional memories for the digital scanner.');
   const config = plan?.profile || resolveProtocol(body.protocol, trunked || memory || {});
   const protocol = config.mode;
-  const freq = validFrequency(plan ? plan.channels[0].frequency : trunked ? (selectedSite.frequencies.find(f => f.use === 'd')?.frequency || selectedSite.frequencies[0]?.frequency || trunked.frequency) : memory?.frequency || body.frequency || activeFrequency);
+  const freq = validFrequency(plan ? plan.channels[0].frequency : trunked ? (body.controlFrequency || selectedSite.frequencies.find(f => f.use === 'd')?.frequency || selectedSite.frequencies[0]?.frequency || trunked.frequency) : memory?.frequency || body.frequency || activeFrequency);
   const flags = plan?.profile.flags || decoderFlags(config, { trunked: Boolean(trunked) });
   let deviceIndex = Number(settings.deviceIndex) || 0;
   if (integrated && settings.deviceSerial) {
@@ -737,20 +865,39 @@ async function launchDigital(body, generation) {
         digitalScan.channel = plan.channels.find(channel => channel.frequency === activeFrequency) || null;
         digitalScan.holding = state.calls.some(call => call.state === 2);
       }
+      if (trunkedScanner?.active && trunkedScanner.current) {
+        const scan = trunkedScanner, callActive = state.calls.some(call => call.state === 2);
+        if (!scan.holdOnSignal) {
+          scan.holding = false;
+          scan.activity = callActive ? 'Voice call active · scan continues' : state.decoderStatus?.trunking ? 'Control channel locked' : 'Monitoring control channel';
+        } else if (callActive) {
+          if (scan.timer) clearTimeout(scan.timer);
+          if (scan.resumeTimer) clearTimeout(scan.resumeTimer);
+          scan.timer = null; scan.resumeTimer = null; scan.holding = true; scan.activity = 'Voice call active';
+        } else if (scan.holding) {
+          scan.activity = 'Call ended · waiting to resume';
+          if (!scan.resumeTimer) scan.resumeTimer = setTimeout(() => {
+            if (trunkedScanner !== scan || !scan.active) return;
+            scan.holding = false; scan.resumeTimer = null; void advanceTrunkedScan(scan);
+          }, scan.holdMs);
+        } else scan.activity = state.decoderStatus?.trunking ? 'Control channel locked' : 'Monitoring control channel';
+      }
       if (Date.now() - lastDigitalBroadcast >= 240 || state.phase !== 'listening') {
         lastDigitalBroadcast = Date.now();
-        broadcast({ type: 'digital-state', digital: state, frequency: activeFrequency, gain: activeGain, scan: digitalScan });
+        broadcast({ type: 'digital-state', digital: state, frequency: activeFrequency, gain: activeGain, scan: trunkedScanner?.active ? trunkedScanSnapshot(trunkedScanner) : digitalScan });
       }
     });
     session.on('failure', error => {
       if (digitalSession !== session) return;
       digitalScan = null;
+      if (trunkedScanner?.active) { void stopTrunkedScan({ error: error.message, stopDecoder: false }); return; }
       broadcast({ type: 'digital-error', message: error.message });
       broadcast({ type: 'status', status: status() });
     });
     session.on('stopped', () => { if (digitalSession === session) { digitalScan = null; broadcast({ type: 'status', status: status() }); } });
     try {
       await session.start();
+      if (generation !== digitalGeneration) { await session.stop(); throw new Error('Decoder start cancelled.'); }
       if (plan) digitalScan = { active: true, engine: 'digital', rapid: plan.rapid, dwellMs: plan.rapid ? 0 : 1000, channelIds: plan.channelIds, channelCount: plan.channels.length, holding: false, channel: plan.channels[0] };
       broadcast({ type: 'status', status: status() });
       return { active: true, engine: 'integrated', protocol, protocolLabel: protocolLabel(config), frequency: activeFrequency,
@@ -874,9 +1021,15 @@ const server = http.createServer(async (req, res) => {
       channels[index] = { ...channels[index], ...normalizeChannel({ ...channels[index], ...b, id }, false) }; writeJson(CHANNELS_FILE, channels); return sendJson(res, 200, channels[index]);
     }
     if (url.pathname === '/api/scan/start' && req.method === 'POST') return sendJson(res, 200, await startScan(await parseBody(req)));
-    if (url.pathname === '/api/scan/stop' && req.method === 'POST') { stopScan(); if (digitalScan) await stopDigital(); return sendJson(res, 200, status()); }
+    if (url.pathname === '/api/scan/stop' && req.method === 'POST') {
+      stopScan();
+      if (trunkedScanner) await stopTrunkedScan();
+      else if (digitalScan) await stopDigital();
+      return sendJson(res, 200, status());
+    }
     if (url.pathname === '/api/scan/skip' && req.method === 'POST') {
-      if (digitalScan && digitalSession?.active) await digitalSession.request('channel_cycle');
+      if (trunkedScanner?.active) await advanceTrunkedScan();
+      else if (digitalScan && digitalSession?.active) await digitalSession.request('channel_cycle');
       else { if (!scanner?.active) throw new Error('Start a memory scan before skipping.'); await scanner.skip(); }
       return sendJson(res, 200, status());
     }

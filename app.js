@@ -109,21 +109,21 @@ function renderStatus() {
 }
 
 function renderDigital() {
-  const digital = state.status?.digital, active = isDigitalActive(), integrated = digital?.engine === 'integrated';
+  const digital = state.status?.digital, active = isDigitalActive(), trunkScan=Boolean(state.status?.scan?.active&&state.status.scan.engine==='trunked'), integrated = digital?.engine === 'integrated';
   const runtime = state.digitalRuntime || digital?.runtime;
   const external = active ? !integrated : state.settings.digitalEngine === 'external';
   if(!active&&state.selectedTrunkId){const channel=state.channels.find(item=>item.id===state.selectedTrunkId);const site=channel?.sites?.find(item=>String(item.id)===$('#digital-site').value)||channel?.sites?.[0];const frequency=site?.frequencies?.find(item=>item.use==='d')?.frequency||site?.frequencies?.[0]?.frequency||channel?.frequency;if(frequency)$('#digital-frequency-input').value=formatMHz(frequency);}
   $('#digital-engine-badge').textContent = external ? 'EXTERNAL ENGINE' : 'INTEGRATED · PREVIEW';
-  $('#digital-toggle').textContent = state.digitalBusy ? 'Please wait…' : active ? 'Stop decoder' : 'Start decoder';
-  $('#digital-toggle').disabled = state.digitalBusy || !active && !external && runtime?.available === false;
+  $('#digital-toggle').textContent = trunkScan ? 'Control scan active' : state.digitalBusy ? 'Please wait…' : active ? 'Stop decoder' : 'Start decoder';
+  $('#digital-toggle').disabled = trunkScan || state.digitalBusy || !active && !external && runtime?.available === false;
   $('#digital-add-memory').disabled=Boolean(state.digitalBusy||state.status?.digitalStarting);
   $('#save-current-memory').disabled=Boolean(state.digitalBusy||state.status?.digitalStarting);
-  for (const id of ['digital-protocol', 'digital-system', 'digital-site', 'digital-scan']) $('#'+id).disabled = active || state.digitalBusy;
+  for (const id of ['digital-protocol', 'digital-system', 'digital-site', 'digital-scan']) $('#'+id).disabled = active || trunkScan || state.digitalBusy;
   $('#digital-site').disabled ||= !state.selectedTrunkId || !$('#digital-site').options.length;
   $('#digital-scan').disabled ||= Boolean(state.selectedTrunkId);
-  $('#digital-frequency-input').disabled=active||state.digitalBusy||Boolean(state.selectedTrunkId)||$('#digital-scan').checked;
+  $('#digital-frequency-input').disabled=active||trunkScan||state.digitalBusy||Boolean(state.selectedTrunkId)||$('#digital-scan').checked;
   $('#digital-slot').disabled = !integrated || digital.phase !== 'listening';
-  $('#digital-return-cc').disabled = !integrated || !digital.decoderStatus?.trunking || digital.phase !== 'listening';
+  $('#digital-return-cc').disabled = trunkScan || !integrated || !digital.decoderStatus?.trunking || digital.phase !== 'listening';
   const output = $('#digital-output'); output.classList.toggle('active', active);
   output.classList.toggle('failed', digital?.phase === 'failed');
   let label = 'Decoder idle · Choose a protocol or a saved trunked system.';
@@ -206,10 +206,22 @@ function renderDigitalSystems() {
   if(current?.mode)$('#digital-protocol').value=protocolChoice(current);
   renderDigital();
 }
+function trunkControlFrequencies(channel) {
+  const result=[];
+  for(const site of channel.sites||[]){
+    const saved=(site.frequencies||[]).filter(item=>['d','a'].includes(item.use));
+    const candidates=saved.length?saved:[(site.frequencies||[])[0]||{frequency:channel.frequency}];
+    for(const item of candidates){const frequency=Number(item.frequency);if(Number.isFinite(frequency)&&frequency>=10000&&!result.some(row=>row.siteId===site.id&&row.frequency===frequency))result.push({siteId:site.id,frequency});}
+  }
+  if(!result.length&&Number(channel.frequency)>=10000)result.push({siteId:'main',frequency:Number(channel.frequency)});
+  return result;
+}
 function renderChannelRows() {
   const query = ($('#channel-search')?.value || '').toLowerCase().trim();
   const filter = $('#channel-filter')?.value || 'all';
   const rows = $('#channel-rows'); rows.replaceChildren();
+  const selectedTrunked=state.channels.some(channel=>state.scanSelection.has(channel.id)&&channel.kind==='trunked');
+  const selectedConventional=state.channels.some(channel=>state.scanSelection.has(channel.id)&&channel.kind!=='trunked');
   const filtered = state.channels.filter(channel => {
     if (filter !== 'all' && channel.kind !== filter) return false;
     const text = [channel.name,channel.group,channel.notes,protocolLabel(channel),formatFrequency(channel.frequency),channel.source].join(' ').toLowerCase();
@@ -221,8 +233,12 @@ function renderChannelRows() {
     const freq = channel.kind === 'trunked' ? (channel.frequency ? formatFrequency(channel.frequency) : `${channel.sites?.length || 0} sites`) : formatMHz(channel.frequency,6);
     const detail = channel.kind === 'trunked' ? `${channel.sites?.length || 0} sites · ${channel.talkgroups?.length || 0} talkgroups` : channel.notes || 'Conventional memory';
     const sourceClass = channel.source === 'RadioReference' ? 'rr' : '';
-    row.innerHTML = `<div class="channel-name-cell"><input type="checkbox" class="scan-memory-checkbox" data-scan-id="${escapeHtml(channel.id)}" aria-label="Scan ${escapeHtml(channel.name)}" ${state.scanSelection.has(channel.id)?'checked':''} ${channel.kind==='trunked'||channel.mode==='HD'||channel.enabled===false?'disabled':''} title="${channel.kind==='trunked'?'Follow this trunked system from Decoders':channel.mode==='HD'?'Tune HD memories individually; digital acquisition takes time':'Include in selected memory scan'}"><span class="channel-type-icon">${channel.kind === 'trunked' ? '⌘' : '⌁'}</span><div><strong>${escapeHtml(channel.name)}</strong><small>${escapeHtml(detail)}</small></div></div><span class="freq-cell">${escapeHtml(freq)}${channel.kind === 'trunked' || freq.includes('GHz') || freq.includes('MHz') || freq.includes('kHz') ? '' : ' MHz'}</span>${channelModeTag(channel)}<span>${escapeHtml(channel.group || 'General')}</span><span class="source-tag ${sourceClass}">${escapeHtml(channel.source || 'Manual')}</span><div class="channel-actions"><button data-action="tune" title="Tune">▶</button><button data-action="edit" title="Edit">✎</button><button data-action="delete" title="Delete">×</button></div>`;
-    row.querySelector('[data-scan-id]').addEventListener('change',event=>{event.target.checked?state.scanSelection.add(channel.id):state.scanSelection.delete(channel.id);renderScanStatus();});
+    const isTrunked=channel.kind==='trunked',hasControls=trunkControlFrequencies(channel).length>0;
+    const conflict=isTrunked?selectedConventional:selectedTrunked;
+    const disabled=channel.mode==='HD'||(!isTrunked&&channel.enabled===false)||(isTrunked&&!hasControls)||conflict;
+    const title=isTrunked?'Scan this system’s saved site control frequencies':channel.mode==='HD'?'Tune HD memories individually; digital acquisition takes time':channel.enabled===false?'Enable this memory before scanning':conflict?'Clear the other scan type before selecting this memory':'Include in the selected memory scan';
+    row.innerHTML = `<div class="channel-name-cell"><input type="checkbox" class="scan-memory-checkbox" data-scan-id="${escapeHtml(channel.id)}" aria-label="Scan ${escapeHtml(channel.name)}" ${state.scanSelection.has(channel.id)?'checked':''} ${disabled?'disabled':''} title="${escapeHtml(title)}"><span class="channel-type-icon">${channel.kind === 'trunked' ? '⌘' : '⌁'}</span><div><strong>${escapeHtml(channel.name)}</strong><small>${escapeHtml(detail)}</small></div></div><span class="freq-cell">${escapeHtml(freq)}${channel.kind === 'trunked' || freq.includes('GHz') || freq.includes('MHz') || freq.includes('kHz') ? '' : ' MHz'}</span>${channelModeTag(channel)}<span>${escapeHtml(channel.group || 'General')}</span><span class="source-tag ${sourceClass}">${escapeHtml(channel.source || 'Manual')}</span><div class="channel-actions"><button data-action="tune" title="Tune">▶</button><button data-action="edit" title="Edit">✎</button><button data-action="delete" title="Delete">×</button></div>`;
+    row.querySelector('[data-scan-id]').addEventListener('change',event=>{event.target.checked?state.scanSelection.add(channel.id):state.scanSelection.delete(channel.id);renderChannelRows();});
     row.querySelector('[data-action="tune"]').addEventListener('click', () => tuneChannel(channel));
     row.querySelector('[data-action="edit"]').addEventListener('click', () => openChannelDialog(channel));
     row.querySelector('[data-action="delete"]').addEventListener('click', () => deleteChannel(channel));
@@ -411,26 +427,46 @@ async function toggleScan() {
 }
 function renderScanStatus() {
   const active=Boolean(state.scan?.active),scan=state.scan;
-  const selected=state.channels.filter(channel=>state.scanSelection.has(channel.id)),digital=selected.length>0&&selected.every(channel=>DIGITAL.has(channel.mode));
-  const speeds={80:'Fastest · 80 ms',150:'Rapid · 150 ms',250:'Rapid · 250 ms',500:'Standard · 500 ms',1500:'Standard · 1.5 seconds'};
-  for(const option of $('#scan-speed').options){option.disabled=digital&&![150,1500].includes(Number(option.value));option.textContent=digital?(Number(option.value)===1500?'Standard · 1 second': 'Rapid · fastest decoder timing'):speeds[option.value];}
-  if(digital&&![150,1500].includes(Number($('#scan-speed').value)))$('#scan-speed').value='150';
+  const selected=state.channels.filter(channel=>state.scanSelection.has(channel.id));
+  const trunked=selected.length>0&&selected.every(channel=>channel.kind==='trunked');
+  const mixed=selected.some(channel=>channel.kind==='trunked')&&!trunked;
+  const digital=!trunked&&!mixed&&selected.length>0&&selected.every(channel=>DIGITAL.has(channel.mode));
+  const controls=trunked?selected.reduce((sum,channel)=>sum+trunkControlFrequencies(channel).length,0):0;
+  const scanSpeed=$('#scan-speed');
+  const scanType=trunked?'trunked':digital?'digital':'native';
+  const speedOptions=trunked?[[5000,'5 seconds / control frequency'],[10000,'10 seconds / control frequency'],[20000,'20 seconds / control frequency'],[30000,'30 seconds / control frequency']]:digital?[[150,'Rapid · fastest decoder timing'],[1500,'Standard · 1 second dwell']]:[[80,'Fastest · 80 ms'],[150,'Rapid · 150 ms'],[250,'Rapid · 250 ms'],[500,'Standard · 500 ms'],[1500,'Standard · 1.5 seconds']];
+  if(state.scanControlMode!==scanType){const previous=Number(scanSpeed.value);scanSpeed.replaceChildren(...speedOptions.map(([value,label])=>{const option=document.createElement('option');option.value=String(value);option.textContent=label;return option;}));scanSpeed.value=speedOptions.some(([value])=>value===previous)?String(previous):String(trunked?10000:digital?150:150);state.scanControlMode=scanType;}
   $('#scan-hold').disabled=digital;$('#scan-hang').disabled=digital;
-  $('#scan-selection-count').textContent=`${state.scanSelection.size} channel${state.scanSelection.size===1?'':'s'} selected`;
-  $('#scan-selected').disabled=active||state.scanSelection.size===0;$('#scan-stop').disabled=!active;$('#scan-skip').disabled=!active||(scan?.engine!=='native'&&state.status?.digital?.engine!=='integrated');
+  $('#scan-selection-count').textContent=trunked?`${selected.length} trunked system${selected.length===1?'':'s'} · ${controls} control frequenc${controls===1?'y':'ies'}`:`${state.scanSelection.size} channel${state.scanSelection.size===1?'':'s'} selected`;
+  const selectTrunked=trunked||(!selected.length&&$('#channel-filter').value==='trunked');
+  $('#scan-select-visible').textContent=selectTrunked?'Select visible trunked systems':'Select visible conventional';
+  $('#scan-selected').textContent=trunked?'▶ Scan control channels':'▶ Scan selected';
+  $('#scan-selected').disabled=active||state.scanSelection.size===0||mixed;$('#scan-stop').disabled=!active;$('#scan-skip').disabled=!active||!(['native','trunked'].includes(scan?.engine)||state.status?.digital?.engine==='integrated');
   $('#memory-scan-status').classList.toggle('holding',Boolean(scan?.holding));
-  if(!active){$('#memory-scan-status').textContent=digital?'Digital memories use native decoder scan timing and activity hold. Select a matching protocol group.':'Select conventional memories using the checkboxes below. One USB tuner visits the selected frequencies in sequence.';return;}
-  const kind=scan.engine==='digital'?'Digital decoder scan':scan.rapid?'Rapid scan':'Memory scan';
-  $('#memory-scan-status').textContent=scan.engine==='digital'?`${kind} · ${scan.channelCount} selected memories · ${scan.rapid?'fastest decoder timing':'1 second dwell'}${scan.channel ? ' · '+scan.channel.name : ''} · see Decoders for activity`:`${kind} · ${scan.channelCount} selected · ${scan.dwellMs} ms dwell · ${scan.holding?'Listening to':'Checking'} ${scan.channel?.name||'receiver'} · ${scan.hops||0} visits`;
+  const note=$('.scan-digital-note');
+  if(!active){
+    if(trunked){$('#memory-scan-status').textContent=`The integrated decoder will rotate through ${controls} saved primary / alternate control frequencies. One RTL-SDR checks them sequentially; calls can be missed while it is on another site.`;note.textContent='Select trunked systems above to scan their saved sites. Choose 5–30 seconds per control frequency. Hold on an active signal keeps the decoder on a call until it ends.';}
+    else if(digital){$('#memory-scan-status').textContent='Digital memories use native decoder scan timing and activity hold. Select a matching protocol group.';note.textContent='Digital selections use the integrated decoder. Group NXDN48 and NXDN96 separately. Trunked systems follow their site and talkgroups from Decoders.';}
+    else {$('#memory-scan-status').textContent=mixed?'Clear the current selection, then choose either trunked systems or conventional memories.':'Select conventional memories using the checkboxes below. One USB tuner visits the selected frequencies in sequence.';note.textContent='Digital selections use the integrated decoder. Group NXDN48 and NXDN96 separately. Trunked systems follow their site and talkgroups from Decoders.';}
+    return;
+  }
+  if(scan.engine==='trunked'){
+    const current=scan.current;
+    $('#memory-scan-status').textContent=`Trunked control scan · ${scan.index+1}/${scan.total} · ${current?.systemName||'System'} / ${current?.siteName||'Site'} · ${formatMHz(current?.frequency||0,6)} MHz · ${scan.activity||'Monitoring'} · ${scan.dwellMs/1000}s per frequency`;
+  }else{
+    const kind=scan.engine==='digital'?'Digital decoder scan':scan.rapid?'Rapid scan':'Memory scan';
+    $('#memory-scan-status').textContent=scan.engine==='digital'?`${kind} · ${scan.channelCount} selected memories · ${scan.rapid?'fastest decoder timing':'1 second dwell'}${scan.channel ? ' · '+scan.channel.name : ''} · see Decoders for activity`:`${kind} · ${scan.channelCount} selected · ${scan.dwellMs} ms dwell · ${scan.holding?'Listening to':'Checking'} ${scan.channel?.name||'receiver'} · ${scan.hops||0} visits`;
+  }
   $('#memory-scan-status').classList.toggle('holding',Boolean(scan.holding));
 }
 async function startSelectedScan() {
   $('#scan-selected').disabled=true;
   try {
-    if(state.settings.digitalEngine!=='external'&&[...state.scanSelection].some(id=>DIGITAL.has(state.channels.find(channel=>channel.id===id)?.mode)))await setupAudio();
+    const selected=state.channels.filter(channel=>state.scanSelection.has(channel.id)),trunked=selected.length>0&&selected.every(channel=>channel.kind==='trunked');
+    if(state.settings.digitalEngine!=='external'&&(trunked||selected.some(channel=>DIGITAL.has(channel.mode))))await setupAudio();
     const dwellMs=Number($('#scan-speed').value),result=await api('/api/scan/start',{channelIds:[...state.scanSelection],rapid:dwellMs<500,dwellMs,holdOnSignal:$('#scan-hold').checked,holdMs:Number($('#scan-hang').value)});
-    state.status={...(state.status||{}),scannerActive:true,scan:result.scan,digitalActive:result.scan.engine==='digital',connected:result.scan.engine==='native'};
-    renderStatus();toast(`Scanning ${result.scan.channelCount} selected memories.`,'success');
+    state.status={...(state.status||{}),scannerActive:true,scan:result.scan,digitalActive:['digital','trunked'].includes(result.scan.engine),connected:result.scan.engine==='native'};
+    renderStatus();toast(trunked?`Scanning ${result.scan.controlCount} trunked control frequencies.`:`Scanning ${result.scan.channelCount} selected memories.`,'success');
   }catch(error){toast(error.message,'error');}
   finally{renderScanStatus();}
 }
@@ -879,7 +915,7 @@ async function refreshState() {
   const data=await api('/api/state');state.platform=data.platform||window.sdrDesktop?.platform||'unknown';state.status=data.status;state.channels=data.channels||[];state.settings=data.settings||{};state.digitalRuntime=data.digitalRuntime;state.digitalEvents=data.digitalHistory||[];state.hdRuntime=data.hdRuntime;
   if(data.status.digitalActive&&data.status.selectedChannelId){const current=state.channels.find(channel=>channel.id===data.status.selectedChannelId);state.selectedTrunkId=current?.kind==='trunked'?current.id:'';state.decoderMemoryId=current?.kind!=='trunked'?current?.id||'':'';}
   if(!state.scanSelectionLoaded){state.scanSelection=new Set(state.settings.scanChannelIds||[]);state.scanSelectionLoaded=true;}
-  state.scanSelection=new Set([...state.scanSelection].filter(id=>state.channels.some(channel=>channel.id===id&&channel.kind!=='trunked'&&channel.mode!=='HD'&&channel.enabled!==false)));
+  state.scanSelection=new Set([...state.scanSelection].filter(id=>state.channels.some(channel=>channel.id===id&&(channel.kind==='trunked'||(channel.mode!=='HD'&&channel.enabled!==false)))));
   $('#rtl-library-path').value=state.settings.rtlLibraryPath||'';$('#dsd-path').value=state.settings.dsdPath||'';$('#sample-rate').value=String(state.settings.sampleRate||2400000);
   const linux=state.platform==='linux';
   $('#rtl-hardware-help').textContent=linux?'Uses the app’s pinned Blog V4-compatible driver for RTL-SDR V1–V4. Configure USB access permissions for your user account.':'Connect directly to your dongle through the native RTL-SDR library. Choose a device below and start listening.';
@@ -914,7 +950,7 @@ function bindEvents() {
   }
   $$('.app-dialog button[value="cancel"]').forEach(button=>{button.type='button';button.addEventListener('click',()=>button.closest('dialog').close('cancel'));});
   for(const id of ['channel-kind','channel-mode','channel-p25-phase'])$('#'+id).addEventListener('change',updateChannelProtocolFields);
-  $('#scan-select-visible').addEventListener('click',()=>{$$('[data-scan-id]:not(:disabled)').forEach(input=>state.scanSelection.add(input.dataset.scanId));renderChannelRows();});
+  $('#scan-select-visible').addEventListener('click',()=>{const selectedTrunked=state.channels.some(channel=>state.scanSelection.has(channel.id)&&channel.kind==='trunked');const trunked=selectedTrunked||(!state.scanSelection.size&&$('#channel-filter').value==='trunked');$$('[data-scan-id]:not(:disabled)').forEach(input=>{const channel=state.channels.find(item=>item.id===input.dataset.scanId);if(channel&&(channel.kind==='trunked')===trunked)state.scanSelection.add(channel.id);});renderChannelRows();});
   $('#scan-clear-selection').addEventListener('click',()=>{state.scanSelection.clear();renderChannelRows();});
   $('#scan-selected').addEventListener('click',startSelectedScan);
   $('#scan-stop').addEventListener('click',async()=>{try{state.status=await api('/api/scan/stop',{});renderStatus();toast('Memory scan stopped.');}catch(error){toast(error.message,'error');}});
