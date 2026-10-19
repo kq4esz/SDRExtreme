@@ -6,7 +6,7 @@ import path from 'node:path';
 import os from 'node:os';
 import { spawn } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
-import { UsbReceiver, listUsbDevices } from './lib/rtl-usb.mjs';
+import { UsbReceiver, listUsbDevices, rtlLibraryPath } from './lib/rtl-usb.mjs';
 import { KiwiDirectory } from './lib/kiwi-directory.mjs';
 import { DIGITAL_MODES, digitalOptions, resolveProtocol, decoderFlags, protocolLabel, importedProtocol, channelMapRows } from './lib/channel-protocols.mjs';
 import { normalizeMemory } from './lib/memory-channels.mjs';
@@ -763,7 +763,14 @@ async function launchDigital(body, generation) {
   }
   try {
     activeDigitalConfig = { mode: protocol, ...digitalOptions(config) };
-    const child = spawn(binary, args, { windowsHide: true, stdio: ['ignore', 'pipe', 'pipe'] });
+    const env = { ...process.env };
+    if (process.platform === 'linux') {
+      try {
+        const libraryPath = rtlLibraryPath(settings.rtlLibraryPath);
+        if (path.isAbsolute(libraryPath)) env.LD_LIBRARY_PATH = [path.dirname(libraryPath), env.LD_LIBRARY_PATH].filter(Boolean).join(path.delimiter);
+      } catch {}
+    }
+    const child = spawn(binary, args, { windowsHide: true, stdio: ['ignore', 'pipe', 'pipe'], env });
     digitalProcess = child;
     child.stdin?.on('error', () => {});
     setSettings({ dsdPath: binary });

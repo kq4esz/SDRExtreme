@@ -128,6 +128,13 @@ function checkLinuxPackage(install) {
       throw new Error(`Linux decoder is not executable: ${filename}`);
     }
   }
+  const bundledRtl = requireFile('native/digital/linux-x64/lib/librtlsdr-app.so');
+  const rtlHeader = Buffer.alloc(20);
+  const rtlFd = fs.openSync(bundledRtl, 'r');
+  try { fs.readSync(rtlFd, rtlHeader, 0, rtlHeader.length, 0); } finally { fs.closeSync(rtlFd); }
+  if (rtlHeader[0] !== 0x7f || rtlHeader.toString('ascii', 1, 4) !== 'ELF' || rtlHeader[4] !== 2 || rtlHeader.readUInt16LE(18) !== 62) {
+    throw new Error(`Expected the pinned Linux x86_64 RTL-SDR library: ${bundledRtl}`);
+  }
   const koffi = requireFile('node_modules/@koromix/koffi-linux-x64/linux_x64/koffi.node');
   const koffiHeader = Buffer.alloc(20);
   const koffiFd = fs.openSync(koffi, 'r');

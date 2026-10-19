@@ -670,10 +670,10 @@ async function refreshState() {
   state.scanSelection=new Set([...state.scanSelection].filter(id=>state.channels.some(channel=>channel.id===id&&channel.kind!=='trunked'&&channel.mode!=='HD'&&channel.enabled!==false)));
   $('#rtl-library-path').value=state.settings.rtlLibraryPath||'';$('#dsd-path').value=state.settings.dsdPath||'';$('#sample-rate').value=String(state.settings.sampleRate||2400000);
   const linux=state.platform==='linux';
-  $('#rtl-hardware-help').textContent=linux?'Uses the system librtlsdr library for direct USB access. Install your distribution’s RTL-SDR runtime and allow your user account to access the dongle.':'Connect directly to your dongle through the native RTL-SDR library. Choose a device below and start listening.';
+  $('#rtl-hardware-help').textContent=linux?'Uses the app’s pinned Blog V4-compatible driver for RTL-SDR V1–V4. Configure USB access permissions for your user account.':'Connect directly to your dongle through the native RTL-SDR library. Choose a device below and start listening.';
   $('#rtl-library-label').textContent='CUSTOM RTL-SDR LIBRARY (OPTIONAL)';
-  $('#rtl-library-path').placeholder=linux?'System librtlsdr.so.0 or a compatible .so library':'Bundled Blog V4 compatible x64 rtlsdr.dll';
-  $('#rtl-permissions-help').textContent=linux?'Linux setup: install librtlsdr and configure USB device permissions as described in the README. Do not run the desktop app as root.':'Windows setup: install WinUSB for the dongle’s Bulk-In Interface 0.';
+  $('#rtl-library-path').placeholder=linux?'Bundled V1–V4 driver · custom .so override optional':'Bundled Blog V4-compatible x64 rtlsdr.dll';
+  $('#rtl-permissions-help').textContent=linux?'Linux setup: configure USB device permissions as described in the README. The release includes the native RTL-SDR driver. Do not run the desktop app as root.':'Windows setup: install WinUSB for the dongle’s Bulk-In Interface 0.';
   $('#rtl-setup-link').classList.toggle('hidden',linux);
   if(linux){$('#digital-engine').options[0].textContent='Integrated DSD-neo';$('#dsd-path').placeholder='/usr/bin/dsd-fme';}
   $('#digital-engine').value=state.settings.digitalEngine||'integrated';$('#external-decoder-fields').classList.toggle('hidden',$('#digital-engine').value!=='external');

@@ -187,6 +187,10 @@ RTLSDR_RUNTIME="$(find "$DSD_RUNTIME/lib" -maxdepth 1 -type f -name 'librtlsdr.s
 RTLSDR_SONAME="$(objdump -p "$RTLSDR_RUNTIME" | awk '$1 == "SONAME" { print $2; exit }')"
 [[ -n "$RTLSDR_SONAME" ]] || { echo "Could not read bundled librtlsdr SONAME." >&2; exit 1; }
 cp -L -- "$RTLSDR_RUNTIME" "$HD_RUNTIME/lib/$RTLSDR_SONAME"
+# Give the direct receiver a stable path to the same V4-compatible driver.
+# The original SONAME files remain in place for the integrated decoder's loader.
+cp -L -- "$RTLSDR_RUNTIME" "$DSD_RUNTIME/lib/librtlsdr-app.so"
+chmod 755 "$DSD_RUNTIME/lib/librtlsdr-app.so"
 LD_LIBRARY_PATH="$HD_RUNTIME/lib" bundle_dependencies "$HD_RUNTIME/lib" "$HD_RUNTIME/lib/libnrsc5.so"
 
 # Keep the RTL-SDR headers and pkg-config metadata available until nrsc5 has

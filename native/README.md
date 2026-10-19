@@ -1,14 +1,15 @@
 # RTL-SDR native USB libraries
 
-Linux x64 HD Radio and integrated DSD-neo builds include a private, pinned
-RTL-SDR 2.0.3 library with RTL-SDR Blog V4 / V4 Lite support. Its source commit
-is pinned in `native/digital/source/dsd-neo-32ae7c8.zip`; see the Linux runtime
-build notes in `native/digital/README.md`. The app's Linux analog and HD Radio
-USB acquisition continues to use the distribution's `librtlsdr`; integrated
-DSD-neo opens the dongle with its private pinned copy. All modes use the
-distribution's USB permission rules.
+Linux x64 packages use one private, pinned RTL-SDR 2.0.3 library for live
+analog, HD Radio and integrated DSD-neo reception. It includes RTL-SDR Blog V4
+and V4 Lite support and is backward-compatible with Blog V3 and older or other
+compatible RTL2832U dongles. Its source commit is pinned in
+`native/digital/source/dsd-neo-32ae7c8.zip`; see the Linux runtime build notes
+in `native/digital/README.md`. The application selects this library by default;
+an explicit library path or `RTLSDR_LIBRARY` environment variable overrides it.
+USB device access still follows the distribution's udev rules and permissions.
 
-The Windows x64 native receiver uses the unmodified `rtlsdr.dll`, `pthreadVC2.dll`, and `msvcr100.dll` from RTL-SDR Blog driver release **V1.4.0**. It supports the Blog V4 as well as compatible RTL2832U receivers. `VCRUNTIME140.dll` is also bundled beside the receiver library: this Blog DLL imports the Visual C++ runtime, so it must not depend on a development PC's installed runtime.
+The Windows x64 native receiver uses the unmodified `rtlsdr.dll`, `pthreadVC2.dll`, and `msvcr100.dll` from RTL-SDR Blog driver release **V1.4.0**. It supports the Blog V4 as well as compatible RTL2832U receivers, including Blog V1–V3. `VCRUNTIME140.dll` is also bundled beside the receiver library: this Blog DLL imports the Visual C++ runtime, so it must not depend on a development PC's installed runtime.
 
 - Binary release: https://github.com/rtlsdrblog/rtl-sdr-blog/releases/tag/V1.4.0
 - Corresponding RTL-SDR source: https://github.com/rtlsdrblog/rtl-sdr-blog/tree/V1.4.0
