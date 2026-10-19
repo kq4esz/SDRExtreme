@@ -212,3 +212,5 @@ button:disabled{cursor:default;opacity:.5}
 #digital-engine{width:100%;height:36px;font-size:11px}#external-decoder-fields>input{width:100%}.digital-save-settings{margin-top:13px}
 @media(max-width:1000px){.digital-live-grid{grid-template-columns:1fr;gap:18px}.digital-slot-label{margin-left:0}.digital-card{padding:18px}.digital-events-table{min-width:620px}}
 @media(max-width:700px){.digital-card{grid-column:auto;padding:14px}.digital-title-row h2{font-size:21px}.digital-config{padding:12px}.digital-card .digital-launch-row>select{width:100%}.digital-card .digital-launch-row>.primary-button{flex:1}.digital-card .digital-launch-row>.outline-button{width:100%}.digital-metrics{gap:12px}.digital-card .decoder-footer{align-items:flex-start;gap:10px}.digital-card .muted-note{max-width:65%}}
+.waterfall-wrap canvas.waterfall-tuneable{cursor:crosshair}
+@media(max-width:700px){.spectrum-head{height:auto;min-height:58px;flex-wrap:wrap;gap:5px;padding:8px 11px}.spectrum-tools{width:100%;justify-content:flex-start;flex-wrap:wrap}}
