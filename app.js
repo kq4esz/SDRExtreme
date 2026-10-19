@@ -98,6 +98,13 @@ function renderStatus() {
     $('#scan-button').innerHTML = state.scanning ? '<span>■</span> Stop scan' : '<span>⟳</span> Scan memories';
     $('#scan-button').classList.toggle('scanning', state.scanning);
   }
+  const currentScan = status.scannerActive && status.scan?.active ? status.scan : null;
+  const scanChannel = currentScan?.engine === 'trunked'
+    ? [currentScan.current?.systemName, currentScan.current?.siteName].filter(Boolean).join(' · ') || currentScan.channel?.name
+    : currentScan?.channel?.name;
+  $('#scan-current-channel').classList.toggle('hidden', !scanChannel);
+  $('#scan-current-channel-name').textContent = scanChannel || '';
+  $('#scan-current-channel-name').title = scanChannel || '';
   renderScanStatus();
   renderDigital();
   $('#save-current-memory').disabled=Boolean(status.digitalStarting||state.digitalBusy||status.hdStarting);
