@@ -553,10 +553,10 @@ function updateSpectrumLabels(view,frame) {
   $(`#${view.prefix}freq-left`).textContent=formatMHz(frame.center-frame.span/2,3);
   $(`#${view.prefix}freq-mid`).textContent=`${formatMHz(frame.center,3)} MHz`;
   $(`#${view.prefix}freq-right`).textContent=formatMHz(frame.center+frame.span/2,3);
-  $(`#${view.prefix}bandwidth-label`).textContent=frame.source==='survey'?'0–2400 MHz panorama · supported bands swept':`${(frame.span/1e6).toFixed(3)} MHz span`;
+  $(`#${view.prefix}bandwidth-label`).textContent=frame.source==='survey'?(frame.surveyType==='20mhz'?'20 MHz span · stepped sweep':'0–2400 MHz panorama · supported bands swept'):`${(frame.span/1e6).toFixed(3)} MHz span`;
   if(view.page==='decoders'){
-    $('#decoder-rf-source').textContent=frame.source==='survey'?'WIDE RF SURVEY':frame.source==='digital'?'NATIVE DECODER IQ':frame.source==='hd'?'HD RADIO USB IQ':'USB RECEIVER IQ';
-    $('#decoder-rf-tuned').textContent=frame.source==='survey'?`Wide survey · ${state.wideSurvey?.progress??frame.surveyProgress??0}% complete`:`${state.spectrumPaused?'Frozen at':'Tuned'} ${formatFrequency(frame.tunedFrequency??frame.center)}`;
+    $('#decoder-rf-source').textContent=frame.source==='survey'?(frame.surveyType==='20mhz'?'20 MHZ RF SWEEP':'WIDE RF SURVEY'):frame.source==='digital'?'NATIVE DECODER IQ':frame.source==='hd'?'HD RADIO USB IQ':'USB RECEIVER IQ';
+    $('#decoder-rf-tuned').textContent=frame.source==='survey'?`${frame.surveyType==='20mhz'?'20 MHz span':'Wide survey'} · ${state.wideSurvey?.progress??frame.surveyProgress??0}% complete`:`${state.spectrumPaused?'Frozen at':'Tuned'} ${formatFrequency(frame.tunedFrequency??frame.center)}`;
   }
 }
 function surveyUnsupportedRanges(frame) {
@@ -599,16 +599,21 @@ function waterfallFrequency(view,event) {
   const fraction=(x-left)/plotWidth;
   return Math.round(frame.center-frame.span/2+fraction*frame.span);
 }
+function snapWaterfallFrequency(frequency) {
+  const step=Math.max(1,Number(state.currentStep)||25000);
+  return Math.round(frequency/step)*step;
+}
 async function tuneFromWaterfall(view,event) {
-  const frequency=waterfallFrequency(view,event);
-  if(!frequency)return;
+  const clickedFrequency=waterfallFrequency(view,event);
+  if(!clickedFrequency)return;
+  const frequency=snapWaterfallFrequency(clickedFrequency);
   try {
     if(frequency<10000||frequency>1766000000){toast('This frequency is outside the application tuning range.','error');return;}
     const supported=state.wideSurvey?.running?state.wideSurvey.ranges:state.status?.connected?rtlSurveyRanges():null;
     if(supported&&!supported.some(([low,high])=>frequency>=low&&frequency<=high)){
       toast('This part of the panorama is outside the connected RTL-SDR tuner’s supported bands.','error');return;
     }
-    if(state.wideSurvey?.running)await stopWideSurvey({restore:false});
+    if(state.wideSurvey?.running)await stopSpectrumSurvey({restore:false});
     state.status=await api('/api/tune',{frequency});
     setFrequencyDisplay(frequency);
     for(const item of spectrumViews)item.center=null;
@@ -624,22 +629,25 @@ async function tuneFromWaterfall(view,event) {
 function renderSpectrumStatus() {
   const status=state.status||{},running=Boolean(status.connected||status.hdActive||status.digitalActive&&status.digital?.engine==='integrated');
   const survey=Boolean(state.wideSurvey?.running),source=survey?'survey':status.hdActive?'hd':status.digitalActive?'digital':'usb';
+  const localSpan=state.wideSurvey?.type==='20mhz';
   const fresh=survey?state.spectrum?.source==='survey':running&&state.spectrum&&Date.now()-state.spectrum.receivedAt<2200&&state.spectrum.source===source;
   for(const view of spectrumViews){
     view.waterfall.classList.toggle('waterfall-tuneable',Boolean(waterfallFrame(view)));
     const held=view.page==='decoders'&&state.spectrumPaused&&view.frame;
     const overlay=$(`#${view.prefix}spectrum-placeholder`);overlay.classList.toggle('hidden',Boolean(fresh||held));
-    overlay.querySelector('strong').textContent=survey?'Surveying receiver frequency range':running?'Waiting for RF samples':status.digitalActive?'External decoder RF feed unavailable':'RF spectrum is standing by';
-    overlay.querySelector('span:last-of-type').textContent=survey?`Sequential sweep · ${state.wideSurvey.progress}% complete. Audio is paused during the survey.`:running?'The display will update when receiver IQ samples arrive.':'Start the USB receiver, HD Radio, or integrated digital decoder to view incoming RF.';
+    overlay.querySelector('strong').textContent=survey?(localSpan?'Surveying 20 MHz around the tuned frequency':'Surveying receiver frequency range'):running?'Waiting for RF samples':status.digitalActive?'External decoder RF feed unavailable':'RF spectrum is standing by';
+    overlay.querySelector('span:last-of-type').textContent=survey?`Sequential sweep · ${state.wideSurvey.progress}% complete. Live audio is paused during the sweep.`:running?'The display will update when receiver IQ samples arrive.':'Start the USB receiver, HD Radio, or integrated digital decoder to view incoming RF.';
   }
   $('#placeholder-connect').textContent=status.digitalActive?'Open decoder workstation':'Connect receiver';
   const pill=$('#decoder-rf-live');pill.classList.toggle('paused',state.spectrumPaused);
   pill.innerHTML=`<i></i>${survey?`SWEEP ${state.wideSurvey.progress}%`:state.spectrumPaused?'PAUSED':fresh?'LIVE':running?'WAITING':'IDLE'}`;
   $('#radio-rf-live').innerHTML=`<i></i>${survey?`SWEEP ${state.wideSurvey.progress}%`:fresh?'LIVE':running?'WAITING':'IDLE'}`;
   const canSurvey=Boolean(status.connected&&!status.hdActive&&!status.digitalActive);
-  for(const id of ['full-span-button','decoder-full-span-button']){
-    const button=$('#'+id);button.textContent=survey?'Stop survey':'Wide survey';button.disabled=!survey&&!canSurvey;
-    button.title=survey?'Stop the sequential RF survey':canSurvey?'Sequentially survey the supported RTL-SDR bands across a 0–2.4 GHz panorama. Live audio pauses while scanning.':'Connect live RF reception and stop HD Radio or the digital decoder before starting a wide survey.';
+  for(const [id,type] of [['full-span-button','wide'],['decoder-full-span-button','wide'],['local-span-button','20mhz'],['decoder-local-span-button','20mhz']]){
+    const button=$('#'+id),active=survey&&state.wideSurvey.type===type;
+    button.textContent=active?(type==='wide'?'Stop survey':'Stop 20 MHz'):(type==='wide'?'Wide survey':'20 MHz span');
+    button.disabled=survey?!active:!canSurvey;
+    button.title=active?'Stop the active RF sweep':survey?'Stop the active sweep before starting another one.':!canSurvey?'Connect live RF reception and stop HD Radio or the digital decoder before starting a sweep.':type==='wide'?'Sequentially survey the supported RTL-SDR bands across a 0–2.4 GHz panorama. Live audio pauses while scanning.':'Sweep a 20 MHz span around the tuned frequency. Live audio pauses during the sweep.';
   }
   $('#decoder-spectrum-freeze').disabled=Boolean(survey)||!state.spectrum&&!state.spectrumPaused;
 }
@@ -706,22 +714,38 @@ function rtlSurveyCenters(ranges,rate) {
 function publishSurveyFrame(survey,{completed=false}={}) {
   const bins=survey.bins,now=Date.now(),epoch=`survey:${survey.id}:${survey.completedPass}`;
   state.spectrum={type:'spectrum',source:'survey',bins,center:survey.center,tunedFrequency:survey.returnFrequency,span:survey.span,
-    timestamp:now,receivedAt:now,epoch,surveyProgress:survey.progress,surveyRanges:survey.ranges};
+    timestamp:now,receivedAt:now,epoch,surveyProgress:survey.progress,surveyRanges:survey.ranges,surveyType:survey.type};
   if(completed){
     state.rfHistory.push(Float32Array.from(bins));if(state.rfHistory.length>24)state.rfHistory.shift();
     state.spectrumEpoch=epoch;drawWaterfall(true);
   }
   drawSpectrum(true);renderSpectrumStatus();
 }
-async function startWideSurvey() {
+function rtlSpanSurveyCenters(ranges,rate,low,high) {
+  const half=rate/2,step=Math.max(250000,Math.floor(rate*.8)),centers=[];
+  for(const [supportedLow,supportedHigh] of ranges){
+    const first=Math.max(supportedLow,low+half),last=Math.min(supportedHigh,high-half);
+    if(first>last)continue;
+    for(let center=first;center<=last;center+=step)centers.push(Math.round(center));
+    if(centers.at(-1)!==Math.round(last))centers.push(Math.round(last));
+  }
+  return centers;
+}
+async function startSpectrumSurvey(type='wide') {
   if(state.wideSurvey?.running)return;
-  if(state.status?.hdActive||state.status?.digitalActive){toast('Stop HD Radio or the digital decoder before starting a wide survey.','error');return;}
-  if(!isConnected()){toast('Start live RF reception before beginning a wide survey.','error');return;}
+  if(state.status?.hdActive||state.status?.digitalActive){toast('Stop HD Radio or the digital decoder before starting an RF sweep.','error');return;}
+  if(!isConnected()){toast('Start live RF reception before beginning an RF sweep.','error');return;}
   if(state.status?.scannerActive)state.status=await api('/api/scan/stop',{});
-  const ranges=rtlSurveyRanges(),rate=Number(state.status.sampleRate||state.settings.sampleRate||2400000),centers=rtlSurveyCenters(ranges,rate);
-  if(!centers.length){toast('No supported tuning range was found for this RTL-SDR.','error');return;}
-  const low=0,high=2400000000,id=++state.spectrumGeneration;
-  const survey={id,running:true,ranges,centers,rate,low,high,center:(low+high)/2,span:high-low,returnFrequency:Number(state.status.frequency||100000000),progress:0,completedPass:0,bins:new Float32Array(262144),pendingTune:null};
+  const ranges=rtlSurveyRanges(),rate=Number(state.status.sampleRate||state.settings.sampleRate||2400000);
+  const returnFrequency=Number(state.status.frequency||100000000);
+  let low=0,high=2400000000;
+  if(type==='20mhz'){
+    low=Math.max(0,returnFrequency-10000000);high=low+20000000;
+  }
+  const sweepCenters=type==='20mhz'?rtlSpanSurveyCenters(ranges,rate,low,high):rtlSurveyCenters(ranges,rate);
+  if(!sweepCenters.length){toast('No supported tuning range was found for this RTL-SDR in the selected 20 MHz span.','error');return;}
+  const id=++state.spectrumGeneration,binCount=type==='20mhz'?16384:262144;
+  const survey={id,type,running:true,ranges,centers:sweepCenters,rate,low,high,center:(low+high)/2,span:high-low,returnFrequency,progress:0,completedPass:0,bins:new Float32Array(binCount),pendingTune:null};
   survey.bins.fill(-120);state.wideSurvey=survey;state.spectrumPaused=false;
   const freeze=$('#decoder-spectrum-freeze');freeze.textContent='Freeze';freeze.setAttribute('aria-pressed','false');
   for(const view of spectrumViews){view.zoom=1;view.center=null;view.frozenHistory=null;view.frozenEpoch='';}
@@ -732,7 +756,7 @@ async function runWideSurvey(survey) {
   const wait=milliseconds=>new Promise(resolve=>setTimeout(resolve,milliseconds));
   try{
     while(survey.running&&state.wideSurvey===survey){
-      survey.bins=new Float32Array(262144);survey.bins.fill(-120);survey.progress=0;
+      survey.bins=new Float32Array(survey.type==='20mhz'?16384:262144);survey.bins.fill(-120);survey.progress=0;
       for(let index=0;index<survey.centers.length;index++){
         if(!survey.running||state.wideSurvey!==survey)break;
         const center=survey.centers[index],previous=state.lastLiveSpectrum?.receivedAt||0;
@@ -761,10 +785,10 @@ async function runWideSurvey(survey) {
       publishSurveyFrame(survey,{completed:true});
     }
   }catch(error){
-    if(state.wideSurvey===survey&&survey.running){toast(`Wide survey stopped: ${error.message}`,'error');await stopWideSurvey({restore:true});}
+    if(state.wideSurvey===survey&&survey.running){toast(`${survey.type==='20mhz'?'20 MHz sweep':'Wide survey'} stopped: ${error.message}`,'error');await stopSpectrumSurvey({restore:true});}
   }
 }
-async function stopWideSurvey({restore=true}={}) {
+async function stopSpectrumSurvey({restore=true}={}) {
   const survey=state.wideSurvey;if(!survey)return;
   survey.running=false;
   await survey.pendingTune?.catch(()=>{});
@@ -778,8 +802,14 @@ async function stopWideSurvey({restore=true}={}) {
 }
 async function toggleWideSurvey() {
   try{
-    if(state.wideSurvey?.running)await stopWideSurvey({restore:true});
-    else await startWideSurvey();
+    if(state.wideSurvey?.running)await stopSpectrumSurvey({restore:true});
+    else await startSpectrumSurvey('wide');
+  }catch(error){toast(error.message,'error');}
+}
+async function toggleLocalSpanSurvey() {
+  try{
+    if(state.wideSurvey?.running)await stopSpectrumSurvey({restore:true});
+    else await startSpectrumSurvey('20mhz');
   }catch(error){toast(error.message,'error');}
 }
 function zoomSpectrum(view,direction,event) {
@@ -896,7 +926,8 @@ function bindEvents() {
     view.waterfall.title='Click a signal to tune to its frequency';
     view.waterfall.addEventListener('pointermove',event=>{
       const frequency=waterfallFrequency(view,event);
-      view.waterfall.title=frequency?`Click to tune to ${formatFrequency(frequency)}`:'Click a signal to tune to its frequency';
+      const snapped=frequency?snapWaterfallFrequency(frequency):null;
+      view.waterfall.title=snapped?`Click to tune to ${formatFrequency(snapped)} (${state.currentStep/1000} kHz step)`:'Click a signal to tune to its frequency';
     });
     view.waterfall.addEventListener('pointerleave',()=>{view.waterfall.title='Click a signal to tune to its frequency';});
     view.waterfall.addEventListener('click',event=>{void tuneFromWaterfall(view,event);});
@@ -962,6 +993,8 @@ function bindEvents() {
   $('#decoder-spectrum-zoom-in').addEventListener('click',()=>zoomSpectrum(spectrumViews.find(view=>view.page==='decoders'),1));
   $('#full-span-button').addEventListener('click',()=>void toggleWideSurvey());
   $('#decoder-full-span-button').addEventListener('click',()=>void toggleWideSurvey());
+  $('#local-span-button').addEventListener('click',()=>void toggleLocalSpanSurvey());
+  $('#decoder-local-span-button').addEventListener('click',()=>void toggleLocalSpanSurvey());
   $('#spectrum-expand').addEventListener('click',()=>$('#spectrum-wrap').classList.toggle('expanded'));
 }
 let desktopUpdateStatus;
