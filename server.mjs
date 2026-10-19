@@ -1077,9 +1077,11 @@ const server = http.createServer(async (req, res) => {
     }
     if (url.pathname === '/api/scan/start' && req.method === 'POST') return sendJson(res, 200, await startScan(await parseBody(req)));
     if (url.pathname === '/api/scan/stop' && req.method === 'POST') {
+      const body = await parseBody(req);
       stopScan();
       if (trunkedScanner) await stopTrunkedScan();
       else if (digitalScan) await stopDigital();
+      else if (receiver && body.keepReceiver !== true) await stopReceiver();
       return sendJson(res, 200, status());
     }
     if (url.pathname === '/api/scan/skip' && req.method === 'POST') {

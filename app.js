@@ -95,7 +95,7 @@ function renderStatus() {
   if (status.scannerActive !== undefined) {
     state.scanning = status.scannerActive;
     state.scan = status.scan || null;
-    $('#scan-button').innerHTML = state.scanning ? '<span>■</span> Stop scan' : '<span>⟳</span> Scan memories';
+    $('#scan-button').innerHTML = state.scanning ? '<span>■</span> Stop scan' : '<span>⟳</span> Scan selected';
     $('#scan-button').classList.toggle('scanning', state.scanning);
   }
   const currentScan = status.scannerActive && status.scan?.active ? status.scan : null;
@@ -428,10 +428,9 @@ async function changeMode(mode) {
   state.hdUi?.render();
 }
 async function toggleScan() {
-  try { if(state.scanning){state.status=await api('/api/scan/stop',{});state.scanning=false;toast('Memory scan stopped.');}
-    else { const result=await api('/api/scan/start',{dwellMs:1500});state.scanning=true;state.status={...state.status,scannerActive:true,scan:result.scan};toast('Scanning enabled conventional memories.','success'); }
-    renderStatus();
-  }catch(error){toast(error.message,'error');}
+  if(!state.scanning){await startSelectedScan();return;}
+  try { state.status=await api('/api/scan/stop',{});await stopAudio();renderStatus();toast('Scan and live RF stopped.'); }
+  catch(error){toast(error.message,'error');}
 }
 function renderScanStatus() {
   const active=Boolean(state.scan?.active),scan=state.scan;
@@ -471,8 +470,10 @@ async function startSelectedScan() {
   $('#scan-selected').disabled=true;
   try {
     const selected=state.channels.filter(channel=>state.scanSelection.has(channel.id)),trunked=selected.length>0&&selected.every(channel=>channel.kind==='trunked');
+    if(!selected.length)throw new Error('Select at least one memory channel to scan.');
+    if(selected.some(channel=>channel.kind==='trunked')&&!trunked)throw new Error('Select either trunked systems or conventional memories, not both.');
     if(state.settings.digitalEngine!=='external'&&(trunked||selected.some(channel=>DIGITAL.has(channel.mode))))await setupAudio();
-    const dwellMs=Number($('#scan-speed').value),result=await api('/api/scan/start',{channelIds:[...state.scanSelection],rapid:dwellMs<500,dwellMs,holdOnSignal:$('#scan-hold').checked,holdMs:Number($('#scan-hang').value)});
+    const dwellMs=Number($('#scan-speed').value),result=await api('/api/scan/start',{channelIds:selected.map(channel=>channel.id),rapid:dwellMs<500,dwellMs,holdOnSignal:$('#scan-hold').checked,holdMs:Number($('#scan-hang').value)});
     state.status={...(state.status||{}),scannerActive:true,scan:result.scan,digitalActive:['digital','trunked'].includes(result.scan.engine),connected:result.scan.engine==='native'};
     renderStatus();toast(trunked?`Scanning ${result.scan.controlCount} trunked control frequencies.`:`Scanning ${result.scan.channelCount} selected memories.`,'success');
   }catch(error){toast(error.message,'error');}
@@ -766,7 +767,7 @@ async function startWideSurvey() {
   if(state.wideSurvey?.running)return;
   if(state.status?.hdActive||state.status?.digitalActive){toast('Stop HD Radio or the digital decoder before starting a wide survey.','error');return;}
   if(!isConnected()){toast('Start live RF reception before beginning a wide survey.','error');return;}
-  if(state.status?.scannerActive)state.status=await api('/api/scan/stop',{});
+  if(state.status?.scannerActive)state.status=await api('/api/scan/stop',{keepReceiver:true});
   const ranges=rtlSurveyRanges(),rate=Number(state.status.sampleRate||state.settings.sampleRate||2400000),centers=rtlSurveyCenters(ranges,rate);
   if(!centers.length){toast('No supported tuning range was found for this RTL-SDR.','error');return;}
   const low=0,high=2400000000,id=++state.spectrumGeneration;
@@ -961,7 +962,7 @@ function bindEvents() {
   $('#scan-select-visible').addEventListener('click',()=>{const selectedTrunked=state.channels.some(channel=>state.scanSelection.has(channel.id)&&channel.kind==='trunked');const trunked=selectedTrunked||(!state.scanSelection.size&&$('#channel-filter').value==='trunked');$$('[data-scan-id]:not(:disabled)').forEach(input=>{const channel=state.channels.find(item=>item.id===input.dataset.scanId);if(channel&&(channel.kind==='trunked')===trunked)state.scanSelection.add(channel.id);});renderChannelRows();});
   $('#scan-clear-selection').addEventListener('click',()=>{state.scanSelection.clear();renderChannelRows();});
   $('#scan-selected').addEventListener('click',startSelectedScan);
-  $('#scan-stop').addEventListener('click',async()=>{try{state.status=await api('/api/scan/stop',{});renderStatus();toast('Memory scan stopped.');}catch(error){toast(error.message,'error');}});
+  $('#scan-stop').addEventListener('click',async()=>{try{state.status=await api('/api/scan/stop',{});await stopAudio();renderStatus();toast('Scan and live RF stopped.');}catch(error){toast(error.message,'error');}});
   $('#scan-skip').addEventListener('click',async()=>{try{state.status=await api('/api/scan/skip',{});renderStatus();}catch(error){toast(error.message,'error');}});
   $$('[data-page]').forEach(button=>button.addEventListener('click',()=>setPage(button.dataset.page)));
   $$('[data-goto]').forEach(button=>button.addEventListener('click',()=>setPage(button.dataset.goto)));
