@@ -437,8 +437,8 @@ async function startTrunkedScan(body) {
   if (settings.digitalEngine === 'external') throw new Error('Trunked site scanning currently requires the integrated DSD-neo decoder. Choose Integrated DSD-neo in Settings.');
   if (!digitalRuntime().available) throw new Error('The integrated DSD-neo decoder is unavailable.');
   const plan = trunkedControlPlan(channels, body.channelIds);
-  const requested = Number(body.dwellMs ?? 10000);
-  if (!Number.isInteger(requested) || requested < 5000 || requested > 120000) throw new Error('Choose a trunked site dwell time from 5 to 120 seconds.');
+  const requested = Number(body.dwellMs ?? 2000);
+  if (!Number.isInteger(requested) || requested < 1000 || requested > 120000) throw new Error('Choose a trunked site dwell time from 1 to 120 seconds.');
   if (trunkedScanner) await stopTrunkedScan();
   await stopHd();
   if (digitalProcess || digitalSession?.active) await stopDigital();
