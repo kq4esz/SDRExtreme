@@ -645,7 +645,8 @@ function waterfallFrequency(view,event) {
   return Math.round(frame.center-frame.span/2+fraction*frame.span);
 }
 function snapWaterfallFrequency(frequency) {
-  const step=Math.max(1,Number(state.currentStep)||25000);
+  // Keep click-to-tune precise even when the manual tuning step is 25 kHz or larger.
+  const step=1000;
   return Math.round(frequency/step)*step;
 }
 async function tuneFromWaterfall(view,event) {
@@ -947,7 +948,7 @@ function bindEvents() {
     view.waterfall.addEventListener('pointermove',event=>{
       const frequency=waterfallFrequency(view,event);
       const snapped=frequency?snapWaterfallFrequency(frequency):null;
-      view.waterfall.title=snapped?`Click to tune to ${formatFrequency(snapped)} (${state.currentStep/1000} kHz step)`:'Click a signal to tune to its frequency';
+      view.waterfall.title=snapped?`Click to tune to ${formatFrequency(snapped)} (1 kHz resolution)`:'Click a signal to tune to its frequency';
     });
     view.waterfall.addEventListener('pointerleave',()=>{view.waterfall.title='Click a signal to tune to its frequency';});
     view.waterfall.addEventListener('click',event=>{void tuneFromWaterfall(view,event);});
